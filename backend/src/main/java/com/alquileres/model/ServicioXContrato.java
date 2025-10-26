@@ -23,10 +23,10 @@ public class ServicioXContrato {
     @JoinColumn(name = "tipo_servicio_id", nullable = false)
     private TipoServicio tipoServicio;
 
-    @Column(name = "nro_cuenta", length = 50)
+    @Column(name = "nro_cuenta", length = 50, nullable = false)
     private String nroCuenta;
 
-    @Column(name = "nro_contrato", length = 50)
+    @Column(name = "nro_contrato", length = 50, nullable = false)
     private String nroContrato;
 
     @Column(name = "es_de_inquilino", nullable = false)
