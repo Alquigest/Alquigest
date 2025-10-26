@@ -30,6 +30,9 @@ public class Alquiler {
     @Column(name = "esta_pagado", nullable = false)
     private Boolean estaPagado = false;
 
+    @Column(name = "fecha_pago")
+    private String fechaPago;
+
     @Column(name = "es_activo", nullable = false)
     private Boolean esActivo = true;
 
@@ -102,6 +105,15 @@ public class Alquiler {
 
     public void setEstaPagado(Boolean estaPagado) {
         this.estaPagado = estaPagado;
+        this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    public String getFechaPago() {
+        return fechaPago;
+    }
+
+    public void setFechaPago(String fechaPago) {
+        this.fechaPago = fechaPago;
         this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
