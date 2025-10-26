@@ -69,7 +69,7 @@ export default function HomePage() {
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-2 ">¡Bienvenido!</h2>
             <p className="text-muted-foreground font-sans text-xs md:text-lg">
-              Gestione alquireles de forma simple.
+              Gestione alquileres de forma simple.
             </p>
           </div>
           
