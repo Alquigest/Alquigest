@@ -45,4 +45,6 @@ public class ErrorCodes {
     public static final String VALIDACION_ERROR = "VALIDACION_ERROR";
     public static final String RECURSO_NO_ENCONTRADO = "RECURSO_NO_ENCONTRADO";
     public static final String ERROR_INTERNO = "ERROR_INTERNO";
+    public static final String DATOS_INCOMPLETOS = "DATOS_INCOMPLETOS";
+    public static final String DATOS_INVALIDOS = "DATOS_INVALIDOS";
 }

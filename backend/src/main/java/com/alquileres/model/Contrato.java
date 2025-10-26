@@ -59,8 +59,6 @@ public class Contrato {
     @Column(name = "created_at")
     private String createdAt;
 
-    @Column(name = "updated_at")
-    private String updatedAt;
 
     // Constructor por defecto
     public Contrato() {
@@ -76,18 +74,6 @@ public class Contrato {
         this.monto = monto;
         this.estadoContrato = estadoContrato;
         this.aumentaConIcl = true;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        String now = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        createdAt = now;
-        updatedAt = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     // Getters y Setters
@@ -189,18 +175,6 @@ public class Contrato {
 
     public String getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     @Override
