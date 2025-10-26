@@ -49,7 +49,7 @@ public class PagoServicioService {
         Map<String, Object> resultado = new HashMap<>();
         int totalActualizados = 0;
         Map<Integer, Integer> detallesPorTipoServicio = new HashMap<>();
-// leer
+
         // Procesar cada actualización de tipo de servicio
         for (ActualizacionMontoServicioDTO actualizacion : request.getActualizaciones()) {
             // Validar que el monto no sea nulo o cero

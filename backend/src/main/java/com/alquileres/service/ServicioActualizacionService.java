@@ -436,9 +436,11 @@ public class ServicioActualizacionService {
      * Crea automáticamente servicios y sus configuraciones para todos los contratos vigentes
      * que no tengan servicios configurados.
      * Se ejecuta al iniciar sesión para asegurar que todos los contratos tengan sus servicios.
+     * OPTIMIZADO: Usa batch processing y reduce queries a BD
      *
      * @return Cantidad de servicios creados
      */
+    @Transactional
     public int crearServiciosParaContratosVigentes() {
         try {
             logger.info("Iniciando creacion automatica de servicios para contratos vigentes");
@@ -461,40 +463,60 @@ public class ServicioActualizacionService {
                 return 0;
             }
 
+            // OPTIMIZACIÓN: Obtener TODOS los servicios existentes de una sola vez
+            List<ServicioXContrato> todosLosServicios = servicioXContratoRepository.findAll();
+
             int serviciosCreados = 0;
             String fechaActual = LocalDate.now().format(FORMATO_FECHA);
 
+            // Listas para batch processing
+            List<ServicioXContrato> serviciosACrear = new java.util.ArrayList<>();
+            List<ConfiguracionPagoServicio> configuracionesACrear = new java.util.ArrayList<>();
+
             // Para cada contrato vigente
             for (Contrato contrato : contratosVigentes) {
-                try {
-                    // Verificar si el contrato ya tiene servicios
-                    List<ServicioXContrato> serviciosExistentes =
-                        servicioXContratoRepository.findByContratoId(contrato.getId());
+                // OPTIMIZACIÓN: Filtrar en memoria en lugar de BD
+                boolean tieneServicios = todosLosServicios.stream()
+                    .anyMatch(s -> s.getContrato().getId().equals(contrato.getId()));
 
-                    // Si el contrato no tiene servicios, crear uno para cada tipo
-                    if (serviciosExistentes.isEmpty()) {
-                        logger.info("Creando servicios para contrato ID: {}", contrato.getId());
+                // Si el contrato no tiene servicios, crear uno para cada tipo
+                if (!tieneServicios) {
+                    for (TipoServicio tipoServicio : tiposServicio) {
+                        // Crear el ServicioXContrato
+                        ServicioXContrato nuevoServicio = new ServicioXContrato();
+                        nuevoServicio.setContrato(contrato);
+                        nuevoServicio.setTipoServicio(tipoServicio);
+                        nuevoServicio.setEsDeInquilino(false);
+                        nuevoServicio.setEsAnual(false);
+                        nuevoServicio.setEsActivo(true);
 
-                        for (TipoServicio tipoServicio : tiposServicio) {
-                            try {
-                                // Crear servicio y configuración en una transacción atómica
-                                crearServicioYConfiguracion(contrato, tipoServicio, fechaActual);
-                                serviciosCreados++;
-
-                            } catch (Exception e) {
-                                logger.error("Error al crear servicio {} para contrato ID {}: {}",
-                                           tipoServicio.getNombre(), contrato.getId(), e.getMessage());
-                                // Continuar con el siguiente tipo de servicio
-                            }
-                        }
-                    } else {
-                        logger.debug("Contrato ID {} ya tiene {} servicios configurados",
-                                   contrato.getId(), serviciosExistentes.size());
+                        serviciosACrear.add(nuevoServicio);
+                        serviciosCreados++;
                     }
+                }
+            }
 
-                } catch (Exception e) {
-                    logger.error("Error al procesar contrato ID {}: {}", contrato.getId(), e.getMessage());
-                    // Continuar con el siguiente contrato
+            // OPTIMIZACIÓN: Guardar todos los servicios de una sola vez (batch)
+            if (!serviciosACrear.isEmpty()) {
+                List<ServicioXContrato> serviciosGuardados = servicioXContratoRepository.saveAll(serviciosACrear);
+                logger.info("Se guardaron {} servicios en batch", serviciosGuardados.size());
+
+                // Crear configuraciones para los servicios guardados
+                for (ServicioXContrato servicio : serviciosGuardados) {
+                    try {
+                        ConfiguracionPagoServicio configuracion =
+                            configuracionPagoServicioService.crearConfiguracion(servicio, fechaActual);
+                        configuracionesACrear.add(configuracion);
+                    } catch (Exception e) {
+                        logger.error("Error al crear configuración para servicio ID {}: {}",
+                                   servicio.getId(), e.getMessage());
+                    }
+                }
+
+                // Guardar todas las configuraciones de una sola vez (batch)
+                if (!configuracionesACrear.isEmpty()) {
+                    configuracionPagoServicioRepository.saveAll(configuracionesACrear);
+                    logger.info("Se guardaron {} configuraciones de pago en batch", configuracionesACrear.size());
                 }
             }
 
@@ -505,34 +527,5 @@ public class ServicioActualizacionService {
             logger.error("Error al crear servicios para contratos vigentes: {}", e.getMessage(), e);
             return 0;
         }
-    }
-
-    /**
-     * Crea un servicio y su configuración en una transacción atómica independiente
-     *
-     * @param contrato El contrato
-     * @param tipoServicio El tipo de servicio
-     * @param fechaActual Fecha actual
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void crearServicioYConfiguracion(Contrato contrato, TipoServicio tipoServicio, String fechaActual) {
-        // Crear el ServicioXContrato
-        ServicioXContrato nuevoServicio = new ServicioXContrato();
-        nuevoServicio.setContrato(contrato);
-        nuevoServicio.setTipoServicio(tipoServicio);
-        nuevoServicio.setEsDeInquilino(false);
-        nuevoServicio.setEsAnual(false); // Por defecto mensual
-        nuevoServicio.setEsActivo(true);
-
-        // Guardar el servicio
-        ServicioXContrato servicioGuardado = servicioXContratoRepository.save(nuevoServicio);
-        logger.debug("Servicio creado - Contrato ID: {}, Tipo: {}",
-                   contrato.getId(), tipoServicio.getNombre());
-
-        // Crear la configuración de pago automáticamente
-        ConfiguracionPagoServicio configuracion =
-            configuracionPagoServicioService.crearConfiguracion(servicioGuardado, fechaActual);
-
-        logger.debug("Configuracion creada para servicio ID: {}", servicioGuardado.getId());
     }
 }
