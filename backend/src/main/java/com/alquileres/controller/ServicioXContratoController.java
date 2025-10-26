@@ -1,6 +1,7 @@
 package com.alquileres.controller;
 
 import com.alquileres.dto.CrearServicioRequest;
+import com.alquileres.dto.FechaInicioRequest;
 import com.alquileres.dto.ServicioXContratoResponseDTO;
 import com.alquileres.model.ServicioXContrato;
 import com.alquileres.service.ServicioXContratoService;
@@ -167,10 +168,9 @@ public class ServicioXContratoController {
                            "Se reanudará la generación de facturas.")
     public ResponseEntity<?> reactivarServicio(
             @PathVariable Integer servicioId,
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody FechaInicioRequest request) {
         try {
-            String fechaInicio = request.get("fechaInicio");
-            servicioXContratoService.reactivarServicio(servicioId, fechaInicio);
+            servicioXContratoService.reactivarServicio(servicioId, request.getFechaInicio());
             return ResponseEntity.ok(Map.of("mensaje", "Servicio reactivado exitosamente"));
         } catch (Exception e) {
             return ResponseEntity
