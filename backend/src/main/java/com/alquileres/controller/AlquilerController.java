@@ -4,6 +4,7 @@ import com.alquileres.dto.AlquilerDTO;
 import com.alquileres.dto.AlquilerCreateDTO;
 import com.alquileres.dto.RegistroPagoDTO;
 import com.alquileres.dto.NotificacionPagoAlquilerDTO;
+import com.alquileres.dto.AlquilerDetalladoDTO;
 import com.alquileres.service.AlquilerService;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
@@ -135,6 +136,13 @@ public class AlquilerController {
     public ResponseEntity<BigDecimal> calcularHonorarioAlquiler(@PathVariable Long id) {
         BigDecimal honorario = alquilerService.calcularHonorarioAlquilerEspecifico(id);
         return ResponseEntity.ok(honorario);
+    }
+
+    // Obtener información detallada del alquiler (propietario, inmueble, monto, estado de pago, honorarios)
+    @GetMapping("/{id}/detallado")
+    public ResponseEntity<AlquilerDetalladoDTO> obtenerAlquilerDetallado(@PathVariable Long id) {
+        AlquilerDetalladoDTO alquilerDetallado = alquilerService.obtenerAlquilerDetallado(id);
+        return ResponseEntity.ok(alquilerDetallado);
     }
 
     // Obtener notificaciones de pago de alquileres no pagados del mes
