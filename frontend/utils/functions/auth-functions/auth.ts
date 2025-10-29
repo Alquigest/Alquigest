@@ -10,17 +10,29 @@ const auth = {
       body: JSON.stringify({ username, password }),
     });
 
-    if (!res.ok) {
-      throw new Error("Usuario o contraseña incorrectos");
+    // Intentar parsear el cuerpo como JSON (tanto en error como en éxito)
+    let payload: any = null;
+    try {
+      payload = await res.json();
+    } catch (_) {
+      // El backend puede responder 204 u otro sin cuerpo; ignorar
+      payload = null;
     }
 
-    const data = await res.json(); 
-    // data: { accessToken, username, email, roles, permisos }
+    if (!res.ok) {
+      // Propagar mensaje del backend si existe, junto con el status
+      const message = payload?.message || (res.status === 401 ? "Credenciales incorrectas." : "Error al iniciar sesión.");
+      const error: any = new Error(message);
+      error.status = res.status;
+      throw error;
+    }
+
+    const data = payload; // { accessToken, username, email, roles, permisos }
 
     localStorage.setItem("token", data.accessToken); // JWT
     localStorage.setItem("user", JSON.stringify(data)); // info completa usuario
 
-    return { username: data.username }; 
+    return { username: data.username };
   },
 
   logout: async () => {

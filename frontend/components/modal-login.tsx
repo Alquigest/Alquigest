@@ -18,6 +18,7 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
   const [username, setUsernameInput] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [loadingInicioSesion, setLoadingInicioSesion] = useState(false) // nuevo estado para loading
 
   const urlLogoAlquigest = isDarkMode? "/alquigest-white.png" : "/alquigest-dark.png"
 
@@ -28,16 +29,30 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault()
+    setLoadingInicioSesion(true); // Activar loading
     try {
+      
       // Llamar a la función de autenticación
       const user = await auth.login(username, password) // Ejemplo, retorna username
       console.log("Token: ", localStorage.getItem("token"))
       setIsOpen(false) // Cerrar el modal
       onClose(user.username, true) // Pasar el username y flag de login exitoso al componente padre
-      // Refrescar la página para actualizar los permisos
-      //window.location.reload()
     } catch (err: any) {
-      setError("Usuario o contraseña incorrectos")
+      // Mostrar mensajes específicos devueltos por el backend
+      // 401: Credenciales incorrectas (puede incluir advertencia de delay)
+      // 500 u otros: problemas de servidor u otros errores
+      if (err?.status && err.status >= 500) {
+        setError(err?.message || "Error del servidor. Intente nuevamente más tarde.")
+      } else if (err?.status === 401) {
+        setError(err?.message || "Credenciales incorrectas.")
+      } else if (typeof err?.message === "string" && err.message.trim().length > 0) {
+        setError(err.message)
+      } else {
+        setError("No se pudo iniciar sesión. Verifique su conexión e intente nuevamente.")
+      }
+    }
+    finally {
+      setLoadingInicioSesion(false); // Desactivar loading
     }
   }
 
@@ -70,6 +85,7 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
           {error && <p className="text-red-500">{error}</p>}
           <Button
             type="submit"
+            loading={loadingInicioSesion}
             onClick={() => setError("")} // Limpia el error al hacer clic
             className="bg-accent hover:bg-accent/80 text-gray-900 text-md"
           >
