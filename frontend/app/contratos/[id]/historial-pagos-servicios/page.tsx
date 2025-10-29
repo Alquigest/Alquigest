@@ -55,7 +55,7 @@ export default function HistorialPagosServiciosPage() {
     fetchData()
   }, [contratoId])
 
-  if (loading) return <Loading text="Cargando historial de pagos de servicios" tituloHeader="Historial de servicios" />
+  if (loading) return <Loading text="Cargando historial de pagos de servicios"/>
 
   return (
     <div className="min-h-screen bg-background">

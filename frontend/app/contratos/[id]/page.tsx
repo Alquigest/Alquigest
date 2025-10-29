@@ -19,7 +19,6 @@ import ModalDefault from "@/components/modal-default";
 import ModalError from "@/components/modal-error";
 import PDFContratoCard from "./pdf-contrato-card";
 
-const esVigente = true
 
 export default function DetalleContratoPage(){
 
@@ -34,6 +33,7 @@ export default function DetalleContratoPage(){
     const [openModalPdf, setOpenModalPdf] = useState(false);
     const [pdfOkMsg, setPdfOkMsg] = useState<string | null>(null);
     const [pdfErrMsg, setPdfErrMsg] = useState<string | null>(null);
+    const [esVigente, setEsVigente] = useState(false);
 
     useEffect(() => {
         const fetchContrato = async () => {
@@ -42,6 +42,8 @@ export default function DetalleContratoPage(){
                 const data = await fetchWithToken(`${BACKEND_URL}/contratos/${id}`);
                 console.log("Datos parseados del backend:", data);
                 setContatoBD(data);
+
+                setEsVigente(data?.estadoContratoId === 1);
                 
                 // Si el contrato está rescindido (estadoContratoId === 3), cargar detalles de cancelación
                 if (data?.estadoContratoId === 3) {
@@ -330,13 +332,13 @@ export default function DetalleContratoPage(){
                     </Card>
 
                 </div>
-                {esVigente && 
-                    <ServiciosContratoPage 
-                        esVigente={esVigente} 
-                        idContrato={contratoBD.id} 
-                        fechaInicioContrato={contratoBD.fechaInicio}
-                    />
-                }
+
+                <ServiciosContratoPage 
+                    esVigente={esVigente} 
+                    idContrato={contratoBD.id} 
+                    fechaInicioContrato={contratoBD.fechaInicio}
+                />
+
                 <PDFContratoCard idContrato={contratoBD.id} />
             </main>
             {/* Modal para cargar PDF */}
