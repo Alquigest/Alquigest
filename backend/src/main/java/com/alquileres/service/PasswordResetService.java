@@ -30,7 +30,7 @@ public class PasswordResetService {
     @Value("${app.password-reset-token-expiration-ms:3600000}")
     private long tokenExpirationTime;
 
-    public void solicitarRecuperacionContraseña(String email) {
+    public void solicitarRecuperacionContrasena(String email) {
         Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
 
         if (usuario.isEmpty()) {
@@ -46,13 +46,13 @@ public class PasswordResetService {
         u.setPasswordResetTokenExpiry(expiryDate);
         usuarioRepository.save(u);
 
-        emailService.enviarEmailRecuperacionContraseña(email, u.getUsername(), token);
-        logger.info("Email de recuperación de contraseña enviado a: {}", email);
+        emailService.enviarEmailRecuperacionContrasena(email, u.getUsername(), token);
+        logger.info("Email de recuperación de contrasena enviado a: {}", email);
     }
 
-    public void resetearContraseña(String token, String nuevaContrasena, String confirmarContraseña) {
-        if (!nuevaContrasena.equals(confirmarContraseña)) {
-            throw new RuntimeException("Las contraseñas no coinciden");
+    public void resetearContrasena(String token, String nuevaContrasena, String confirmarContrasena) {
+        if (!nuevaContrasena.equals(confirmarContrasena)) {
+            throw new RuntimeException("Las contrasenas no coinciden");
         }
 
         Optional<Usuario> usuario = usuarioRepository.findByPasswordResetToken(token);
@@ -74,7 +74,7 @@ public class PasswordResetService {
         u.setPasswordResetTokenExpiry(null);
         usuarioRepository.save(u);
 
-        logger.info("Contraseña reseteada exitosamente para usuario: {}", u.getUsername());
+        logger.info("Contrasena reseteada exitosamente para usuario: {}", u.getUsername());
     }
 
     public boolean validarToken(String token) {

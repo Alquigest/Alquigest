@@ -2,13 +2,13 @@ package com.alquileres.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RecuperarContraseñaDTO {
+public class RecuperarContrasenaDTO {
     @JsonProperty("email")
     private String email;
 
-    public RecuperarContraseñaDTO() {}
+    public RecuperarContrasenaDTO() {}
 
-    public RecuperarContraseñaDTO(String email) {
+    public RecuperarContrasenaDTO(String email) {
         this.email = email;
     }
 

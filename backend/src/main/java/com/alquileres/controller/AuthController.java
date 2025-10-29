@@ -4,8 +4,8 @@ import com.alquileres.dto.JwtResponse;
 import com.alquileres.dto.LoginRequest;
 import com.alquileres.dto.MessageResponse;
 import com.alquileres.dto.SignupRequest;
-import com.alquileres.dto.RecuperarContraseñaDTO;
-import com.alquileres.dto.ResetearContraseñaDTO;
+import com.alquileres.dto.RecuperarContrasenaDTO;
+import com.alquileres.dto.ResetearContrasenaDTO;
 import com.alquileres.model.Rol;
 import com.alquileres.model.RolNombre;
 import com.alquileres.model.Usuario;
@@ -260,10 +260,10 @@ public class AuthController {
     }
 
     @PostMapping("/recuperar-contrasena")
-    @Operation(summary = "Solicitar recuperación de contraseña")
-    public ResponseEntity<?> recuperarContraseña(@Valid @RequestBody RecuperarContraseñaDTO dto) {
+    @Operation(summary = "Solicitar recuperación de contrasena")
+    public ResponseEntity<?> recuperarContrasena(@Valid @RequestBody RecuperarContrasenaDTO dto) {
         try {
-            passwordResetService.solicitarRecuperacionContraseña(dto.getEmail());
+            passwordResetService.solicitarRecuperacionContrasena(dto.getEmail());
             return ResponseEntity.ok(new MessageResponse("Se ha enviado un correo de recuperación. Por favor, revise su bandeja de entrada."));
         } catch (Exception e) {
             return ResponseEntity
@@ -273,11 +273,11 @@ public class AuthController {
     }
 
     @PostMapping("/resetear-contrasena")
-    @Operation(summary = "Resetear contraseña con token")
-    public ResponseEntity<?> resetearContraseña(@Valid @RequestBody ResetearContraseñaDTO dto) {
+    @Operation(summary = "Resetear contrasena con token")
+    public ResponseEntity<?> resetearContrasena(@Valid @RequestBody ResetearContrasenaDTO dto) {
         try {
-            passwordResetService.resetearContraseña(dto.getToken(), dto.getNuevaContraseña(), dto.getConfirmarContraseña());
-            return ResponseEntity.ok(new MessageResponse("Contraseña actualizada exitosamente!"));
+            passwordResetService.resetearContrasena(dto.getToken(), dto.getNuevaContrasena(), dto.getConfirmarContrasena());
+            return ResponseEntity.ok(new MessageResponse("Contrasena actualizada exitosamente!"));
         } catch (Exception e) {
             return ResponseEntity
                     .badRequest()
