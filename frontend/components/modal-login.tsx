@@ -34,7 +34,6 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
       
       // Llamar a la función de autenticación
       const user = await auth.login(username, password) // Ejemplo, retorna username
-      console.log("Token: ", localStorage.getItem("token"))
       setIsOpen(false) // Cerrar el modal
       onClose(user.username, true) // Pasar el username y flag de login exitoso al componente padre
     } catch (err: any) {
@@ -94,7 +93,7 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
         </form>
 
         <div className="flex items-center justify-center">
-          <Link href={"/404"}>
+          <Link href={"/auth/recuperar-contrasena"}>
             <p className="hover:text-amber-900">¿Olvidó su Contraseña?</p>
           </Link>
         </div>

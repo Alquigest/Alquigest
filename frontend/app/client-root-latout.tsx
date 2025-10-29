@@ -27,6 +27,7 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
   const [notificationDot, setNotificationDot] = useState(false); // para el punto de notificación
   const [needsReload, setNeedsReload] = useState(false); // flag para recargar después de ver notificaciones
   const pathname = usePathname(); // Obtener la ruta actual
+  const isPublicRoute = pathname?.startsWith("/auth/") === true;
 
   // Mapear las rutas a títulos específicos
   const getTituloPagina = (path: string) => {
@@ -47,11 +48,11 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
           setUsername(payload.sub);
         } catch {
           auth.logout();
-          setShowModal(true);
+          if (!isPublicRoute) setShowModal(true);
         }
       }
     } else {
-      setShowModal(true);
+      if (!isPublicRoute) setShowModal(true);
     }
 
     // Leer la preferencia de tema del localStorage
@@ -63,7 +64,14 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
       setIsDarkMode(false);
       document.documentElement.classList.remove("dark");
     }
-  }, []);
+  }, [isPublicRoute]);
+
+  // Si navegamos a la ruta pública, asegurarse de ocultar el modal de login
+  useEffect(() => {
+    if (isPublicRoute && showModal) {
+      setShowModal(false);
+    }
+  }, [isPublicRoute]);
 
   const toggleTheme = () => {
     setIsDarkMode((prev) => {
