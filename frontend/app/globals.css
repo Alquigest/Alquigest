@@ -156,13 +156,14 @@ body {
 
 .animate-gradient-x {
   background-size: 200% 200%;
-  animation: gradient-x 2s ease-out; /* forwards = se queda al final */
+  animation: gradient-x 4s ease-out; /* forwards = se queda al final */
 }
 
 @keyframes gradient-diagonal {
-  0% {
+  30% {
     background-position: 0% 0%;
   }
+  
   50% {
     background-position: 100% 100%;
   }
@@ -175,3 +176,31 @@ body {
   background-size: 200% 200%;
   animation: gradient-diagonal 10s ease infinite;
 }
+
+
+/* INTRO */
+
+  @keyframes lock-reveal {
+      0% {
+        mask-size: 70vh;
+        mask-image: url("/alquigest-logo.svg");
+      }
+      50% {
+        mask-size: 90vh;
+      }
+      100% {
+        mask-size: 5000vh;
+        mask-image: url("/rectangle.svg");
+      }
+    }
+
+
+  #mask {
+    mask-image: url('/alquigest-logo.svg');
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    overflow-y: scroll;
+    position: fixed;
+    inset: 0;
+    animation: lock-reveal 6s forwards ease-in-out;
+  }

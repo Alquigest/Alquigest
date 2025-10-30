@@ -55,15 +55,9 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
       if (!isPublicRoute) setShowModal(true);
     }
 
-    // Leer la preferencia de tema del localStorage
+    // Sincronizar el estado con la clase ya aplicada por el script inline
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove("dark");
-    }
+    setIsDarkMode(savedTheme === "dark");
   }, [isPublicRoute]);
 
   // Si navegamos a la ruta pública, asegurarse de ocultar el modal de login

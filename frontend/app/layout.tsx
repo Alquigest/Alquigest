@@ -20,9 +20,26 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`duration-500 transition-colors`}>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* Script bloqueante que lee el tema antes de renderizar para evitar flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme');
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
-        <ClientRootLayout>{children}</ClientRootLayout>
+            <ClientRootLayout>{children}</ClientRootLayout>
       </body>
     </html>
   );
