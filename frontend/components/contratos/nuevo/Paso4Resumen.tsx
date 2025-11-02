@@ -44,7 +44,7 @@ export default function Paso4Resumen({ formData, datosAdicionales, serviciosCont
         </div>
         <div className="flex items-center gap-2">
           <ChartColumnIcon className="h-4 w-4" />
-          <p><b>Aumento:</b> {formData.tipoAumento} ({formData.porcentajeAumento}%)</p>
+          <p><b>Aumento:</b> {formData.tipoAumento} ({formData.tipoAumento === 'ICL' ? 'según índice mensual' : `${formData.porcentajeAumento}%`})</p>
         </div>
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
