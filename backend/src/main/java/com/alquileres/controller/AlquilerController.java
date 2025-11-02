@@ -8,6 +8,7 @@ import com.alquileres.dto.AlquilerDetalladoDTO;
 import com.alquileres.service.AlquilerService;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,5 +151,30 @@ public class AlquilerController {
     public ResponseEntity<List<NotificacionPagoAlquilerDTO>> obtenerNotificacionesPagoAlquileresMes() {
         List<NotificacionPagoAlquilerDTO> notificaciones = alquilerService.obtenerNotificacionesPagoAlquileresMes();
         return ResponseEntity.ok(notificaciones);
+    }
+
+    // Obtener alquileres que necesitan aumento manual
+    @GetMapping("/aumento-manual/pendientes")
+    @Operation(summary = "Obtener alquileres que necesitan aumento manual",
+               description = "Devuelve todos los alquileres marcados con necesitaAumentoManual=true debido a fallos en la API del BCRA")
+    public ResponseEntity<List<AlquilerDTO>> obtenerAlquileresConAumentoManualPendiente() {
+        List<AlquilerDTO> alquileres = alquilerService.obtenerAlquileresConAumentoManualPendiente();
+        return ResponseEntity.ok(alquileres);
+    }
+
+    // Aplicar aumento manual a un alquiler usando índices ICL proporcionados por el usuario
+    @PostMapping("/{id}/aumento-manual")
+    @Operation(summary = "Aplicar aumento manual con índices ICL",
+               description = "Aplica un aumento manual a un alquiler cuando la API del BCRA falla. " +
+                           "El usuario debe proporcionar los índices ICL inicial y final manualmente.")
+    public ResponseEntity<AlquilerDTO> aplicarAumentoManual(
+            @PathVariable Long id,
+            @RequestBody @Valid com.alquileres.dto.IndicesICLManualDTO indicesDTO) {
+        AlquilerDTO alquilerActualizado = alquilerService.aplicarAumentoManual(
+                id,
+                indicesDTO.getIndiceInicial(),
+                indicesDTO.getIndiceFinal()
+        );
+        return ResponseEntity.ok(alquilerActualizado);
     }
 }

@@ -232,4 +232,21 @@ public class AumentoAlquilerService {
         }
     }
 
+    /**
+     * Crea y guarda un registro de aumento de alquiler
+     * Utilizado para aumentos manuales cuando falla la API del BCRA
+     *
+     * @param contrato El contrato asociado al aumento
+     * @param montoAnterior El monto antes del aumento
+     * @param montoNuevo El monto después del aumento
+     * @param porcentajeAumento El porcentaje de aumento aplicado
+     * @return El registro de aumento guardado
+     */
+    @Transactional
+    public AumentoAlquiler crearYGuardarAumento(Contrato contrato, BigDecimal montoAnterior,
+                                                 BigDecimal montoNuevo, BigDecimal porcentajeAumento) {
+        AumentoAlquiler aumento = crearAumentoSinGuardar(contrato, montoAnterior, montoNuevo, porcentajeAumento);
+        return aumentoAlquilerRepository.save(aumento);
+    }
+
 }

@@ -22,6 +22,8 @@ public class AlquilerDTO {
 
     private String fechaPago;
 
+    private Boolean necesitaAumentoManual;
+
     @Size(max = 100, message = "La cuenta de banco no puede exceder 100 caracteres")
     private String cuentaBanco;
 
@@ -54,6 +56,7 @@ public class AlquilerDTO {
         this.fechaPago = alquiler.getFechaPago();
         this.monto = alquiler.getMonto();
         this.estaPagado = alquiler.getEstaPagado();
+        this.necesitaAumentoManual = alquiler.getNecesitaAumentoManual();
         this.cuentaBanco = alquiler.getCuentaBanco();
         this.titularDePago = alquiler.getTitularDePago();
         this.metodo = alquiler.getMetodo();
@@ -121,6 +124,14 @@ public class AlquilerDTO {
 
     public void setFechaPago(String fechaPago) {
         this.fechaPago = fechaPago;
+    }
+
+    public Boolean getNecesitaAumentoManual() {
+        return necesitaAumentoManual;
+    }
+
+    public void setNecesitaAumentoManual(Boolean necesitaAumentoManual) {
+        this.necesitaAumentoManual = necesitaAumentoManual;
     }
 
     public String getCuentaBanco() {

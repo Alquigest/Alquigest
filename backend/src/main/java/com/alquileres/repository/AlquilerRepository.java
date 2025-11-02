@@ -64,5 +64,9 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     // Obtener el último alquiler activo de un contrato (usando objeto Contrato)
     @Query("SELECT a FROM Alquiler a WHERE a.contrato = :contrato AND a.esActivo = true ORDER BY CAST(a.fechaVencimientoPago AS date) DESC LIMIT 1")
     Optional<Alquiler> findTopByContratoOrderByFechaVencimientoPagoDesc(@Param("contrato") Contrato contrato);
+
+    // Buscar alquileres activos que necesitan aumento manual
+    @Query("SELECT a FROM Alquiler a WHERE a.necesitaAumentoManual = true AND a.esActivo = true")
+    List<Alquiler> findByNecesitaAumentoManualTrueAndEsActivoTrue();
 }
 

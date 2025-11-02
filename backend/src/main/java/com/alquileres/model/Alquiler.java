@@ -36,6 +36,9 @@ public class Alquiler {
     @Column(name = "es_activo", nullable = false)
     private Boolean esActivo = true;
 
+    @Column(name = "necesita_aumento_manual", nullable = false)
+    private Boolean necesitaAumentoManual = false;
+
     @Column(name = "cuenta_banco", length = 100)
     private String cuentaBanco;
 
@@ -163,6 +166,15 @@ public class Alquiler {
 
     public void setEsActivo(Boolean esActivo) {
         this.esActivo = esActivo;
+        this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    public Boolean getNecesitaAumentoManual() {
+        return necesitaAumentoManual;
+    }
+
+    public void setNecesitaAumentoManual(Boolean necesitaAumentoManual) {
+        this.necesitaAumentoManual = necesitaAumentoManual;
         this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 

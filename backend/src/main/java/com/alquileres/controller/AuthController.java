@@ -161,11 +161,6 @@ public class AuthController {
         }
 
         try {
-            contratoActualizacionService.actualizarFechasAumento();
-        } catch (Exception ignored) {
-        }
-
-        try {
             servicioActualizacionService.crearServiciosParaContratosVigentes();
         } catch (Exception ignored) {
         }

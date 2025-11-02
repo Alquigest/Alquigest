@@ -244,9 +244,18 @@ public class AlquilerActualizacionService {
                                 actualizarFechaAumentoContrato(contrato);
 
                             } catch (Exception e) {
-                                logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
+                                logger.error("Error al consultar ICL para contrato ID {}: {}. Se marcará para aumento manual.",
                                            contrato.getId(), e.getMessage());
+                                // ❌ Fallo la API - crear alquiler con monto base y marcar para aumento manual
                                 montoNuevo = montoBase;
+
+                                // Crear el alquiler pero marcado para aumento manual
+                                Alquiler alquilerConError = new Alquiler(contrato, fechaVencimientoISO, montoNuevo);
+                                alquilerConError.setNecesitaAumentoManual(true);
+                                nuevosAlquileres.add(alquilerConError);
+
+                                logger.warn("Alquiler para contrato ID {} creado con necesitaAumentoManual=true", contrato.getId());
+                                continue; // Saltar al siguiente contrato
                             }
                         } else {
                             // Aumento fijo
@@ -519,7 +528,7 @@ public class AlquilerActualizacionService {
 
         // Si dice "No aumenta más" o similar, no aumenta
         if (contrato.getFechaAumento().equalsIgnoreCase("No aumenta más") ||
-            contrato.getFechaAumento().equalsIgnoreCase("Sin Aumento")) {
+            contrato.getFechaAumento().equalsIgnoreCase("No aumenta mas")) {
             return false;
         }
 

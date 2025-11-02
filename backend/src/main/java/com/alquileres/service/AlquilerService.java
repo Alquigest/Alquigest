@@ -41,6 +41,9 @@ public class AlquilerService {
     @Autowired
     private com.alquileres.repository.PropietarioRepository propietarioRepository;
 
+    @Autowired
+    private AumentoAlquilerService aumentoAlquilerService;
+
     // Obtener todos los alquileres
     public List<AlquilerDTO> obtenerTodosLosAlquileres() {
         List<Alquiler> alquileres = alquilerRepository.findAll();
@@ -360,6 +363,104 @@ public class AlquilerService {
                         alquiler.getContrato().getInquilino().getApellido(),
                         alquiler.getContrato().getInquilino().getNombre()
                 ))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Aplica un aumento manual a un alquiler usando índices ICL proporcionados por el usuario
+     * Se usa cuando la API del BCRA falla y el alquiler está marcado con necesitaAumentoManual=true
+     *
+     * @param alquilerId ID del alquiler a actualizar
+     * @param indiceInicial Índice ICL inicial
+     * @param indiceFinal Índice ICL final
+     * @return DTO del alquiler actualizado
+     * @throws BusinessException si el alquiler no existe o no necesita aumento manual
+     */
+    public AlquilerDTO aplicarAumentoManual(Long alquilerId, BigDecimal indiceInicial, BigDecimal indiceFinal) {
+        logger.info("Aplicando aumento manual al alquiler ID: {}", alquilerId);
+
+        // Validar que el alquiler existe
+        Alquiler alquiler = alquilerRepository.findById(alquilerId)
+                .orElseThrow(() -> new BusinessException(
+                        "Alquiler no encontrado con ID: " + alquilerId,
+                        ErrorCodes.ALQUILER_NO_ENCONTRADO,
+                        HttpStatus.NOT_FOUND
+                ));
+
+        // Validar que el alquiler necesita aumento manual
+        if (!Boolean.TRUE.equals(alquiler.getNecesitaAumentoManual())) {
+            throw new BusinessException(
+                    "El alquiler ID " + alquilerId + " no está marcado para aumento manual",
+                    ErrorCodes.DATOS_INVALIDOS,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // Validar índices
+        if (indiceInicial == null || indiceFinal == null || indiceInicial.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(
+                    "Los índices ICL deben ser mayores a cero",
+                    ErrorCodes.DATOS_INVALIDOS,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // Calcular tasa de aumento
+        BigDecimal tasaAumento = indiceFinal.divide(indiceInicial, 10, BigDecimal.ROUND_HALF_UP);
+
+        // Obtener el monto actual (antes del aumento)
+        BigDecimal montoAnterior = alquiler.getMonto();
+
+        // Calcular nuevo monto
+        BigDecimal nuevoMonto = montoAnterior.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        // Calcular porcentaje de aumento
+        BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
+                .multiply(new BigDecimal("100"))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        logger.info("Alquiler ID {}: Monto anterior: {}, Nuevo monto: {}, Tasa: {}, Porcentaje: {}%",
+                alquilerId, montoAnterior, nuevoMonto, tasaAumento, porcentajeAumento);
+
+        // Actualizar el alquiler
+        alquiler.setMonto(nuevoMonto);
+        alquiler.setNecesitaAumentoManual(false);
+
+        Alquiler alquilerActualizado = alquilerRepository.save(alquiler);
+
+        // Registrar el aumento en el historial
+        Contrato contrato = alquiler.getContrato();
+        try {
+            // Crear y guardar el registro de aumento usando el servicio
+            aumentoAlquilerService.crearYGuardarAumento(
+                contrato,
+                montoAnterior,
+                nuevoMonto,
+                porcentajeAumento
+            );
+
+            logger.info("Aumento manual aplicado y registrado correctamente para alquiler ID: {}", alquilerId);
+
+        } catch (Exception e) {
+            logger.error("Error al registrar el aumento en el historial: {}", e.getMessage());
+            // No fallar la operación principal si falla el registro del historial
+        }
+
+        return new AlquilerDTO(alquilerActualizado);
+    }
+
+    /**
+     * Obtiene todos los alquileres que necesitan aumento manual
+     *
+     * @return Lista de alquileres que necesitan aumento manual
+     */
+    public List<AlquilerDTO> obtenerAlquileresConAumentoManualPendiente() {
+        List<Alquiler> alquileres = alquilerRepository.findByNecesitaAumentoManualTrueAndEsActivoTrue();
+
+        logger.info("Encontrados {} alquileres con aumento manual pendiente", alquileres.size());
+
+        return alquileres.stream()
+                .map(AlquilerDTO::new)
                 .collect(Collectors.toList());
     }
 }
