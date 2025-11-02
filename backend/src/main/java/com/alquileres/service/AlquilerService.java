@@ -44,6 +44,9 @@ public class AlquilerService {
     @Autowired
     private AumentoAlquilerService aumentoAlquilerService;
 
+    @Autowired
+    private com.alquileres.util.BCRAApiClient bcraApiClient;
+
     // Obtener todos los alquileres
     public List<AlquilerDTO> obtenerTodosLosAlquileres() {
         List<Alquiler> alquileres = alquilerRepository.findAll();
@@ -451,15 +454,86 @@ public class AlquilerService {
 
     /**
      * Obtiene todos los alquileres que necesitan aumento manual
+     * Reintenta automáticamente la consulta a la API del BCRA para cada alquiler pendiente
+     * Si la consulta tiene éxito, aplica el aumento automáticamente
      *
-     * @return Lista de alquileres que necesitan aumento manual
+     * @return Lista de alquileres que aún necesitan aumento manual (los que fallaron el reintento)
      */
     public List<AlquilerDTO> obtenerAlquileresConAumentoManualPendiente() {
         List<Alquiler> alquileres = alquilerRepository.findByNecesitaAumentoManualTrueAndEsActivoTrue();
 
-        logger.info("Encontrados {} alquileres con aumento manual pendiente", alquileres.size());
+        logger.info("Encontrados {} alquileres con aumento manual pendiente. Reintentando consulta a API del BCRA...",
+                   alquileres.size());
 
-        return alquileres.stream()
+        List<Alquiler> alquileresPendientes = new java.util.ArrayList<>();
+        int actualizadosExitosamente = 0;
+
+        for (Alquiler alquiler : alquileres) {
+            try {
+                Contrato contrato = alquiler.getContrato();
+
+                // Solo reintentar si el contrato aumenta con ICL
+                if (!Boolean.TRUE.equals(contrato.getAumentaConIcl())) {
+                    logger.warn("Alquiler ID {} no aumenta con ICL, se mantiene en lista de pendientes",
+                               alquiler.getId());
+                    alquileresPendientes.add(alquiler);
+                    continue;
+                }
+
+                // Obtener fechas para consultar la API
+                String fechaInicio = contrato.getFechaAumento();
+                String fechaFin = LocalDate.now().withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+                logger.debug("Reintentando consulta API del BCRA para alquiler ID {}: fechaInicio={}, fechaFin={}",
+                            alquiler.getId(), fechaInicio, fechaFin);
+
+                // Intentar obtener tasa de aumento de la API del BCRA
+                BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicio, fechaFin);
+
+                // Si llegamos aquí, la consulta fue exitosa
+                logger.info("✅ Consulta API exitosa para alquiler ID {}. Tasa obtenida: {}",
+                           alquiler.getId(), tasaAumento);
+
+                // Calcular nuevo monto
+                BigDecimal montoAnterior = alquiler.getMonto();
+                BigDecimal nuevoMonto = montoAnterior.multiply(tasaAumento)
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+
+                // Calcular porcentaje de aumento
+                BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)
+                        .multiply(new BigDecimal("100"))
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+
+                // Actualizar el alquiler
+                alquiler.setMonto(nuevoMonto);
+                alquiler.setNecesitaAumentoManual(false);
+                alquilerRepository.save(alquiler);
+
+                // Registrar el aumento en el historial
+                aumentoAlquilerService.crearYGuardarAumento(
+                        contrato,
+                        montoAnterior,
+                        nuevoMonto,
+                        porcentajeAumento
+                );
+
+                logger.info("Alquiler ID {} actualizado automáticamente. Monto: {} -> {}. Porcentaje: {}%",
+                           alquiler.getId(), montoAnterior, nuevoMonto, porcentajeAumento);
+
+                actualizadosExitosamente++;
+
+            } catch (Exception e) {
+                // Si falla el reintento, mantener el alquiler en la lista de pendientes
+                logger.warn("Fallo al reintentar consulta API para alquiler ID {}: {}. Se mantiene pendiente.",
+                           alquiler.getId(), e.getMessage());
+                alquileresPendientes.add(alquiler);
+            }
+        }
+
+        logger.info("Reintento completado: {} alquileres actualizados exitosamente, {} aún pendientes",
+                   actualizadosExitosamente, alquileresPendientes.size());
+
+        return alquileresPendientes.stream()
                 .map(AlquilerDTO::new)
                 .collect(Collectors.toList());
     }

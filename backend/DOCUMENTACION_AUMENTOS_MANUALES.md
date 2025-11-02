@@ -111,11 +111,17 @@ List<Alquiler> findByNecesitaAumentoManualTrueAndEsActivoTrue();
 **Nuevos endpoints**:
 
 1. **GET `/api/alquileres/aumento-manual/pendientes`**
-   - Devuelve lista de alquileres que necesitan aumento manual
-   - Response: `List<AlquilerDTO>`
+   - **⚡ ACTUALIZADO**: Ahora incluye reintento automático
+   - Proceso:
+     1. Busca alquileres con `necesitaAumentoManual = true`
+     2. Para cada alquiler, reintenta consulta a API del BCRA
+     3. Si reintento exitoso: actualiza automáticamente el alquiler
+     4. Si reintento falla: mantiene en lista de pendientes
+   - Response: `List<AlquilerDTO>` (solo alquileres que aún necesitan intervención manual)
 
 2. **POST `/api/alquileres/{id}/aumento-manual`**
    - Aplica aumento manual a un alquiler específico
+   - Usado cuando el reintento automático falla
    - Request Body:
      ```json
      {
@@ -137,18 +143,23 @@ List<Alquiler> findByNecesitaAumentoManualTrueAndEsActivoTrue();
      - Marca `necesitaAumentoManual = true`
      - Continúa procesando los demás alquileres
 
-2. **Usuario verifica pendientes**:
+2. **Usuario verifica pendientes (⚡ CON REINTENTO AUTOMÁTICO)**:
    ```
    GET /api/alquileres/aumento-manual/pendientes
    ```
-   - Obtiene lista de alquileres que necesitan aumento manual
+   - El sistema encuentra alquileres que necesitan aumento manual
+   - **⚡ NUEVO**: Para cada alquiler pendiente, el sistema automáticamente:
+     - Reintenta la consulta a la API del BCRA
+     - Si tiene éxito: aplica el aumento automáticamente y lo elimina de la lista
+     - Si falla: mantiene el alquiler en la lista de pendientes
+   - Devuelve **solo** los alquileres que aún requieren intervención manual
 
-3. **Usuario busca índices ICL manualmente**:
+3. **Si quedan alquileres pendientes, usuario busca índices ICL manualmente**:
    - Accede a la API del BCRA directamente o desde otra fuente
    - URL: `https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/40?desde=yyyy-mm-dd&hasta=yyyy-mm-dd`
    - Obtiene los valores de `fechaInicio` y `fechaFin`
 
-4. **Usuario aplica aumento manual**:
+4. **Usuario aplica aumento manual (solo si el reintento automático falló)**:
    ```
    POST /api/alquileres/{alquilerId}/aumento-manual
    {
@@ -248,4 +259,45 @@ Se recomienda crear tests para:
 3. Validación de alquileres sin marca de aumento manual
 4. Validación de índices ICL inválidos
 5. Registro de aumentos en el historial
+6. **⚡ NUEVO**: Reintento automático exitoso al consultar pendientes
+7. **⚡ NUEVO**: Reintento automático fallido al consultar pendientes
+
+## ⚡ Actualización: Reintento Automático
+
+### Cambio Importante (Noviembre 2025)
+
+Se agregó funcionalidad de **reintento automático** al endpoint de consulta de alquileres pendientes.
+
+#### ¿Qué cambió?
+
+**Antes:**
+- `GET /api/alquileres/aumento-manual/pendientes` solo devolvía la lista de pendientes
+
+**Ahora:**
+- `GET /api/alquileres/aumento-manual/pendientes` reintenta automáticamente la API del BCRA
+- Si el reintento es exitoso, actualiza el alquiler automáticamente
+- Solo devuelve alquileres que realmente necesitan intervención manual
+
+#### Beneficios
+
+1. **Recuperación Automática**: Los alquileres se resuelven automáticamente cuando la API vuelve a funcionar
+2. **Menos Trabajo Manual**: El usuario solo interviene si la API sigue fallando
+3. **Transparencia**: Solo se muestran alquileres que realmente necesitan atención
+
+#### Documentación Detallada
+
+Para más información sobre el reintento automático, consultar:
+- **DOCUMENTACION_REINTENTO_API_BCRA.md**
+
+#### Ejemplo de Logs
+
+```
+INFO: Encontrados 3 alquileres con aumento manual pendiente. Reintentando consulta a API del BCRA...
+INFO: ✅ Consulta API exitosa para alquiler ID 123. Tasa obtenida: 1.00177683
+INFO: Alquiler ID 123 actualizado automáticamente. Monto: 150000.00 -> 150266.52. Porcentaje: 0.18%
+INFO: ✅ Consulta API exitosa para alquiler ID 124. Tasa obtenida: 1.00177683
+INFO: Alquiler ID 124 actualizado automáticamente. Monto: 200000.00 -> 200355.37. Porcentaje: 0.18%
+WARN: Fallo al reintentar consulta API para alquiler ID 125: Connection timeout. Se mantiene pendiente.
+INFO: Reintento completado: 2 alquileres actualizados exitosamente, 1 aún pendientes
+```
 
