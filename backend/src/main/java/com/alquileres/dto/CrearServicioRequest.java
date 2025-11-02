@@ -15,6 +15,7 @@ public class CrearServicioRequest {
 
     private String nroCuenta;
     private String nroContrato;
+    private String nroContratoServicio;
     private Boolean esDeInquilino = false;
     private Boolean esAnual = false; // false = mensual, true = anual
     private String fechaInicio; // Formato ISO (yyyy-MM-dd)
@@ -61,6 +62,14 @@ public class CrearServicioRequest {
         this.nroContrato = nroContrato;
     }
 
+    public String getNroContratoServicio() {
+        return nroContratoServicio;
+    }
+
+    public void setNroContratoServicio(String nroContratoServicio) {
+        this.nroContratoServicio = nroContratoServicio;
+    }
+
     public Boolean getEsDeInquilino() {
         return esDeInquilino;
     }
@@ -92,6 +101,7 @@ public class CrearServicioRequest {
                 ", tipoServicioId=" + tipoServicioId +
                 ", nroCuenta='" + nroCuenta + '\'' +
                 ", nroContrato='" + nroContrato + '\'' +
+                ", nroContratoServicio='" + nroContratoServicio + '\'' +
                 ", esDeInquilino=" + esDeInquilino +
                 ", esAnual=" + esAnual +
                 ", fechaInicio='" + fechaInicio + '\'' +

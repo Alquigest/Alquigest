@@ -68,6 +68,7 @@ public class PagoServicioResponseDTO {
     public static class ServicioXContratoMiniDTO {
         private Integer id;
         private String nroCuenta;
+        private String nroContratoServicio;
         private Boolean esDeInquilino;
         private Boolean esAnual;
         private Boolean esActivo;
@@ -78,6 +79,7 @@ public class PagoServicioResponseDTO {
         public ServicioXContratoMiniDTO(ServicioXContrato sxc) {
             this.id = sxc.getId();
             this.nroCuenta = sxc.getNroCuenta();
+            this.nroContratoServicio = sxc.getNroContratoServicio();
             this.esDeInquilino = sxc.getEsDeInquilino();
             this.esAnual = sxc.getEsAnual();
             this.esActivo = sxc.getEsActivo();
@@ -91,6 +93,9 @@ public class PagoServicioResponseDTO {
 
         public String getNroCuenta() { return nroCuenta; }
         public void setNroCuenta(String nroCuenta) { this.nroCuenta = nroCuenta; }
+
+        public String getNroContratoServicio() { return nroContratoServicio; }
+        public void setNroContratoServicio(String nroContratoServicio) { this.nroContratoServicio = nroContratoServicio; }
 
         public Boolean getEsDeInquilino() { return esDeInquilino; }
         public void setEsDeInquilino(Boolean esDeInquilino) { this.esDeInquilino = esDeInquilino; }

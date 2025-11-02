@@ -9,6 +9,7 @@ public class ServicioXContratoDTO {
     private String tipoServicioNombre;
     private String nroCuenta;
     private String nroContrato;
+    private String nroContratoServicio;
     private Boolean esDeInquilino;
     private Boolean esAnual;
     private Boolean esActivo;
@@ -23,6 +24,7 @@ public class ServicioXContratoDTO {
         this.tipoServicioNombre = servicio.getTipoServicio().getNombre();
         this.nroCuenta = servicio.getNroCuenta();
         this.nroContrato = servicio.getNroContrato();
+        this.nroContratoServicio = servicio.getNroContratoServicio();
         this.esDeInquilino = servicio.getEsDeInquilino();
         this.esAnual = servicio.getEsAnual();
         this.esActivo = servicio.getEsActivo();
@@ -75,6 +77,14 @@ public class ServicioXContratoDTO {
 
     public void setNroContrato(String nroContrato) {
         this.nroContrato = nroContrato;
+    }
+
+    public String getNroContratoServicio() {
+        return nroContratoServicio;
+    }
+
+    public void setNroContratoServicio(String nroContratoServicio) {
+        this.nroContratoServicio = nroContratoServicio;
     }
 
     public Boolean getEsDeInquilino() {

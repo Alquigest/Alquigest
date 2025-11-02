@@ -51,6 +51,7 @@ public class ServicioXContratoService {
      * @param tipoServicioId ID del tipo de servicio
      * @param nroCuenta Número de cuenta (opcional)
      * @param nroContrato Número de contrato con el proveedor (opcional)
+     * @param nroContratoServicio Número de contrato de servicio (opcional)
      * @param esDeInquilino Si el servicio está a nombre del inquilino
      * @param esAnual Si el pago es anual (false = mensual)
      * @param fechaInicio Fecha de inicio del servicio
@@ -58,7 +59,7 @@ public class ServicioXContratoService {
      */
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public ServicioXContrato crearServicio(Long contratoId, Integer tipoServicioId,
-                                           String nroCuenta, String nroContrato,
+                                           String nroCuenta, String nroContrato, String nroContratoServicio,
                                            Boolean esDeInquilino, Boolean esAnual,
                                            String fechaInicio) {
         // Validar que el contrato existe
@@ -75,6 +76,7 @@ public class ServicioXContratoService {
         servicio.setTipoServicio(tipoServicio);
         servicio.setNroCuenta(nroCuenta);
         servicio.setNroContrato(nroContrato);
+        servicio.setNroContratoServicio(nroContratoServicio);
         servicio.setEsDeInquilino(esDeInquilino != null ? esDeInquilino : false);
         servicio.setEsAnual(esAnual != null ? esAnual : false);
         servicio.setEsActivo(true);
@@ -194,16 +196,18 @@ public class ServicioXContratoService {
      * @param servicioId ID del servicio
      * @param nroCuenta Nuevo número de cuenta
      * @param nroContrato Nuevo número de contrato
+     * @param nroContratoServicio Nuevo número de contrato de servicio
      * @return El servicio actualizado
      */
     @Transactional
-    public ServicioXContrato actualizarServicio(Integer servicioId, String nroCuenta, String nroContrato) {
+    public ServicioXContrato actualizarServicio(Integer servicioId, String nroCuenta, String nroContrato, String nroContratoServicio) {
         ServicioXContrato servicio = servicioXContratoRepository.findById(servicioId)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + servicioId));
         
         servicio.setNroCuenta(nroCuenta);
         servicio.setNroContrato(nroContrato);
-        
+        servicio.setNroContratoServicio(nroContratoServicio);
+
         return servicioXContratoRepository.save(servicio);
     }
 

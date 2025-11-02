@@ -29,6 +29,9 @@ public class ServicioXContrato {
     @Column(name = "nro_contrato", length = 50, nullable = false)
     private String nroContrato;
 
+    @Column(name = "nro_contrato_servicio", length = 50)
+    private String nroContratoServicio;
+
     @Column(name = "es_de_inquilino", nullable = false)
     private Boolean esDeInquilino = false;
 
@@ -110,6 +113,14 @@ public class ServicioXContrato {
         this.nroContrato = nroContrato;
     }
 
+    public String getNroContratoServicio() {
+        return nroContratoServicio;
+    }
+
+    public void setNroContratoServicio(String nroContratoServicio) {
+        this.nroContratoServicio = nroContratoServicio;
+    }
+
     public Boolean getEsDeInquilino() {
         return esDeInquilino;
     }
@@ -158,6 +169,7 @@ public class ServicioXContrato {
                 ", tipoServicioId=" + (tipoServicio != null ? tipoServicio.getId() : null) +
                 ", nroCuenta='" + nroCuenta + '\'' +
                 ", nroContrato='" + nroContrato + '\'' +
+                ", nroContratoServicio='" + nroContratoServicio + '\'' +
                 ", esDeInquilino=" + esDeInquilino +
                 ", esAnual=" + esAnual +
                 ", esActivo=" + esActivo +

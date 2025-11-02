@@ -55,6 +55,7 @@ public class ServicioXContratoController {
                             request.getTipoServicioId(),
                             request.getNroCuenta(),
                             request.getNroContrato(),
+                            request.getNroContratoServicio(),
                             request.getEsDeInquilino(),
                             request.getEsAnual(),
                             request.getFechaInicio()
