@@ -39,7 +39,7 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
     List<PagoServicio> findByContratoId(@Param("contratoId") Long contratoId);
 
     // Contar pagos pendientes
-    @Query("SELECT COUNT(p) FROM PagoServicio p WHERE p.estaPagado = false")
+    @Query("SELECT COUNT(p) FROM PagoServicio p WHERE p.estaPagado = false AND p.servicioXContrato.esActivo = true")
     Long countPagosPendientes();
 
     // Contar pagos vencidos
