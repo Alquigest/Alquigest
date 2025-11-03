@@ -47,6 +47,10 @@ public class Contrato {
     @Column(name = "aumenta_con_icl", nullable = false)
     private Boolean aumentaConIcl = true;
 
+    @PositiveOrZero(message = "El porcentaje de honorario debe ser positivo o cero")
+    @Column(name = "porcentaje_honorario", precision = 5, scale = 2, nullable = false)
+    private BigDecimal porcentajeHonorario = new BigDecimal("10");
+
     @Column(name = "id_pdf")
     private Long idPDF;
 
@@ -153,6 +157,14 @@ public class Contrato {
 
     public void setAumentaConIcl(Boolean aumentaConIcl) {
         this.aumentaConIcl = aumentaConIcl;
+    }
+
+    public BigDecimal getPorcentajeHonorario() {
+        return porcentajeHonorario;
+    }
+
+    public void setPorcentajeHonorario(BigDecimal porcentajeHonorario) {
+        this.porcentajeHonorario = porcentajeHonorario;
     }
 
     public Long getIdPDF() {

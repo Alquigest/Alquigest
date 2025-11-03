@@ -290,34 +290,59 @@ public class AlquilerService {
         return alquileresCreados;
     }
 
-    // Calcular honorarios (10% de la suma de alquileres pagados del mes actual, independientemente de si están activos)
+    // Calcular honorarios (suma de porcentajes específicos de cada contrato para alquileres pagados del mes actual)
     public BigDecimal calcularHonorarios() {
         List<Alquiler> alquileresPagados = alquilerRepository.findAlquileresDelMes();
 
-        BigDecimal sumaTotal = alquileresPagados.stream()
-                .map(Alquiler::getMonto)
-                .filter(monto -> monto != null)
+        BigDecimal honorariosTotales = alquileresPagados.stream()
+                .map(alquiler -> {
+                    BigDecimal monto = alquiler.getMonto();
+                    if (monto == null) {
+                        return BigDecimal.ZERO;
+                    }
+
+                    // Obtener el porcentaje de honorario del contrato (por defecto 10%)
+                    Contrato contrato = alquiler.getContrato();
+                    BigDecimal porcentajeHonorario = contrato.getPorcentajeHonorario();
+                    if (porcentajeHonorario == null) {
+                        porcentajeHonorario = new BigDecimal("10"); // fallback al 10%
+                    }
+
+                    // Calcular honorario: monto * (porcentaje / 100)
+                    BigDecimal honorarioAlquiler = monto.multiply(porcentajeHonorario)
+                            .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+
+                    return honorarioAlquiler;
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calcular el 10% (0.1)
-        BigDecimal honorarios = sumaTotal.multiply(new BigDecimal("0.1"));
+        logger.info("Honorarios calculados: {} (basados en {} alquileres pagados del mes con porcentajes específicos por contrato)",
+                   honorariosTotales, alquileresPagados.size());
 
-        logger.info("Honorarios calculados: {} (basados en {} alquileres pagados del mes con suma total: {})",
-                   honorarios, alquileresPagados.size(), sumaTotal);
-
-        return honorarios;
+        return honorariosTotales;
     }
 
-    // Calcular honorario de un alquiler específico (10% solo si está pagado)
+    // Calcular honorario de un alquiler específico (usando el porcentaje del contrato, solo si está pagado)
     public BigDecimal calcularHonorarioAlquilerEspecifico(Long alquilerId) {
         Alquiler alquiler = alquilerRepository.findById(alquilerId)
                 .orElseThrow(() -> new RuntimeException("Alquiler no encontrado"));
 
         // Solo calcular si el alquiler está pagado
         if (alquiler.getEstaPagado()) {
-            BigDecimal honorario = alquiler.getMonto().multiply(new BigDecimal("0.1"));
-            logger.info("Honorario calculado para alquiler {}: {} (10% de {})",
-                       alquilerId, honorario, alquiler.getMonto());
+            // Obtener el porcentaje de honorario del contrato (por defecto 10%)
+            Contrato contrato = alquiler.getContrato();
+            BigDecimal porcentajeHonorario = contrato.getPorcentajeHonorario();
+            if (porcentajeHonorario == null) {
+                porcentajeHonorario = new BigDecimal("10"); // fallback al 10%
+            }
+
+            // Calcular honorario: monto * (porcentaje / 100)
+            BigDecimal honorario = alquiler.getMonto()
+                    .multiply(porcentajeHonorario)
+                    .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+
+            logger.info("Honorario calculado para alquiler {}: {} ({}% de {})",
+                       alquilerId, honorario, porcentajeHonorario, alquiler.getMonto());
             return honorario;
         } else {
             logger.warn("El alquiler {} no está pagado, no se calcula honorario", alquilerId);
@@ -337,10 +362,17 @@ public class AlquilerService {
         Propietario propietario = propietarioRepository.findById(inmueble.getPropietarioId())
                 .orElseThrow(() -> new RuntimeException("Propietario no encontrado"));
 
-        // Calcular honorarios (10% solo si está pagado)
-        BigDecimal honorarios = alquiler.getEstaPagado()
-            ? alquiler.getMonto().multiply(new BigDecimal("0.1"))
-            : BigDecimal.ZERO;
+        // Calcular honorarios (usando el porcentaje del contrato, solo si está pagado)
+        BigDecimal honorarios = BigDecimal.ZERO;
+        if (alquiler.getEstaPagado()) {
+            BigDecimal porcentajeHonorario = contrato.getPorcentajeHonorario();
+            if (porcentajeHonorario == null) {
+                porcentajeHonorario = new BigDecimal("10"); // fallback al 10%
+            }
+            honorarios = alquiler.getMonto()
+                    .multiply(porcentajeHonorario)
+                    .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+        }
 
         return new AlquilerDetalladoDTO(
             alquilerId,

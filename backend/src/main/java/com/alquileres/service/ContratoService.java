@@ -34,6 +34,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -348,6 +349,7 @@ public class ContratoService {
         contrato.setPorcentajeAumento(contratoDTO.getPorcentajeAumento());
         contrato.setEstadoContrato(estadoContrato);
         contrato.setAumentaConIcl(contratoDTO.getAumentaConIcl() != null ? contratoDTO.getAumentaConIcl() : false);
+        contrato.setPorcentajeHonorario(contratoDTO.getPorcentajeHonorario() != null ? contratoDTO.getPorcentajeHonorario() : new BigDecimal("10"));
         contrato.setPeriodoAumento(contratoDTO.getPeriodoAumento());
         contrato.setFechaAumento(fechaAumentoCalculada);
 

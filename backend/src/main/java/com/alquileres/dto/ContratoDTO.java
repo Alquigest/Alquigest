@@ -31,6 +31,9 @@ public class ContratoDTO {
 
     private Boolean aumentaConIcl;
 
+    @PositiveOrZero(message = "El porcentaje de honorario debe ser positivo o cero")
+    private BigDecimal porcentajeHonorario;
+
     @PositiveOrZero(message = "El período de aumento debe ser positivo o cero")
     private Integer periodoAumento;
 
@@ -74,6 +77,7 @@ public class ContratoDTO {
         this.porcentajeAumento = contrato.getPorcentajeAumento();
         this.estadoContratoId = contrato.getEstadoContrato() != null ? contrato.getEstadoContrato().getId().intValue() : null;
         this.aumentaConIcl = contrato.getAumentaConIcl();
+        this.porcentajeHonorario = contrato.getPorcentajeHonorario();
         this.periodoAumento = contrato.getPeriodoAumento();
         this.fechaAumento = contrato.getFechaAumento();
 
@@ -187,6 +191,14 @@ public class ContratoDTO {
 
     public void setAumentaConIcl(Boolean aumentaConIcl) {
         this.aumentaConIcl = aumentaConIcl;
+    }
+
+    public BigDecimal getPorcentajeHonorario() {
+        return porcentajeHonorario;
+    }
+
+    public void setPorcentajeHonorario(BigDecimal porcentajeHonorario) {
+        this.porcentajeHonorario = porcentajeHonorario;
     }
 
     public Integer getPeriodoAumento() {

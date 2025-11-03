@@ -28,6 +28,8 @@ public class ContratoCreateDTO {
 
     private Boolean aumentaConIcl;
 
+    @PositiveOrZero(message = "El porcentaje de honorario debe ser positivo o cero")
+    private BigDecimal porcentajeHonorario;
 
     @Min(value = 1, message = "El período de aumento debe ser mínimo 1 mes")
     @Max(value = 12, message = "El período de aumento debe ser máximo 12 meses")
@@ -60,6 +62,7 @@ public class ContratoCreateDTO {
         contratoDTO.setMonto(this.monto);
         contratoDTO.setPorcentajeAumento(this.porcentajeAumento);
         contratoDTO.setAumentaConIcl(this.aumentaConIcl);
+        contratoDTO.setPorcentajeHonorario(this.porcentajeHonorario);
         contratoDTO.setPeriodoAumento(this.periodoAumento);
         // estadoContratoId y fechaAumento se calculan automáticamente en el servicio
         // El PDF se carga después a través del endpoint dedicado
@@ -123,6 +126,13 @@ public class ContratoCreateDTO {
         this.aumentaConIcl = aumentaConIcl;
     }
 
+    public BigDecimal getPorcentajeHonorario() {
+        return porcentajeHonorario;
+    }
+
+    public void setPorcentajeHonorario(BigDecimal porcentajeHonorario) {
+        this.porcentajeHonorario = porcentajeHonorario;
+    }
 
     public Integer getPeriodoAumento() {
         return periodoAumento;
