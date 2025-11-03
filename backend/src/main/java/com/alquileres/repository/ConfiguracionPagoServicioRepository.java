@@ -24,7 +24,8 @@ public interface ConfiguracionPagoServicioRepository extends JpaRepository<Confi
     List<ConfiguracionPagoServicio> findByEsActivo(Boolean esActivo);
 
     // Buscar configuraciones con pagos pendientes de generar (proximoPago <= fecha actual)
-    @Query("SELECT c FROM ConfiguracionPagoServicio c WHERE c.esActivo = true AND c.proximoPago <= :fechaActual")
+    // Solo incluye configuraciones activas Y cuyo servicio esté activo
+    @Query("SELECT c FROM ConfiguracionPagoServicio c WHERE c.esActivo = true AND c.servicioXContrato.esActivo = true AND c.proximoPago <= :fechaActual")
     List<ConfiguracionPagoServicio> findConfiguracionesConPagosPendientes(@Param("fechaActual") String fechaActual);
 
     // Buscar configuraciones por contrato

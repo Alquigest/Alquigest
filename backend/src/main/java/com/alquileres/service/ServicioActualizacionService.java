@@ -332,6 +332,13 @@ public class ServicioActualizacionService {
             }
 
             ConfiguracionPagoServicio configuracion = configOpt.get();
+
+            // Verificar que el servicio esté activo
+            if (!Boolean.TRUE.equals(configuracion.getServicioXContrato().getEsActivo())) {
+                logger.warn("El servicio del configuración ID {} no está activo. No se generarán pagos.", configuracionId);
+                return 0;
+            }
+
             String fechaActual = LocalDate.now().format(FORMATO_FECHA);
             int pagosGenerados = 0;
 
