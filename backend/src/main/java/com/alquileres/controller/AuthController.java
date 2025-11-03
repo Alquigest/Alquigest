@@ -255,16 +255,18 @@ public class AuthController {
     }
 
     @PostMapping("/recuperar-contrasena")
-    @Operation(summary = "Solicitar recuperación de contraseña")
+    @Operation(summary = "Solicitar recuperación de contraseña",
+               description = "Solicita el envío de un email de recuperación. El procesamiento se realiza de forma asíncrona. " +
+                           "Siempre devuelve el mismo mensaje por razones de seguridad, independientemente de si el email existe o no.")
     public ResponseEntity<?> recuperarContrasena(@Valid @RequestBody RecuperarContrasenaDTO dto) {
-        try {
-            passwordResetService.solicitarRecuperacionContrasena(dto.getEmail());
-            return ResponseEntity.ok(new MessageResponse("Se ha enviado un correo de recuperación. Por favor, revise su bandeja de entrada."));
-        } catch (Exception e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: " + e.getMessage()));
-        }
+        // Procesar de forma asíncrona (no bloquea la respuesta)
+        passwordResetService.solicitarRecuperacionContrasena(dto.getEmail());
+
+        // Siempre devolver el mismo mensaje, sin importar si el email existe o no
+        // Esto evita que se pueda determinar qué emails están registrados en el sistema
+        return ResponseEntity.ok(new MessageResponse(
+            "Si el email existe en nuestro sistema, recibirás un correo con instrucciones para recuperar tu contraseña."
+        ));
     }
 
     @PostMapping("/resetear-contrasena")
