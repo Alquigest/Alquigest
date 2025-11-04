@@ -237,7 +237,7 @@ jobs:
 - **Crítico**: 90%+ (cálculos de alquileres, aumentos, pagos)
 
 ### Estado Actual
-- **Tests totales**: 78 pasando + 2 con error = 80 tests
+- **Tests totales**: 102 tests (100 pasando + 2 con error de configuración)
 - **Cobertura estimada**: ~35% del código backend
 - **Componentes críticos cubiertos**: 
   - ✅ Aumentos automáticos de alquileres

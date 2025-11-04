@@ -45,6 +45,7 @@ class ContratoControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(contratos, response.getBody());
         assertEquals(2, response.getBody().size());
+        verify(contratoService).obtenerTodosLosContratos();
     }
 
     @Test
@@ -55,6 +56,7 @@ class ContratoControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().isEmpty());
+        verify(contratoService).obtenerTodosLosContratos();
     }
 
     @Test
@@ -320,8 +322,8 @@ class ContratoControllerTest {
         dto.setInmuebleId(inmuebleId);
         dto.setInquilinoId(inquilinoId);
         dto.setMonto(new BigDecimal("50000"));
-        dto.setFechaInicio(LocalDate.now().minusMonths(1).toString());
-        dto.setFechaFin(LocalDate.now().plusYears(1).toString());
+        dto.setFechaInicio(LocalDate.of(2024, 1, 1).toString());
+        dto.setFechaFin(LocalDate.of(2025, 1, 1).toString());
         dto.setEstadoContratoId(1);
         return dto;
     }
@@ -331,8 +333,8 @@ class ContratoControllerTest {
         dto.setInmuebleId(inmuebleId);
         dto.setInquilinoId(inquilinoId);
         dto.setMonto(new BigDecimal("50000"));
-        dto.setFechaInicio(LocalDate.now().minusMonths(1).toString());
-        dto.setFechaFin(LocalDate.now().plusYears(1).toString());
+        dto.setFechaInicio(LocalDate.of(2024, 1, 1).toString());
+        dto.setFechaFin(LocalDate.of(2025, 1, 1).toString());
         dto.setEstadoContratoId(1);
         return dto;
     }

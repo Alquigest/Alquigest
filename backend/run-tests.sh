@@ -88,8 +88,8 @@ case "${1:-all}" in
         run_tests "*Test" "Todos los tests"
         ;;
     unit)
-        echo -e "${YELLOW}Nota: Esto ejecutará todos los tests excepto los de integración${NC}"
-        run_tests "*Test" "Tests unitarios"
+        echo -e "${YELLOW}Nota: Ejecutando tests de controladores y servicios (tests rápidos)${NC}"
+        run_tests "*ControllerTest,*ServiceTest" "Tests unitarios de controladores y servicios"
         ;;
     controller)
         run_tests "*ControllerTest" "Tests de controladores"

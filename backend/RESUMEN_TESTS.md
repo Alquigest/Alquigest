@@ -248,6 +248,6 @@ El sistema ahora permite:
 
 ---
 
-*Documento generado: 2025-11-04*  
+*Documento generado: Noviembre 2024*  
 *Tests pasando: 100/102*  
 *Cobertura estimada: ~35%*
