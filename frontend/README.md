@@ -8,27 +8,31 @@ Interfaz de usuario para el sistema de gestión de alquileres a cargo del estudi
 📂 Módulos / Funcionalidades disponibles
 
 - Inmuebles
-  
-  - Carga de nuevo inmueble, modificación y consulta   
-
-  - Registro de dirección, tipo, estado, superficie y propietario.
-
-- Propietarios
-
-    - Alta de nuevo propietario, modificación de datos, baja lógica y consulta. 
-
-    - Datos personales (nombre, apellido, DNI, etc.).
+  - Consulta, edición, baja.
+- Locadores
+  - Consulta, edición, baja
+- Locatarios
+  - Consulta, edición, baja
+- Pago de Servicios de un alquiler
+  - Carga de un pago
+  - Historial de pagos
+- Gestión de Contratos
+  - Alta, baja, gestión de recinsiones
+  - Historial de contratos
+  - Historial de pagos de alquiler
+- Gestión de alquileres/contratos vigentes
+- Gestión de notificaciones
+- Gestión de Usuarios
+  - Autenticación
+  - Gestión de Permisos y roles
+  - Recuperación de contraseña
 
  
 ## 📌 Próximas mejoras
 
-- Gestión de inquilinos.
-
-- Gestión de contratos y pagos.
-
 - Dashboard con métricas y reportes.
-
 - Integración con API de backend para servicios adicionales.
+- Correción de errores/Performance
 
 
 ---
