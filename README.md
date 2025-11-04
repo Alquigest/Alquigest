@@ -58,6 +58,7 @@ npm start
 - **Backend**: Ver `backend/README.md`
 - **Frontend**: Ver `frontend/README.md`
 - **API Docs**: `http://localhost:8081/swagger-ui.html` (después de ejecutar el backend)
+- **Testing**: Ver `backend/GUIA_TESTING.md` para ejecutar y crear tests
 
 ## Funcionalidades Implementadas
 
@@ -104,3 +105,42 @@ npm start
 ### Frontend
 - [Node.js](https://nodejs.org/) **>=18**
 - [npm](https://www.npmjs.com/) **>=9**
+
+## Testing
+
+El proyecto incluye una suite completa de tests para validar que el sistema funciona correctamente.
+
+### Ejecutar Tests del Backend
+
+```bash
+cd backend
+
+# Todos los tests
+mvn test
+
+# Usando el script helper
+./run-tests.sh all
+
+# Solo tests de controladores
+./run-tests.sh controller
+
+# Test específico
+./run-tests.sh InmuebleControllerTest
+
+# Generar reporte de cobertura
+./run-tests.sh coverage
+```
+
+### Estado Actual
+- ✅ **100 tests unitarios pasando**
+- ❌ 2 tests de integración con error (configuración de BD)
+- 📊 Cobertura: ~35% del código backend
+
+### Documentación de Testing
+Ver `backend/GUIA_TESTING.md` para:
+- Guía completa de testing
+- Cómo crear nuevos tests
+- Mejores prácticas
+- Solución de problemas
+
+## Desarrollo
