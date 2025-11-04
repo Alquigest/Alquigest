@@ -18,6 +18,7 @@ import { useEffect, useState } from "react"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading"
+import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 
 export default function HomePage() {
 
@@ -65,7 +66,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8 pt-30">
         {/* Welcome Section */}
-        <div className="mb-16 flex justify-between gap-6">
+        <div className="mb-12 flex justify-between gap-6">
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-2 ">¡Bienvenido!</h2>
             <p className="text-muted-foreground font-sans text-xs md:text-lg">
@@ -77,51 +78,37 @@ export default function HomePage() {
 
         {/* Cards DATOS ACTUALES */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-md md:text-lg font-medium ">Facturas Pendientes</CardTitle>
-                <AlertCircle className="h-6 w-6 text-orange-500" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-                <div className="text-3xl font-bold font-sans text-orange-600">{contadores.cantServiciosNoPagos}</div>
-                <p className="text-sm text-muted-foreground">Servicios aún no pagados</p>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            titulo="Facturas Pendientes"
+            valor={contadores.cantServiciosNoPagos}
+            icono={<AlertCircle className="h-6 w-6 text-orange-500" />}
+            subtitulo="Servicios aún no pagados"
+            tituloAyuda="Cantidad de facturas de servicios que figuran como no pagadas en el sistema"
+          />
 
-          <Card>
-            
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-md md:text-lg font-medium ">Alquileres Activos</CardTitle>
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="text-3xl font-bold font-sans text-green-600">{contadores.cantContratosVigentes}</div>
-              <p className="text-sm text-muted-foreground"> Con contrato/s vigente/s</p>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            titulo="Alquileres Activos"
+            valor={contadores.cantContratosVigentes}
+            icono={<CheckCircle2 className="h-6 w-6 text-green-500" />}
+            subtitulo="Con contrato/s vigente/s"
+            tituloAyuda="Cantidad de alquileres que se encuentran activos en el sistema"
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-md md:text-lg font-medium">Inmuebles Gestionados</CardTitle>
-              <Building2 className="h-6 w-6 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="text-3xl font-bold font-sans">{contadores.cantInmueblesActivos}</div>
-              <p className="text-sm text-muted-foreground">Bajo administración</p>
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            titulo="Inmuebles Gestionados"
+            valor={contadores.cantInmueblesActivos}
+            icono={<Building2 className="h-6 w-6 text-muted-foreground" />}
+            subtitulo="Bajo administración"
+            tituloAyuda="Cantidad de inmuebles activos bajo administración del estudio jurídico"
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-md md:text-lg font-medium ">Honorarios del mes</CardTitle>
-              <BarChart3 className="h-6 w-6 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              <div className="text-2xl font-bold font-sans">${contadores.honorariosDelMes.toLocaleString('es-AR')}</div>
-              <p className="text-sm text-muted-foreground">Cálculo estimativo</p>
-              
-            </CardContent>
-          </Card>
+          <EstadisticaCard
+            titulo="Honorarios del mes"
+            valor={`$ ${contadores.honorariosDelMes.toLocaleString('es-AR')}`}
+            icono={<BarChart3 className="h-6 w-6 text-muted-foreground" />}
+            subtitulo="Cálculo real acumulativo"
+            tituloAyuda="Suma de los honorarios correspondientes a los alquileres ya pagos del mes actual"
+          />
         </div>
 
         {/* Main Navigation Cards */}

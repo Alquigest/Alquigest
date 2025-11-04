@@ -24,7 +24,7 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
   const [showModal, setShowModal] = useState(false);
   const [showNotificaciones, setShowNotificaciones] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [notificationDot, setNotificationDot] = useState(false); // para el punto de notificación
+  const [notificationDot, setNotificationDot] = useState(true); // para el punto de notificación
   const [needsReload, setNeedsReload] = useState(false); // flag para recargar después de ver notificaciones
   const pathname = usePathname(); // Obtener la ruta actual
   const isPublicRoute = pathname?.startsWith("/auth/") === true;
