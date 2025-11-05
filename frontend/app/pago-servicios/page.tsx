@@ -29,7 +29,8 @@ export default function PagoServiciosPage() {
         // Fetch de contratos y contadores en paralelo
         const [data, cantServicios] = await Promise.all([
           fetchWithToken(`${BACKEND_URL}/contratos/vigentes`),
-          fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
+          //fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
+          -912
         ])
 
         console.log("Datos parseados del backend:", data)

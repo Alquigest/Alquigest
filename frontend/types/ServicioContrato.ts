@@ -2,7 +2,8 @@ export interface ServicioContrato {
   tipoServicioId: number; // 1=Agua, 2=Luz, 3=Gas, 4=Municipal, 5=Rentas
   nroCuenta: number | null;
   contratoId: number | null;
-  nroContrato: string; // solo para mostrar en el resumen
+  nroContrato: string;
+  nroContratoServicio: number | null; // 2do número de contrato para el servicio (POR AHORA SOLO PARA LUZ)
   esDeInquilino: boolean; // true: Inquilino paga, false: Estudio jurídico
   esActivo: boolean; // habilitado para este contrato
   esAnual: boolean;

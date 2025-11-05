@@ -47,7 +47,7 @@ export default function ContratoServiciosCard({ contrato }: ContratoServiciosCar
 
   return (
     <Card className="transition-all duration-200">
-      <CardHeader>
+      <CardHeader onClick={toggleCard} className="cursor-pointer">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Building2 className="h-7 w-7 text-primary" />

@@ -82,6 +82,9 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado }: Ser
                 <p className="font-bold text-base">{pagoServicio.servicioXContrato.tipoServicio.nombre}</p>
                 <p className="text-sm text-muted-foreground">Período: {pagoServicio.periodo}</p>
                 <p className="text-sm text-muted-foreground">Nro Cuenta: {pagoServicio.servicioXContrato.nroCuenta || "No Especificado"}</p>
+                {pagoServicio.servicioXContrato.nroContratoServicio !== "" && (
+                  <p className="text-sm text-muted-foreground">Nro Contrato Servicio: {pagoServicio.servicioXContrato.nroContratoServicio || "No Especificado"}</p>
+                )}
                 </div>
             </div>
             <div className="flex items-center gap-10">

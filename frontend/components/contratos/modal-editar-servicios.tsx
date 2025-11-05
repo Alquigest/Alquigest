@@ -21,11 +21,11 @@ interface ModalEditarServiciosProps {
 }
 
 const serviciosInicial: ServicioContrato[] = [
-  { tipoServicioId: 1, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '' }, // Agua
-  { tipoServicioId: 2, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '' }, // Luz
-  { tipoServicioId: 3, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '' }, // Gas
-  { tipoServicioId: 4, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '' },  // Municipal
-  { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '' },  // Otros
+  { tipoServicioId: 1, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Agua
+  { tipoServicioId: 2, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Luz
+  { tipoServicioId: 3, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: false, fechaInicio: '', nroContratoServicio: '' }, // Gas
+  { tipoServicioId: 4, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: '' },  // Municipal
+  { tipoServicioId: 5, nroCuenta: null, contratoId: null, nroContrato: '', esDeInquilino: true, esActivo: false, esAnual: true, fechaInicio: '', nroContratoServicio: '' },  // Otros
 ];
 
 export default function ModalEditarServicios({ contratoId, fechaInicioContrato, onServiciosActualizados, disabled = false }: ModalEditarServiciosProps) {
@@ -109,6 +109,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
           contratoId: contratoId,
           tipoServicioId: servicio.tipoServicioId,
           nroCuenta: servicio.nroCuenta || "",
+          nroContratoServicio: servicio.nroContratoServicio || "",
           nroContrato: contratoId.toString(),
           esDeInquilino: servicio.esDeInquilino,
           esAnual: servicio.esAnual,
@@ -128,7 +129,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
         }
       }
 
-      // 2. Activar/Desactivar servicios existentes que cambiaron de estado
+      // 2. Actualizar servicios existentes
       const serviciosExistentesParaActualizar = serviciosContrato.filter(servicio => 
         serviciosExistentesIds.includes(servicio.tipoServicioId) && (servicio as any).id
       );
@@ -139,7 +140,10 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
         // Buscar el servicio original para comparar
         const original = serviciosOriginales.find((s: any) => s.id === servicioId);
         
-        if (original && original.esActivo !== servicio.esActivo) {
+        if (!original) continue;
+
+        // A. Si cambió el estado activo/inactivo
+        if (original.esActivo !== servicio.esActivo) {
           try {
             if (servicio.esActivo) {
               // Reactivar: ahora requiere fechaInicio en el body (YYYY-MM-DD)
@@ -148,17 +152,43 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fechaInicio: fechaActualValida() }),
               });
+              console.log(`✅ Servicio ${servicioId} reactivado exitosamente`);
             } else {
               // Desactivar: sin body
               await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}/desactivar`, {
                 method: "PUT",
               });
+              console.log(`✅ Servicio ${servicioId} desactivado exitosamente`);
             }
-            
-            console.log(`✅ Servicio ${servicioId} ${servicio.esActivo ? 'reactivado' : 'desactivado'} exitosamente`);
           } catch (error: any) {
-            console.error(`❌ Error al actualizar servicio ${servicioId}:`, error);
+            console.error(`❌ Error al cambiar estado del servicio ${servicioId}:`, error);
             errores.push(`Error al ${servicio.esActivo ? 'reactivar' : 'desactivar'} servicio`);
+          }
+        }
+
+        // B. Si cambió algún dato (nroCuenta, nroContratoServicio, esDeInquilino, esAnual)
+        const cambiosDatos = 
+          original.nroCuenta !== servicio.nroCuenta ||
+          original.nroContratoServicio !== servicio.nroContratoServicio ||
+          original.esDeInquilino !== servicio.esDeInquilino ||
+          original.esAnual !== servicio.esAnual;
+
+        if (cambiosDatos && servicio.esActivo) {
+          try {
+            await fetchWithToken(`${BACKEND_URL}/servicios-contrato/${servicioId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nroCuenta: servicio.nroCuenta || "",
+                nroContratoServicio: servicio.nroContratoServicio || "",
+                esDeInquilino: servicio.esDeInquilino,
+                esAnual: servicio.esAnual,
+              }),
+            });
+            console.log(`✅ Servicio ${servicioId} actualizado exitosamente`);
+          } catch (error: any) {
+            console.error(`❌ Error al actualizar datos del servicio ${servicioId}:`, error);
+            errores.push(`Error al actualizar datos del servicio`);
           }
         }
       }

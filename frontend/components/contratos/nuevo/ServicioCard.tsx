@@ -48,6 +48,7 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
               <Input
                 id={`nroCuenta-${s.tipoServicioId}`}
                 type="text"
+                maxLength={30}
                 required
                 inputMode="numeric"
                 value={s.nroCuenta ?? ""}
@@ -58,6 +59,23 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
                 placeholder="Ej: 123456789"
               />
             </div>
+            {(s.tipoServicioId === 1) &&(
+              <div className="space-y-2">
+                <Label htmlFor={`nroContratoServicio-${s.tipoServicioId}`}>Nro. de Contrato</Label>
+                <Input
+                  id={`nroContratoServicio-${s.tipoServicioId}`}
+                  type="text"
+                  maxLength={30}
+                  inputMode="numeric"
+                  value={s.nroContratoServicio ?? ""}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, "");
+                    updateServicio(s.tipoServicioId, { nroContratoServicio: onlyDigits ? Number(onlyDigits) : null })
+                  }}
+                  placeholder="Ej: 123456789"
+                />
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
