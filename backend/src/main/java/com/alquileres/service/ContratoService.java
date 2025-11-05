@@ -92,11 +92,43 @@ public class ContratoService {
     @Autowired
     private PDFService pdfService;
 
-    // Método helper para enriquecer ContratoDTO con información del propietario
+    /**
+     * Enriquece un ContratoDTO con información adicional del propietario, inmueble y alquiler
+     * 
+     * Este método transforma un objeto Contrato en un DTO completo con:
+     * - Fechas convertidas al formato del usuario (dd/MM/yyyy)
+     * - Información completa del propietario (incluyendo clave fiscal desencriptada)
+     * - Tipo de inmueble
+     * - Monto del último alquiler
+     * 
+     * @param contrato El contrato a enriquecer
+     * @return ContratoDTO con toda la información adicional
+     */
     private ContratoDTO enrichContratoDTO(Contrato contrato) {
         ContratoDTO contratoDTO = new ContratoDTO(contrato);
 
-        // Convertir fechas de formato ISO a formato de usuario para la respuesta
+        // Convertir fechas de formato ISO (yyyy-MM-dd) a formato usuario (dd/MM/yyyy)
+        convertirFechasParaRespuesta(contrato, contratoDTO);
+
+        // Agregar información del propietario
+        agregarInformacionPropietario(contrato, contratoDTO);
+
+        // Agregar tipo de inmueble
+        agregarTipoInmueble(contrato, contratoDTO);
+
+        // Agregar monto del último alquiler
+        agregarMontoUltimoAlquiler(contrato, contratoDTO);
+
+        return contratoDTO;
+    }
+
+    /**
+     * Convierte las fechas del contrato de formato ISO a formato usuario
+     * 
+     * @param contrato Contrato fuente con fechas en formato ISO
+     * @param contratoDTO DTO destino donde se setean las fechas convertidas
+     */
+    private void convertirFechasParaRespuesta(Contrato contrato, ContratoDTO contratoDTO) {
         if (contrato.getFechaInicio() != null) {
             contratoDTO.setFechaInicio(FechaUtil.convertirFechaISOToUsuario(contrato.getFechaInicio()));
         }
@@ -106,49 +138,108 @@ public class ContratoService {
         if (contrato.getFechaAumento() != null) {
             contratoDTO.setFechaAumento(FechaUtil.convertirFechaISOToUsuario(contrato.getFechaAumento()));
         }
-
-        // Obtener información completa del propietario a través del inmueble
-        if (contrato.getInmueble() != null && contrato.getInmueble().getPropietarioId() != null) {
-            Optional<Propietario> propietario = propietarioRepository.findById(contrato.getInmueble().getPropietarioId());
-            if (propietario.isPresent()) {
-                Propietario prop = propietario.get();
-                contratoDTO.setNombrePropietario(prop.getNombre());
-                contratoDTO.setApellidoPropietario(prop.getApellido());
-                contratoDTO.setDniPropietario(prop.getCuil());
-                contratoDTO.setTelefonoPropietario(prop.getTelefono());
-                contratoDTO.setEmailPropietario(prop.getEmail());
-                contratoDTO.setDireccionPropietario(prop.getDireccion());
-
-                // Desencriptar clave fiscal
-                if (prop.getClaveFiscal() != null && !prop.getClaveFiscal().trim().isEmpty()) {
-                    try {
-                        contratoDTO.setClaveFiscalPropietario(encryptionService.desencriptar(prop.getClaveFiscal()));
-                    } catch (Exception e) {
-                        logger.error("Error desencriptando clave fiscal del propietario", e);
-                        contratoDTO.setClaveFiscalPropietario(null);
-                    }
-                }
-            }
-        }
-
-        // Obtener información del tipo de inmueble
-        if (contrato.getInmueble() != null && contrato.getInmueble().getTipoInmuebleId() != null) {
-            Optional<TipoInmueble> tipoInmueble = tipoInmuebleRepository.findById(contrato.getInmueble().getTipoInmuebleId());
-            if (tipoInmueble.isPresent()) {
-                contratoDTO.setTipoInmueble(tipoInmueble.get().getNombre());
-            }
-        }
-
-        // Obtener el monto del último alquiler
-        Optional<com.alquileres.model.Alquiler> ultimoAlquiler = alquilerRepository.findUltimoAlquilerByContratoId(contrato.getId());
-        if (ultimoAlquiler.isPresent()) {
-            contratoDTO.setMontoUltimoAlquiler(ultimoAlquiler.get().getMonto());
-        }
-
-        return contratoDTO;
     }
 
-    // Obtener todos los contratos
+    /**
+     * Agrega la información completa del propietario al DTO del contrato
+     * 
+     * Obtiene el propietario a través del inmueble e incluye la clave fiscal desencriptada
+     * 
+     * @param contrato Contrato con referencia al inmueble
+     * @param contratoDTO DTO donde se setea la información del propietario
+     */
+    private void agregarInformacionPropietario(Contrato contrato, ContratoDTO contratoDTO) {
+        if (contrato.getInmueble() == null || contrato.getInmueble().getPropietarioId() == null) {
+            return;
+        }
+
+        Optional<Propietario> propietarioOpt = propietarioRepository.findById(
+            contrato.getInmueble().getPropietarioId()
+        );
+        
+        if (!propietarioOpt.isPresent()) {
+            return;
+        }
+
+        Propietario propietario = propietarioOpt.get();
+        
+        // Setear datos básicos del propietario
+        contratoDTO.setNombrePropietario(propietario.getNombre());
+        contratoDTO.setApellidoPropietario(propietario.getApellido());
+        contratoDTO.setDniPropietario(propietario.getCuil());
+        contratoDTO.setTelefonoPropietario(propietario.getTelefono());
+        contratoDTO.setEmailPropietario(propietario.getEmail());
+        contratoDTO.setDireccionPropietario(propietario.getDireccion());
+
+        // Desencriptar y agregar clave fiscal si existe
+        desencriptarYAgregarClaveFiscal(propietario, contratoDTO);
+    }
+
+    /**
+     * Desencripta la clave fiscal del propietario y la agrega al DTO
+     * 
+     * Si hay algún error en la desencriptación, se setea como null
+     * 
+     * @param propietario Propietario con clave fiscal encriptada
+     * @param contratoDTO DTO donde se setea la clave fiscal desencriptada
+     */
+    private void desencriptarYAgregarClaveFiscal(Propietario propietario, ContratoDTO contratoDTO) {
+        if (propietario.getClaveFiscal() == null || propietario.getClaveFiscal().trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            String claveFiscalDesencriptada = encryptionService.desencriptar(propietario.getClaveFiscal());
+            contratoDTO.setClaveFiscalPropietario(claveFiscalDesencriptada);
+        } catch (Exception e) {
+            logger.error("Error desencriptando clave fiscal del propietario ID: {}", 
+                propietario.getId(), e);
+            contratoDTO.setClaveFiscalPropietario(null);
+        }
+    }
+
+    /**
+     * Agrega el nombre del tipo de inmueble al DTO del contrato
+     * 
+     * @param contrato Contrato con referencia al inmueble
+     * @param contratoDTO DTO donde se setea el tipo de inmueble
+     */
+    private void agregarTipoInmueble(Contrato contrato, ContratoDTO contratoDTO) {
+        if (contrato.getInmueble() == null || contrato.getInmueble().getTipoInmuebleId() == null) {
+            return;
+        }
+
+        Optional<TipoInmueble> tipoInmuebleOpt = tipoInmuebleRepository.findById(
+            contrato.getInmueble().getTipoInmuebleId()
+        );
+        
+        tipoInmuebleOpt.ifPresent(tipoInmueble -> 
+            contratoDTO.setTipoInmueble(tipoInmueble.getNombre())
+        );
+    }
+
+    /**
+     * Agrega el monto del último alquiler al DTO del contrato
+     * 
+     * @param contrato Contrato del cual obtener el último alquiler
+     * @param contratoDTO DTO donde se setea el monto
+     */
+    private void agregarMontoUltimoAlquiler(Contrato contrato, ContratoDTO contratoDTO) {
+        Optional<com.alquileres.model.Alquiler> ultimoAlquilerOpt = 
+            alquilerRepository.findUltimoAlquilerByContratoId(contrato.getId());
+        
+        ultimoAlquilerOpt.ifPresent(alquiler -> 
+            contratoDTO.setMontoUltimoAlquiler(alquiler.getMonto())
+        );
+    }
+
+    /**
+     * Obtiene todos los contratos del sistema
+     * 
+     * Los resultados se cachean para mejorar el rendimiento
+     * 
+     * @return Lista de todos los contratos con información enriquecida
+     */
     @Cacheable(value = "contratos", key = "'all'")
     public List<ContratoDTO> obtenerTodosLosContratos() {
         List<Contrato> contratos = contratoRepository.findAll();
@@ -157,46 +248,76 @@ public class ContratoService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener contrato por ID
+    /**
+     * Obtiene un contrato por su ID
+     * 
+     * @param id ID del contrato a buscar
+     * @return ContratoDTO con información completa
+     * @throws BusinessException si el contrato no existe
+     */
     @Cacheable(value = "contratos", key = "#id")
     public ContratoDTO obtenerContratoPorId(Long id) {
-        Optional<Contrato> contrato = contratoRepository.findById(id);
-        if (contrato.isPresent()) {
-            return enrichContratoDTO(contrato.get());
-        } else {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO, "Contrato no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
-        }
+        Contrato contrato = contratoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO, 
+                "Contrato no encontrado con ID: " + id, 
+                HttpStatus.NOT_FOUND
+            ));
+        
+        return enrichContratoDTO(contrato);
     }
 
-    // Obtener contratos por inmueble
+    /**
+     * Obtiene todos los contratos asociados a un inmueble específico
+     * 
+     * @param inmuebleId ID del inmueble
+     * @return Lista de contratos del inmueble
+     * @throws BusinessException si el inmueble no existe
+     */
     @Cacheable(value = "contratos", key = "'inmueble_' + #inmuebleId")
     public List<ContratoDTO> obtenerContratosPorInmueble(Long inmuebleId) {
-        Optional<Inmueble> inmueble = inmuebleRepository.findById(inmuebleId);
-        if (!inmueble.isPresent()) {
-            throw new BusinessException(ErrorCodes.INMUEBLE_NO_ENCONTRADO, "Inmueble no encontrado con ID: " + inmuebleId, HttpStatus.NOT_FOUND);
-        }
+        Inmueble inmueble = inmuebleRepository.findById(inmuebleId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.INMUEBLE_NO_ENCONTRADO, 
+                "Inmueble no encontrado con ID: " + inmuebleId, 
+                HttpStatus.NOT_FOUND
+            ));
 
-        List<Contrato> contratos = contratoRepository.findByInmueble(inmueble.get());
+        List<Contrato> contratos = contratoRepository.findByInmueble(inmueble);
         return contratos.stream()
                 .map(this::enrichContratoDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtener contratos por inquilino
+    /**
+     * Obtiene todos los contratos asociados a un inquilino específico
+     * 
+     * @param inquilinoId ID del inquilino
+     * @return Lista de contratos del inquilino
+     * @throws BusinessException si el inquilino no existe
+     */
     @Cacheable(value = "contratos", key = "'inquilino_' + #inquilinoId")
     public List<ContratoDTO> obtenerContratosPorInquilino(Long inquilinoId) {
-        Optional<Inquilino> inquilino = inquilinoRepository.findById(inquilinoId);
-        if (!inquilino.isPresent()) {
-            throw new BusinessException(ErrorCodes.INQUILINO_NO_ENCONTRADO, "Inquilino no encontrado con ID: " + inquilinoId, HttpStatus.NOT_FOUND);
-        }
+        Inquilino inquilino = inquilinoRepository.findById(inquilinoId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.INQUILINO_NO_ENCONTRADO, 
+                "Inquilino no encontrado con ID: " + inquilinoId, 
+                HttpStatus.NOT_FOUND
+            ));
 
-        List<Contrato> contratos = contratoRepository.findByInquilino(inquilino.get());
+        List<Contrato> contratos = contratoRepository.findByInquilino(inquilino);
         return contratos.stream()
                 .map(this::enrichContratoDTO)
                 .collect(Collectors.toList());
     }
 
-    // Obtener contratos vigentes
+    /**
+     * Obtiene todos los contratos que están actualmente vigentes
+     * 
+     * Un contrato vigente es aquel cuyo estado es "Vigente"
+     * 
+     * @return Lista de contratos vigentes
+     */
     @Cacheable(value = "contratos", key = "'vigentes'")
     public List<ContratoDTO> obtenerContratosVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosVigentes();
@@ -205,7 +326,13 @@ public class ContratoService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener contratos no vigentes
+    /**
+     * Obtiene todos los contratos que no están vigentes
+     * 
+     * Incluye contratos cancelados, finalizados, etc.
+     * 
+     * @return Lista de contratos no vigentes
+     */
     @Cacheable(value = "contratos", key = "'no_vigentes'")
     public List<ContratoDTO> obtenerContratosNoVigentes() {
         List<Contrato> contratos = contratoRepository.findContratosNoVigentes();
@@ -214,433 +341,840 @@ public class ContratoService {
                 .collect(Collectors.toList());
     }
 
-    // Contar contratos vigentes
+    /**
+     * Cuenta la cantidad total de contratos vigentes
+     * 
+     * @return Cantidad de contratos vigentes
+     */
     @Cacheable(value = "contratos", key = "'count_vigentes'")
     public Long contarContratosVigentes() {
         return contratoRepository.countContratosVigentes();
     }
 
-    // Obtener contratos que vencen próximamente
+    /**
+     * Obtiene los contratos vigentes que vencen dentro de un período determinado
+     * 
+     * Útil para alertas y notificaciones de vencimientos próximos
+     * 
+     * @param diasAntes Número de días hacia adelante para buscar vencimientos
+     * @return Lista de contratos próximos a vencer
+     */
     @Cacheable(value = "contratos-por-vencer", key = "'proximos_' + #diasAntes")
     public List<ContratoDTO> obtenerContratosProximosAVencer(int diasAntes) {
-        // Calcular fecha actual y fecha límite como strings en formato ISO
         String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        List<Contrato> contratos = contratoRepository.findContratosVigentesProximosAVencer(fechaActual, fechaLimite);
+        
+        List<Contrato> contratos = contratoRepository.findContratosVigentesProximosAVencer(
+            fechaActual, 
+            fechaLimite
+        );
+        
         return contratos.stream()
                 .map(this::enrichContratoDTO)
                 .collect(Collectors.toList());
     }
 
-    // Contar contratos próximos a vencer
+    /**
+     * Cuenta los contratos vigentes que vencen dentro de un período determinado
+     * 
+     * @param diasAntes Número de días hacia adelante para buscar vencimientos
+     * @return Cantidad de contratos próximos a vencer
+     */
     @Cacheable(value = "contratos-por-vencer", key = "'count_proximos_' + #diasAntes")
     public Long contarContratosProximosAVencer(int diasAntes) {
-        // Calcular fecha actual y fecha límite como strings en formato ISO
         String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        
         return contratoRepository.countContratosVigentesProximosAVencer(fechaActual, fechaLimite);
     }
 
-    // Crear nuevo contrato
+    /**
+     * Crea un nuevo contrato en el sistema
+     * 
+     * Este método realiza las siguientes operaciones:
+     * 1. Valida que existan el inmueble e inquilino
+     * 2. Verifica que el inmueble esté disponible
+     * 3. Procesa y valida las fechas del contrato
+     * 4. Calcula la fecha de primer aumento
+     * 5. Crea el contrato y actualiza estados de inmueble e inquilino
+     * 6. Genera el primer alquiler si el contrato queda vigente
+     * 
+     * @param contratoDTO DTO con los datos del contrato a crear
+     * @return ContratoDTO del contrato creado con información completa
+     * @throws BusinessException si hay errores de validación
+     */
     @Transactional
     @CacheEvict(value = "contratos", allEntries = true)
     public ContratoDTO crearContrato(ContratoCreateDTO contratoDTO) {
-        // ===== OPTIMIZACIÓN: Fetch todas las entidades necesarias en una sola operación =====
-        // Validar que existe el inmueble
-        Optional<Inmueble> inmueble = inmuebleRepository.findById(contratoDTO.getInmuebleId());
-        if (!inmueble.isPresent()) {
-            throw new BusinessException(ErrorCodes.INMUEBLE_NO_ENCONTRADO, "No existe el inmueble indicado", HttpStatus.BAD_REQUEST);
-        }
-
-        // Validar que existe el inquilino
-        Optional<Inquilino> inquilino = inquilinoRepository.findById(contratoDTO.getInquilinoId());
-        if (!inquilino.isPresent()) {
-            throw new BusinessException(ErrorCodes.INQUILINO_NO_ENCONTRADO, "No existe el inquilino indicado", HttpStatus.BAD_REQUEST);
-        }
-
-        // Validar que el inmueble no tenga un contrato vigente
-        if (contratoRepository.existsContratoVigenteByInmueble(inmueble.get())) {
-            throw new BusinessException(ErrorCodes.INMUEBLE_YA_ALQUILADO, "El inmueble ya tiene un contrato vigente", HttpStatus.BAD_REQUEST);
-        }
-
-        // Validar o asignar estado de contrato
-        EstadoContrato estadoContrato;
-        if (contratoDTO.getEstadoContratoId() != null) {
-            // Si se proporciona un estado, validar que existe
-            Optional<EstadoContrato> estadoContratoOpt = estadoContratoRepository.findById(contratoDTO.getEstadoContratoId());
-            if (!estadoContratoOpt.isPresent()) {
-                throw new BusinessException(ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, "No existe el estado de contrato indicado", HttpStatus.BAD_REQUEST);
-            }
-            estadoContrato = estadoContratoOpt.get();
-        } else {
-            // Si no se proporciona estado, asignar "Vigente" por defecto
-            Optional<EstadoContrato> estadoVigenteOpt = estadoContratoRepository.findByNombre("Vigente");
-            if (!estadoVigenteOpt.isPresent()) {
-                throw new BusinessException(ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, "No se pudo asignar el estado por defecto", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-            estadoContrato = estadoVigenteOpt.get();
-        }
-
-        // ===== OPTIMIZACIÓN: Buscar estado "Alquilado" de una vez =====
-        EstadoInmueble estadoAlquilado = null;
+        // Paso 1: Validar entidades relacionadas
+        Inmueble inmueble = validarYObtenerInmueble(contratoDTO.getInmuebleId());
+        Inquilino inquilino = validarYObtenerInquilino(contratoDTO.getInquilinoId());
+        
+        // Paso 2: Validar disponibilidad del inmueble
+        validarDisponibilidadInmueble(inmueble);
+        
+        // Paso 3: Obtener o asignar estado del contrato
+        EstadoContrato estadoContrato = obtenerEstadoContrato(contratoDTO.getEstadoContratoId());
+        
+        // Paso 4: Pre-cargar estado "Alquilado" si será necesario
+        EstadoInmueble estadoAlquilado = precargarEstadoAlquilado(estadoContrato);
+        
+        // Paso 5: Procesar y validar fechas del contrato
+        FechasContrato fechas = procesarYValidarFechas(contratoDTO);
+        
+        // Paso 6: Crear y guardar el contrato
+        Contrato contratoGuardado = crearYGuardarContrato(
+            contratoDTO, 
+            inmueble, 
+            inquilino, 
+            estadoContrato, 
+            fechas
+        );
+        
+        // Paso 7: Actualizar estados si el contrato queda vigente
         if ("Vigente".equals(estadoContrato.getNombre())) {
-            Optional<EstadoInmueble> estadoAlquiladoOpt = estadoInmuebleRepository.findByNombre("Alquilado");
-            if (estadoAlquiladoOpt.isPresent()) {
-                estadoAlquilado = estadoAlquiladoOpt.get();
-            }
+            actualizarEstadosParaContratoVigente(contratoGuardado, inmueble, inquilino, estadoAlquilado);
+            generarPrimerAlquiler(contratoGuardado);
         }
-
-        // Validar y convertir fechas del formato del usuario (dd/MM/yyyy) al formato ISO (yyyy-MM-dd)
-        String fechaInicioISO = null;
-        String fechaFinISO = null;
-
-        try {
-            if (contratoDTO.getFechaInicio() != null) {
-                if (!FechaUtil.esFechaValidaUsuario(contratoDTO.getFechaInicio())) {
-                    throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO,
-                        "Formato de fecha de inicio inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
-                }
-                fechaInicioISO = FechaUtil.convertirFechaUsuarioToISODate(contratoDTO.getFechaInicio());
-            }
-
-            if (contratoDTO.getFechaFin() != null) {
-                if (!FechaUtil.esFechaValidaUsuario(contratoDTO.getFechaFin())) {
-                    throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO,
-                        "Formato de fecha de fin inválido. Use dd/MM/yyyy (ej: 25/12/2024)", HttpStatus.BAD_REQUEST);
-                }
-                fechaFinISO = FechaUtil.convertirFechaUsuarioToISODate(contratoDTO.getFechaFin());
-            }
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException(ErrorCodes.FORMATO_FECHA_INVALIDO, e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-        // Validar fechas lógicas usando las fechas convertidas
-        String fechaActualISO = LocalDate.now().toString(); // Formato yyyy-MM-dd
-
-        if (fechaInicioISO != null && fechaFinISO != null) {
-            if (FechaUtil.compararFechas(fechaFinISO, fechaInicioISO) < 0) {
-                throw new BusinessException(ErrorCodes.RANGO_DE_FECHAS_INVALIDO, "La fecha de fin no puede ser anterior a la fecha de inicio", HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        // Validar que la fecha de fin no sea anterior a la fecha actual
-        if (fechaFinISO != null) {
-            if (FechaUtil.compararFechas(fechaFinISO, fechaActualISO) < 0) {
-                throw new BusinessException(ErrorCodes.RANGO_DE_FECHAS_INVALIDO,
-                    "La fecha de fin no puede ser anterior a la fecha actual", HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        // Calcular fecha de aumento usando las fechas en formato ISO
-        String fechaAumentoCalculada = null;
-        if (fechaInicioISO != null && contratoDTO.getPeriodoAumento() != null && contratoDTO.getPeriodoAumento() > 0) {
-            try {
-                String fechaCalculada = FechaUtil.agregarMesesDate(fechaInicioISO, contratoDTO.getPeriodoAumento());
-
-                // Convertir a día 1 del mes calculado
-                // Ejemplo: 2025-06-20 → 2025-06-01
-                LocalDate fecha = LocalDate.parse(fechaCalculada, DateTimeFormatter.ISO_LOCAL_DATE);
-                LocalDate fechaDia1 = fecha.withDayOfMonth(1);
-                fechaAumentoCalculada = fechaDia1.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-                // Validar que la fechaAumento no sea mayor a la fechaFin
-                if (fechaFinISO != null && FechaUtil.compararFechas(fechaAumentoCalculada, fechaFinISO) > 0) {
-                    fechaAumentoCalculada = "No aumenta más";
-                }
-            } catch (IllegalArgumentException e) {
-                throw new BusinessException(ErrorCodes.ERROR_CALCULO_FECHA, "Error calculando fecha de aumento: " + e.getMessage(), HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        // Crear el contrato con las fechas en formato ISO
-        Contrato contrato = new Contrato();
-        contrato.setInmueble(inmueble.get());
-        contrato.setInquilino(inquilino.get());
-        contrato.setFechaInicio(fechaInicioISO);
-        contrato.setFechaFin(fechaFinISO);
-        contrato.setMonto(contratoDTO.getMonto());
-        contrato.setPorcentajeAumento(contratoDTO.getPorcentajeAumento());
-        contrato.setEstadoContrato(estadoContrato);
-        contrato.setAumentaConIcl(contratoDTO.getAumentaConIcl() != null ? contratoDTO.getAumentaConIcl() : false);
-        contrato.setPorcentajeHonorario(contratoDTO.getPorcentajeHonorario() != null ? contratoDTO.getPorcentajeHonorario() : new BigDecimal("10"));
-        contrato.setPeriodoAumento(contratoDTO.getPeriodoAumento());
-        contrato.setFechaAumento(fechaAumentoCalculada);
-
-        // Guardar el contrato
-        Contrato contratoGuardado = contratoRepository.save(contrato);
-
-        // ===== OPTIMIZACIÓN: Actualizar inmueble e inquilino en la misma transacción =====
-        if ("Vigente".equals(estadoContrato.getNombre())) {
-            // Actualizar el estado del inmueble a "Alquilado"
-            if (estadoAlquilado != null) {
-                Inmueble inmuebleToUpdate = inmueble.get();
-                inmuebleToUpdate.setEstado(estadoAlquilado.getId());
-                inmuebleToUpdate.setEsAlquilado(true);
-                inmuebleRepository.save(inmuebleToUpdate);
-            }
-
-            // Actualizar estaAlquilando del inquilino
-            Inquilino inquilinoToUpdate = inquilino.get();
-            inquilinoToUpdate.setEstaAlquilando(true);
-            inquilinoRepository.save(inquilinoToUpdate);
-
-            // ===== OPTIMIZACIÓN: Crear alquiler en la misma transacción =====
-            try {
-                LocalDate fechaActual = LocalDate.now();
-                LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
-                String fechaVencimientoISO = fechaVencimiento.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-                com.alquileres.model.Alquiler nuevoAlquiler = new com.alquileres.model.Alquiler(
-                    contratoGuardado,
-                    fechaVencimientoISO,
-                    contratoGuardado.getMonto()
-                );
-                nuevoAlquiler.setEsActivo(true);
-                alquilerRepository.save(nuevoAlquiler);
-
-                logger.info("Alquiler generado automáticamente para el nuevo contrato ID: {} - Monto: {}",
-                           contratoGuardado.getId(), contratoGuardado.getMonto());
-            } catch (Exception e) {
-                logger.error("Error al generar alquiler para el nuevo contrato ID {}: {}",
-                           contratoGuardado.getId(), e.getMessage());
-                // No lanzamos la excepción para no afectar la creación del contrato
-            }
-        }
-
+        
         return enrichContratoDTO(contratoGuardado);
     }
 
+    /**
+     * Valida que el inmueble exista y lo retorna
+     * 
+     * @param inmuebleId ID del inmueble a validar
+     * @return Inmueble encontrado
+     * @throws BusinessException si el inmueble no existe
+     */
+    private Inmueble validarYObtenerInmueble(Long inmuebleId) {
+        return inmuebleRepository.findById(inmuebleId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.INMUEBLE_NO_ENCONTRADO, 
+                "No existe el inmueble indicado", 
+                HttpStatus.BAD_REQUEST
+            ));
+    }
 
-    // Cambiar estado del contrato
+    /**
+     * Valida que el inquilino exista y lo retorna
+     * 
+     * @param inquilinoId ID del inquilino a validar
+     * @return Inquilino encontrado
+     * @throws BusinessException si el inquilino no existe
+     */
+    private Inquilino validarYObtenerInquilino(Long inquilinoId) {
+        return inquilinoRepository.findById(inquilinoId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.INQUILINO_NO_ENCONTRADO, 
+                "No existe el inquilino indicado", 
+                HttpStatus.BAD_REQUEST
+            ));
+    }
+
+    /**
+     * Valida que el inmueble no tenga un contrato vigente
+     * 
+     * @param inmueble Inmueble a validar
+     * @throws BusinessException si el inmueble ya está alquilado
+     */
+    private void validarDisponibilidadInmueble(Inmueble inmueble) {
+        if (contratoRepository.existsContratoVigenteByInmueble(inmueble)) {
+            throw new BusinessException(
+                ErrorCodes.INMUEBLE_YA_ALQUILADO, 
+                "El inmueble ya tiene un contrato vigente", 
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Obtiene el estado del contrato especificado o asigna "Vigente" por defecto
+     * 
+     * @param estadoContratoId ID del estado (puede ser null para usar defecto)
+     * @return EstadoContrato a asignar al contrato
+     * @throws BusinessException si el estado especificado no existe
+     */
+    private EstadoContrato obtenerEstadoContrato(Integer estadoContratoId) {
+        if (estadoContratoId != null) {
+            return estadoContratoRepository.findById(estadoContratoId)
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, 
+                    "No existe el estado de contrato indicado", 
+                    HttpStatus.BAD_REQUEST
+                ));
+        }
+        
+        // Si no se proporciona estado, asignar "Vigente" por defecto
+        return estadoContratoRepository.findByNombre("Vigente")
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, 
+                "No se pudo asignar el estado por defecto", 
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ));
+    }
+
+    /**
+     * Pre-carga el estado "Alquilado" si será necesario para optimizar
+     * 
+     * @param estadoContrato Estado del contrato que se está creando
+     * @return EstadoInmueble "Alquilado" o null si no es necesario
+     */
+    private EstadoInmueble precargarEstadoAlquilado(EstadoContrato estadoContrato) {
+        if ("Vigente".equals(estadoContrato.getNombre())) {
+            return estadoInmuebleRepository.findByNombre("Alquilado").orElse(null);
+        }
+        return null;
+    }
+
+    /**
+     * Procesa y valida todas las fechas del contrato
+     * 
+     * Convierte fechas del formato usuario (dd/MM/yyyy) a formato ISO (yyyy-MM-dd)
+     * y realiza todas las validaciones lógicas necesarias
+     * 
+     * @param contratoDTO DTO con las fechas en formato usuario
+     * @return FechasContrato con fechas validadas en formato ISO
+     * @throws BusinessException si las fechas son inválidas
+     */
+    private FechasContrato procesarYValidarFechas(ContratoCreateDTO contratoDTO) {
+        // Convertir fechas del usuario a formato ISO
+        String fechaInicioISO = convertirYValidarFecha(
+            contratoDTO.getFechaInicio(), 
+            "fecha de inicio"
+        );
+        String fechaFinISO = convertirYValidarFecha(
+            contratoDTO.getFechaFin(), 
+            "fecha de fin"
+        );
+        
+        // Validar lógica de fechas
+        validarLogicaFechas(fechaInicioISO, fechaFinISO);
+        
+        // Calcular fecha de primer aumento
+        String fechaAumentoCalculada = calcularFechaAumento(
+            fechaInicioISO, 
+            fechaFinISO, 
+            contratoDTO.getPeriodoAumento()
+        );
+        
+        return new FechasContrato(fechaInicioISO, fechaFinISO, fechaAumentoCalculada);
+    }
+
+    /**
+     * Convierte y valida una fecha del formato usuario a formato ISO
+     * 
+     * @param fechaUsuario Fecha en formato dd/MM/yyyy
+     * @param nombreCampo Nombre del campo para mensajes de error
+     * @return Fecha en formato ISO (yyyy-MM-dd) o null si no se proporcionó
+     * @throws BusinessException si el formato es inválido
+     */
+    private String convertirYValidarFecha(String fechaUsuario, String nombreCampo) {
+        if (fechaUsuario == null) {
+            return null;
+        }
+        
+        if (!FechaUtil.esFechaValidaUsuario(fechaUsuario)) {
+            throw new BusinessException(
+                ErrorCodes.FORMATO_FECHA_INVALIDO,
+                "Formato de " + nombreCampo + " inválido. Use dd/MM/yyyy (ej: 25/12/2024)", 
+                HttpStatus.BAD_REQUEST
+            );
+        }
+        
+        try {
+            return FechaUtil.convertirFechaUsuarioToISODate(fechaUsuario);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(
+                ErrorCodes.FORMATO_FECHA_INVALIDO, 
+                e.getMessage(), 
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Valida la lógica de las fechas del contrato
+     * 
+     * Verifica que:
+     * - La fecha fin no sea anterior a la fecha inicio
+     * - La fecha fin no sea anterior a la fecha actual
+     * 
+     * @param fechaInicioISO Fecha de inicio en formato ISO
+     * @param fechaFinISO Fecha de fin en formato ISO
+     * @throws BusinessException si las fechas no cumplen las reglas
+     */
+    private void validarLogicaFechas(String fechaInicioISO, String fechaFinISO) {
+        String fechaActualISO = LocalDate.now().toString();
+        
+        // Validar que fecha fin no sea anterior a fecha inicio
+        if (fechaInicioISO != null && fechaFinISO != null) {
+            if (FechaUtil.compararFechas(fechaFinISO, fechaInicioISO) < 0) {
+                throw new BusinessException(
+                    ErrorCodes.RANGO_DE_FECHAS_INVALIDO, 
+                    "La fecha de fin no puede ser anterior a la fecha de inicio", 
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+        }
+        
+        // Validar que fecha fin no sea anterior a fecha actual
+        if (fechaFinISO != null && FechaUtil.compararFechas(fechaFinISO, fechaActualISO) < 0) {
+            throw new BusinessException(
+                ErrorCodes.RANGO_DE_FECHAS_INVALIDO,
+                "La fecha de fin no puede ser anterior a la fecha actual", 
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Calcula la fecha del primer aumento del contrato
+     * 
+     * La fecha de aumento se calcula sumando el período de aumento (en meses)
+     * a la fecha de inicio y ajustándola al día 1 del mes resultante
+     * 
+     * @param fechaInicioISO Fecha de inicio en formato ISO
+     * @param fechaFinISO Fecha de fin en formato ISO
+     * @param periodoAumento Período de aumento en meses
+     * @return Fecha de aumento calculada o "No aumenta más" si excede la fecha fin
+     */
+    private String calcularFechaAumento(String fechaInicioISO, String fechaFinISO, Integer periodoAumento) {
+        if (fechaInicioISO == null || periodoAumento == null || periodoAumento <= 0) {
+            return null;
+        }
+        
+        try {
+            String fechaCalculada = FechaUtil.agregarMesesDate(fechaInicioISO, periodoAumento);
+            
+            // Convertir al día 1 del mes calculado (ej: 2025-06-20 → 2025-06-01)
+            LocalDate fecha = LocalDate.parse(fechaCalculada, DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate fechaDia1 = fecha.withDayOfMonth(1);
+            String fechaAumentoCalculada = fechaDia1.format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
+            // Validar que la fecha de aumento no supere la fecha fin
+            if (fechaFinISO != null && FechaUtil.compararFechas(fechaAumentoCalculada, fechaFinISO) > 0) {
+                return "No aumenta más";
+            }
+            
+            return fechaAumentoCalculada;
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(
+                ErrorCodes.ERROR_CALCULO_FECHA, 
+                "Error calculando fecha de aumento: " + e.getMessage(), 
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Crea y guarda el objeto Contrato con todos sus datos
+     * 
+     * @param contratoDTO DTO con los datos del contrato
+     * @param inmueble Inmueble asociado al contrato
+     * @param inquilino Inquilino asociado al contrato
+     * @param estadoContrato Estado del contrato
+     * @param fechas Objeto con las fechas procesadas del contrato
+     * @return Contrato guardado en la base de datos
+     */
+    private Contrato crearYGuardarContrato(
+            ContratoCreateDTO contratoDTO,
+            Inmueble inmueble,
+            Inquilino inquilino,
+            EstadoContrato estadoContrato,
+            FechasContrato fechas) {
+        
+        Contrato contrato = new Contrato();
+        contrato.setInmueble(inmueble);
+        contrato.setInquilino(inquilino);
+        contrato.setFechaInicio(fechas.fechaInicio);
+        contrato.setFechaFin(fechas.fechaFin);
+        contrato.setMonto(contratoDTO.getMonto());
+        contrato.setPorcentajeAumento(contratoDTO.getPorcentajeAumento());
+        contrato.setEstadoContrato(estadoContrato);
+        contrato.setAumentaConIcl(
+            contratoDTO.getAumentaConIcl() != null ? contratoDTO.getAumentaConIcl() : false
+        );
+        contrato.setPorcentajeHonorario(
+            contratoDTO.getPorcentajeHonorario() != null 
+                ? contratoDTO.getPorcentajeHonorario() 
+                : new BigDecimal("10")
+        );
+        contrato.setPeriodoAumento(contratoDTO.getPeriodoAumento());
+        contrato.setFechaAumento(fechas.fechaAumento);
+        
+        return contratoRepository.save(contrato);
+    }
+
+    /**
+     * Actualiza los estados del inmueble e inquilino para un contrato vigente
+     * 
+     * Marca el inmueble como "Alquilado" y el inquilino como "Alquilando"
+     * 
+     * @param contrato Contrato que se está creando
+     * @param inmueble Inmueble a actualizar
+     * @param inquilino Inquilino a actualizar
+     * @param estadoAlquilado Estado "Alquilado" pre-cargado
+     */
+    private void actualizarEstadosParaContratoVigente(
+            Contrato contrato,
+            Inmueble inmueble,
+            Inquilino inquilino,
+            EstadoInmueble estadoAlquilado) {
+        
+        // Actualizar estado del inmueble a "Alquilado"
+        if (estadoAlquilado != null) {
+            inmueble.setEstado(estadoAlquilado.getId());
+            inmueble.setEsAlquilado(true);
+            inmuebleRepository.save(inmueble);
+        }
+        
+        // Actualizar inquilino como "Alquilando"
+        inquilino.setEstaAlquilando(true);
+        inquilinoRepository.save(inquilino);
+    }
+
+    /**
+     * Genera el primer alquiler para un nuevo contrato vigente
+     * 
+     * El alquiler se genera con vencimiento el día 10 del mes actual
+     * 
+     * @param contrato Contrato para el cual generar el alquiler
+     */
+    private void generarPrimerAlquiler(Contrato contrato) {
+        try {
+            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaVencimiento = LocalDate.of(
+                fechaActual.getYear(), 
+                fechaActual.getMonth(), 
+                10
+            );
+            String fechaVencimientoISO = fechaVencimiento.format(DateTimeFormatter.ISO_LOCAL_DATE);
+            
+            com.alquileres.model.Alquiler nuevoAlquiler = new com.alquileres.model.Alquiler(
+                contrato,
+                fechaVencimientoISO,
+                contrato.getMonto()
+            );
+            nuevoAlquiler.setEsActivo(true);
+            alquilerRepository.save(nuevoAlquiler);
+            
+            logger.info("Alquiler generado automáticamente para el nuevo contrato ID: {} - Monto: {}",
+                contrato.getId(), contrato.getMonto());
+        } catch (Exception e) {
+            logger.error("Error al generar alquiler para el nuevo contrato ID {}: {}",
+                contrato.getId(), e.getMessage());
+            // No lanzamos la excepción para no afectar la creación del contrato
+        }
+    }
+
+    /**
+     * Clase interna para encapsular las fechas procesadas del contrato
+     */
+    private static class FechasContrato {
+        final String fechaInicio;
+        final String fechaFin;
+        final String fechaAumento;
+        
+        FechasContrato(String fechaInicio, String fechaFin, String fechaAumento) {
+            this.fechaInicio = fechaInicio;
+            this.fechaFin = fechaFin;
+            this.fechaAumento = fechaAumento;
+        }
+    }
+
+    /**
+     * Cambia el estado de un contrato existente
+     * 
+     * Permite terminar, cancelar o reactivar un contrato.
+     * Actualiza automáticamente los estados de inmueble, inquilino, alquileres y servicios.
+     * 
+     * @param id ID del contrato a modificar
+     * @param estadoContratoUpdateDTO DTO con el nuevo estado y datos adicionales
+     * @return ContratoDTO con el contrato actualizado
+     * @throws BusinessException si el contrato no existe o el cambio no es válido
+     */
     @CacheEvict(value = {"contratos", "contratos-por-vencer"}, allEntries = true)
     public ContratoDTO terminarContrato(Long id, EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
-        // Verificar que existe el contrato
-        Optional<Contrato> contratoExistente = contratoRepository.findById(id);
-        if (!contratoExistente.isPresent()) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO, "Contrato no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
-        }
-
-        // Verificar que existe el estado de contrato
-        Optional<EstadoContrato> estadoContrato = estadoContratoRepository.findById(estadoContratoUpdateDTO.getEstadoContratoId());
-        if (!estadoContrato.isPresent()) {
-            throw new BusinessException(ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, "No existe el estado de contrato indicado", HttpStatus.BAD_REQUEST);
-        }
-
-        Contrato contrato = contratoExistente.get();
+        // Validar existencia del contrato y nuevo estado
+        Contrato contrato = contratoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO, 
+                "Contrato no encontrado con ID: " + id, 
+                HttpStatus.NOT_FOUND
+            ));
+        
+        EstadoContrato nuevoEstado = estadoContratoRepository.findById(
+                estadoContratoUpdateDTO.getEstadoContratoId())
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.ESTADO_CONTRATO_NO_ENCONTRADO, 
+                "No existe el estado de contrato indicado", 
+                HttpStatus.BAD_REQUEST
+            ));
+        
         String estadoAnterior = contrato.getEstadoContrato().getNombre();
-        String nombreEstadoContrato = estadoContrato.get().getNombre();
-
-        // Validar que el inmueble esté disponible si se quiere cambiar a un estado que no sea terminar
-        if ("Vigente".equals(nombreEstadoContrato)) {
-            // Si se quiere poner el contrato como "Vigente", validar que el inmueble esté disponible
-            Inmueble inmueble = contrato.getInmueble();
-            Optional<EstadoInmueble> estadoInmuebleActual = estadoInmuebleRepository.findById(inmueble.getEstado());
-
-            if (estadoInmuebleActual.isPresent() && !"Disponible".equals(estadoInmuebleActual.get().getNombre())) {
-                throw new BusinessException(ErrorCodes.INMUEBLE_NO_DISPONIBLE,
-                    "No se puede activar el contrato porque el inmueble no está disponible. Estado actual: " + estadoInmuebleActual.get().getNombre(),
-                    HttpStatus.BAD_REQUEST);
-            }
-        }
-
+        String nombreNuevoEstado = nuevoEstado.getNombre();
+        
+        // Validar que el cambio de estado es posible
+        validarCambioEstadoContrato(contrato, nombreNuevoEstado);
+        
         // Actualizar el estado del contrato
-        contrato.setEstadoContrato(estadoContrato.get());
-
-        // Verificar si el nuevo estado requiere actualizar el inmueble
-        if ("No Vigente".equals(nombreEstadoContrato) || "Cancelado".equals(nombreEstadoContrato)) {
-            // Actualizar el estado del inmueble a "Disponible"
-            Optional<EstadoInmueble> estadoDisponible = estadoInmuebleRepository.findByNombre("Disponible");
-            if (estadoDisponible.isPresent()) {
-                Inmueble inmuebleToUpdate = contrato.getInmueble();
-                inmuebleToUpdate.setEstado(estadoDisponible.get().getId());
-                inmuebleToUpdate.setEsAlquilado(false);
-                inmuebleRepository.save(inmuebleToUpdate);
-            }
-
-            // Actualizar estaAlquilando del inquilino a false
-            Inquilino inquilinoToUpdate = contrato.getInquilino();
-            inquilinoToUpdate.setEstaAlquilando(false);
-            inquilinoRepository.save(inquilinoToUpdate);
-
-            // ANULAR TODOS LOS ALQUILERES DEL CONTRATO
-            anularAlquileresDelContrato(id);
-
-            // DESACTIVAR TODOS LOS SERVICIOS DEL CONTRATO
-            desactivarServiciosDelContrato(id);
-        } else if ("Vigente".equals(nombreEstadoContrato)) {
-            // Actualizar el estado del inmueble a "Alquilado"
-            Optional<EstadoInmueble> estadoAlquilado = estadoInmuebleRepository.findByNombre("Alquilado");
-            if (estadoAlquilado.isPresent()) {
-                Inmueble inmuebleToUpdate = contrato.getInmueble();
-                inmuebleToUpdate.setEstado(estadoAlquilado.get().getId());
-                inmuebleToUpdate.setEsAlquilado(true);
-                inmuebleRepository.save(inmuebleToUpdate);
-            }
-
-            // Actualizar estaAlquilando del inquilino a true
-            Inquilino inquilinoToUpdate = contrato.getInquilino();
-            inquilinoToUpdate.setEstaAlquilando(true);
-            inquilinoRepository.save(inquilinoToUpdate);
-        }
-
-        // Si se está cambiando de "Vigente" a "Cancelado", crear registro de cancelación
-        if ("Vigente".equals(estadoAnterior) && "Cancelado".equals(nombreEstadoContrato)) {
-            // Verificar que no exista ya una cancelación para este contrato
-            if (!cancelacionContratoRepository.existsByContratoId(id)) {
-                // Obtener el motivo de cancelación
-                MotivoCancelacion motivoCancelacion;
-                if (estadoContratoUpdateDTO.getMotivoCancelacionId() != null) {
-                    // Si se proporciona un motivo, buscarlo
-                    Optional<MotivoCancelacion> motivoOpt = motivoCancelacionRepository.findById(estadoContratoUpdateDTO.getMotivoCancelacionId());
-                    if (!motivoOpt.isPresent()) {
-                        throw new BusinessException(ErrorCodes.MOTIVO_CANCELACION_NO_ENCONTRADO,
-                            "No existe el motivo de cancelación indicado", HttpStatus.BAD_REQUEST);
-                    }
-                    motivoCancelacion = motivoOpt.get();
-                } else {
-                    // Si no se proporciona motivo, usar "Otro" por defecto
-                    Optional<MotivoCancelacion> motivoOtroOpt = motivoCancelacionRepository.findByNombre("Otro");
-                    if (!motivoOtroOpt.isPresent()) {
-                        throw new BusinessException(ErrorCodes.MOTIVO_CANCELACION_NO_ENCONTRADO,
-                            "No se encontró el motivo de cancelación por defecto", HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
-                    motivoCancelacion = motivoOtroOpt.get();
-                }
-
-                // Crear el objeto de cancelación
-                CancelacionContrato cancelacion = new CancelacionContrato();
-                cancelacion.setContrato(contrato);
-                cancelacion.setFechaCancelacion(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                cancelacion.setMotivoCancelacion(motivoCancelacion);
-
-                // Agregar observaciones si se proporcionaron
-                if (estadoContratoUpdateDTO.getObservaciones() != null && !estadoContratoUpdateDTO.getObservaciones().trim().isEmpty()) {
-                    cancelacion.setObservaciones(estadoContratoUpdateDTO.getObservaciones());
-                }
-
-                // Guardar la cancelación
-                cancelacionContratoRepository.save(cancelacion);
-            }
-        }
-
+        contrato.setEstadoContrato(nuevoEstado);
+        
+        // Aplicar los cambios según el nuevo estado
+        aplicarCambiosPorNuevoEstado(
+            contrato, 
+            estadoAnterior, 
+            nombreNuevoEstado, 
+            estadoContratoUpdateDTO
+        );
+        
         Contrato contratoActualizado = contratoRepository.save(contrato);
         return enrichContratoDTO(contratoActualizado);
     }
 
-    // Verificar si existe un contrato
+    /**
+     * Valida que el cambio de estado solicitado sea posible
+     * 
+     * @param contrato Contrato a modificar
+     * @param nombreNuevoEstado Nombre del nuevo estado
+     * @throws BusinessException si el cambio no es válido
+     */
+    private void validarCambioEstadoContrato(Contrato contrato, String nombreNuevoEstado) {
+        // Si se quiere activar el contrato, validar que el inmueble esté disponible
+        if ("Vigente".equals(nombreNuevoEstado)) {
+            Inmueble inmueble = contrato.getInmueble();
+            Optional<EstadoInmueble> estadoInmuebleActual = 
+                estadoInmuebleRepository.findById(inmueble.getEstado());
+            
+            if (estadoInmuebleActual.isPresent() && 
+                !"Disponible".equals(estadoInmuebleActual.get().getNombre())) {
+                throw new BusinessException(
+                    ErrorCodes.INMUEBLE_NO_DISPONIBLE,
+                    "No se puede activar el contrato porque el inmueble no está disponible. " +
+                    "Estado actual: " + estadoInmuebleActual.get().getNombre(),
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+        }
+    }
+
+    /**
+     * Aplica los cambios necesarios según el nuevo estado del contrato
+     * 
+     * @param contrato Contrato que se está modificando
+     * @param estadoAnterior Nombre del estado anterior
+     * @param nombreNuevoEstado Nombre del nuevo estado
+     * @param estadoContratoUpdateDTO DTO con información adicional
+     */
+    private void aplicarCambiosPorNuevoEstado(
+            Contrato contrato,
+            String estadoAnterior,
+            String nombreNuevoEstado,
+            EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
+        
+        if ("No Vigente".equals(nombreNuevoEstado) || "Cancelado".equals(nombreNuevoEstado)) {
+            // Contrato se está terminando o cancelando
+            finalizarContrato(contrato);
+            
+            // Si cambió de Vigente a Cancelado, crear registro de cancelación
+            if ("Vigente".equals(estadoAnterior) && "Cancelado".equals(nombreNuevoEstado)) {
+                crearRegistroCancelacion(contrato, estadoContratoUpdateDTO);
+            }
+        } else if ("Vigente".equals(nombreNuevoEstado)) {
+            // Contrato se está activando/reactivando
+            activarContrato(contrato);
+        }
+    }
+
+    /**
+     * Finaliza un contrato actualizando todos los elementos relacionados
+     * 
+     * - Marca el inmueble como disponible
+     * - Marca el inquilino como no alquilando
+     * - Anula todos los alquileres del contrato
+     * - Desactiva todos los servicios del contrato
+     * 
+     * @param contrato Contrato a finalizar
+     */
+    private void finalizarContrato(Contrato contrato) {
+        // Actualizar estado del inmueble a "Disponible"
+        Optional<EstadoInmueble> estadoDisponible = 
+            estadoInmuebleRepository.findByNombre("Disponible");
+        
+        if (estadoDisponible.isPresent()) {
+            Inmueble inmueble = contrato.getInmueble();
+            inmueble.setEstado(estadoDisponible.get().getId());
+            inmueble.setEsAlquilado(false);
+            inmuebleRepository.save(inmueble);
+        }
+        
+        // Actualizar inquilino como no alquilando
+        Inquilino inquilino = contrato.getInquilino();
+        inquilino.setEstaAlquilando(false);
+        inquilinoRepository.save(inquilino);
+        
+        // Anular todos los alquileres del contrato
+        anularAlquileresDelContrato(contrato.getId());
+        
+        // Desactivar todos los servicios del contrato
+        desactivarServiciosDelContrato(contrato.getId());
+    }
+
+    /**
+     * Activa un contrato actualizando todos los elementos relacionados
+     * 
+     * - Marca el inmueble como alquilado
+     * - Marca el inquilino como alquilando
+     * 
+     * @param contrato Contrato a activar
+     */
+    private void activarContrato(Contrato contrato) {
+        // Actualizar estado del inmueble a "Alquilado"
+        Optional<EstadoInmueble> estadoAlquilado = 
+            estadoInmuebleRepository.findByNombre("Alquilado");
+        
+        if (estadoAlquilado.isPresent()) {
+            Inmueble inmueble = contrato.getInmueble();
+            inmueble.setEstado(estadoAlquilado.get().getId());
+            inmueble.setEsAlquilado(true);
+            inmuebleRepository.save(inmueble);
+        }
+        
+        // Actualizar inquilino como alquilando
+        Inquilino inquilino = contrato.getInquilino();
+        inquilino.setEstaAlquilando(true);
+        inquilinoRepository.save(inquilino);
+    }
+
+    /**
+     * Crea un registro de cancelación cuando un contrato vigente se cancela
+     * 
+     * @param contrato Contrato que se está cancelando
+     * @param estadoContratoUpdateDTO DTO con motivo y observaciones de la cancelación
+     */
+    private void crearRegistroCancelacion(
+            Contrato contrato, 
+            EstadoContratoUpdateDTO estadoContratoUpdateDTO) {
+        
+        // Verificar que no exista ya una cancelación
+        if (cancelacionContratoRepository.existsByContratoId(contrato.getId())) {
+            return;
+        }
+        
+        // Obtener el motivo de cancelación
+        MotivoCancelacion motivoCancelacion = obtenerMotivoCancelacion(
+            estadoContratoUpdateDTO.getMotivoCancelacionId()
+        );
+        
+        // Crear el registro de cancelación
+        CancelacionContrato cancelacion = new CancelacionContrato();
+        cancelacion.setContrato(contrato);
+        cancelacion.setFechaCancelacion(
+            LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
+        cancelacion.setMotivoCancelacion(motivoCancelacion);
+        
+        // Agregar observaciones si se proporcionaron
+        if (estadoContratoUpdateDTO.getObservaciones() != null && 
+            !estadoContratoUpdateDTO.getObservaciones().trim().isEmpty()) {
+            cancelacion.setObservaciones(estadoContratoUpdateDTO.getObservaciones());
+        }
+        
+        cancelacionContratoRepository.save(cancelacion);
+    }
+
+    /**
+     * Obtiene el motivo de cancelación o retorna "Otro" por defecto
+     * 
+     * @param motivoCancelacionId ID del motivo (puede ser null)
+     * @return MotivoCancelacion correspondiente
+     * @throws BusinessException si el motivo especificado no existe
+     */
+    private MotivoCancelacion obtenerMotivoCancelacion(Integer motivoCancelacionId) {
+        if (motivoCancelacionId != null) {
+            return motivoCancelacionRepository.findById(motivoCancelacionId)
+                .orElseThrow(() -> new BusinessException(
+                    ErrorCodes.MOTIVO_CANCELACION_NO_ENCONTRADO,
+                    "No existe el motivo de cancelación indicado", 
+                    HttpStatus.BAD_REQUEST
+                ));
+        }
+        
+        // Si no se proporciona motivo, usar "Otro" por defecto
+        return motivoCancelacionRepository.findByNombre("Otro")
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.MOTIVO_CANCELACION_NO_ENCONTRADO,
+                "No se encontró el motivo de cancelación por defecto", 
+                HttpStatus.INTERNAL_SERVER_ERROR
+            ));
+    }
+
+    /**
+     * Verifica si existe un contrato con el ID especificado
+     * 
+     * @param id ID del contrato a verificar
+     * @return true si el contrato existe, false en caso contrario
+     */
     public boolean existeContrato(Long id) {
         return contratoRepository.existsById(id);
     }
 
-    // Verificar si un inmueble tiene un contrato vigente
+    /**
+     * Verifica si un inmueble tiene un contrato vigente
+     * 
+     * @param inmuebleId ID del inmueble a verificar
+     * @return true si el inmueble tiene un contrato vigente, false en caso contrario
+     */
     public boolean inmuebleTieneContratoVigente(Long inmuebleId) {
         return contratoRepository.existsContratoVigenteByInmuebleId(inmuebleId);
     }
 
-    // Guardar PDF en un contrato
+    /**
+     * Guarda un PDF asociado a un contrato
+     * 
+     * @param id ID del contrato
+     * @param pdfBytes Contenido del PDF en bytes
+     * @param nombreArchivo Nombre del archivo PDF
+     * @return ContratoDTO con el PDF guardado
+     * @throws BusinessException si el contrato no existe
+     */
     public ContratoDTO guardarPdf(Long id, byte[] pdfBytes, String nombreArchivo) throws Exception {
-        Optional<Contrato> contrato = contratoRepository.findById(id);
-        if (!contrato.isPresent()) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO,
-                "Contrato no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
-        }
-
-        Contrato contratoToUpdate = contrato.get();
-
-        // Crear el objeto PDF con los datos
+        Contrato contrato = contratoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "Contrato no encontrado con ID: " + id, 
+                HttpStatus.NOT_FOUND
+            ));
+        
+        // Crear y guardar el PDF
         PDF pdf = new PDF("CONTRATO", pdfBytes, nombreArchivo);
         PDF pdfGuardado = pdfService.guardarPDF(pdf.getAmbito(), pdfBytes, nombreArchivo);
-
+        
         // Asignar el ID del PDF al contrato
-        contratoToUpdate.setIdPDF(pdfGuardado.getId());
-        Contrato contratoActualizado = contratoRepository.save(contratoToUpdate);
-
-        logger.info("PDF guardado exitosamente para contrato ID: {} con PDF ID: {}", id, pdfGuardado.getId());
+        contrato.setIdPDF(pdfGuardado.getId());
+        Contrato contratoActualizado = contratoRepository.save(contrato);
+        
+        logger.info("PDF guardado exitosamente para contrato ID: {} con PDF ID: {}", 
+            id, pdfGuardado.getId());
+        
         return enrichContratoDTO(contratoActualizado);
     }
 
-    // Obtener PDF de un contrato
+    /**
+     * Obtiene el PDF asociado a un contrato
+     * 
+     * @param id ID del contrato
+     * @return Contenido del PDF en bytes
+     * @throws BusinessException si el contrato no existe o no tiene PDF
+     */
     public byte[] obtenerPdf(Long id) {
-        Optional<Contrato> contrato = contratoRepository.findById(id);
-        if (!contrato.isPresent()) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO,
-                "Contrato no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
-        }
-
-        Long idPDF = contrato.get().getIdPDF();
+        Contrato contrato = contratoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "Contrato no encontrado con ID: " + id, 
+                HttpStatus.NOT_FOUND
+            ));
+        
+        Long idPDF = contrato.getIdPDF();
         if (idPDF == null) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO,
-                "El contrato ID " + id + " no tiene un PDF asociado", HttpStatus.NOT_FOUND);
+            throw new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "El contrato ID " + id + " no tiene un PDF asociado", 
+                HttpStatus.NOT_FOUND
+            );
         }
-
+        
         Optional<PDF> pdf = pdfService.obtenerPDF(idPDF);
         if (pdf.isEmpty()) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO,
-                "El PDF asociado al contrato ID " + id + " no existe", HttpStatus.NOT_FOUND);
+            throw new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "El PDF asociado al contrato ID " + id + " no existe", 
+                HttpStatus.NOT_FOUND
+            );
         }
-
+        
         byte[] pdfBytes = pdf.get().getFile();
         if (pdfBytes == null || pdfBytes.length == 0) {
-            throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO,
-                "El PDF del contrato ID " + id + " está vacío", HttpStatus.NOT_FOUND);
+            throw new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "El PDF del contrato ID " + id + " está vacío", 
+                HttpStatus.NOT_FOUND
+            );
         }
-
+        
         logger.info("PDF obtenido para contrato ID: {}", id);
         return pdfBytes;
     }
 
     /**
-     * Anula todos los alquileres asociados a un contrato.
+     * Anula todos los alquileres asociados a un contrato (borrado lógico)
+     * 
      * Se llama cuando el contrato cambia a estado "No Vigente" o "Cancelado"
-     * Implementa borrado lógico (esActivo = false) en lugar de físico
-     *
+     * Los alquileres no se eliminan físicamente, solo se marcan como inactivos
+     * 
      * @param contratoId ID del contrato cuyos alquileres serán anulados
+     * @throws BusinessException si hay un error al desactivar los alquileres
      */
     private void anularAlquileresDelContrato(Long contratoId) {
         try {
-            // Obtener todos los alquileres activos del contrato
-            List<com.alquileres.model.Alquiler> alquileres = alquilerRepository.findByContratoId(contratoId);
-
+            List<com.alquileres.model.Alquiler> alquileres = 
+                alquilerRepository.findByContratoId(contratoId);
+            
             if (alquileres != null && !alquileres.isEmpty()) {
                 // Marcar todos los alquileres como inactivos (borrado lógico)
                 for (com.alquileres.model.Alquiler alquiler : alquileres) {
                     alquiler.setEsActivo(false);
                 }
                 alquilerRepository.saveAll(alquileres);
-                logger.info("Se anularon {} alquileres del contrato ID: {} (borrado lógico)", alquileres.size(), contratoId);
+                
+                logger.info("Se anularon {} alquileres del contrato ID: {} (borrado lógico)", 
+                    alquileres.size(), contratoId);
             } else {
                 logger.info("No hay alquileres para anular en el contrato ID: {}", contratoId);
             }
         } catch (Exception e) {
             logger.error("Error al desactivar servicios del contrato ID: {}", contratoId, e);
-            throw new BusinessException(ErrorCodes.ERROR_INTERNO,
-                "Error al desactivar los servicios del contrato", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new BusinessException(
+                ErrorCodes.ERROR_INTERNO,
+                "Error al desactivar los servicios del contrato", 
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
     /**
      * Desactiva todos los servicios activos asociados a un contrato
-     *
-     * @param contratoId ID del contrato
+     * 
+     * Se llama cuando el contrato cambia a estado "No Vigente" o "Cancelado"
+     * 
+     * @param contratoId ID del contrato cuyos servicios serán desactivados
+     * @throws BusinessException si hay un error al desactivar los servicios
      */
     private void desactivarServiciosDelContrato(Long contratoId) {
         try {
-            // Obtener todos los servicios activos del contrato
-            List<com.alquileres.model.ServicioXContrato> servicios = servicioXContratoService.obtenerServiciosActivosPorContrato(contratoId);
-
+            List<com.alquileres.model.ServicioXContrato> servicios = 
+                servicioXContratoService.obtenerServiciosActivosPorContrato(contratoId);
+            
             if (servicios != null && !servicios.isEmpty()) {
                 // Desactivar todos los servicios
                 for (com.alquileres.model.ServicioXContrato servicio : servicios) {
                     servicioXContratoService.desactivarServicio(servicio.getId());
                 }
-                logger.info("Se desactivaron {} servicios del contrato ID: {}", servicios.size(), contratoId);
+                
+                logger.info("Se desactivaron {} servicios del contrato ID: {}", 
+                    servicios.size(), contratoId);
             } else {
-                logger.info("No hay servicios activos para desactivar en el contrato ID: {}", contratoId);
+                logger.info("No hay servicios activos para desactivar en el contrato ID: {}", 
+                    contratoId);
             }
         } catch (Exception e) {
             logger.error("Error al desactivar servicios del contrato ID: {}", contratoId, e);
-            throw new BusinessException(ErrorCodes.ERROR_INTERNO,
-                "Error al desactivar los servicios del contrato", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new BusinessException(
+                ErrorCodes.ERROR_INTERNO,
+                "Error al desactivar los servicios del contrato", 
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 }
