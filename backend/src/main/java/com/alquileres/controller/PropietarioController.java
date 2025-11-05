@@ -1,14 +1,21 @@
 package com.alquileres.controller;
 
 import com.alquileres.dto.PropietarioDTO;
+import com.alquileres.dto.RevelarClaveFiscalRequest;
 import com.alquileres.service.PropietarioService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/propietarios")
@@ -97,5 +104,34 @@ public class PropietarioController {
     public ResponseEntity<Void> activarPropietario(@PathVariable Long id) {
         propietarioService.activarPropietario(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // POST /api/propietarios/{id}/clave-fiscal/revelar - Revelar clave fiscal con autenticación extra
+    @PostMapping("/{id}/clave-fiscal/revelar")
+    @Operation(summary = "Revelar clave fiscal", description = "Requiere confirmar contraseña del usuario para mayor seguridad")
+    public ResponseEntity<Map<String, String>> revelarClaveFiscal(
+            @PathVariable Long id,
+            @Valid @RequestBody RevelarClaveFiscalRequest request,
+            HttpServletRequest httpRequest) {
+
+        // Obtener usuario autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // Obtener IP del cliente
+        String ipAddress = httpRequest.getRemoteAddr();
+
+        // Revelar clave fiscal (valida contraseña internamente)
+        String claveFiscal = propietarioService.revelarClaveFiscal(
+            id,
+            username,
+            request.getPassword(),
+            ipAddress
+        );
+
+        return ResponseEntity.ok(Map.of(
+            "claveFiscal", claveFiscal,
+            "advertencia", "Esta clave es confidencial. No la compartas."
+        ));
     }
 }

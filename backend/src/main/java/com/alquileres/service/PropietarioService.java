@@ -37,6 +37,12 @@ public class PropietarioService {
     @Autowired
     private EncryptionService encryptionService;
 
+    @Autowired
+    private com.alquileres.repository.UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     // Obtener todos los propietarios
     public List<PropietarioDTO> obtenerTodosLosPropietarios() {
         List<Propietario> propietarios = propietarioRepository.findAll();
@@ -293,19 +299,106 @@ public class PropietarioService {
     }
 
     /**
-     * Método auxiliar para desencriptar la clave fiscal en un DTO
-     * Si ocurre un error, registra el error pero no lanza excepción
+     * Método auxiliar para enmascarar la clave fiscal en un DTO
+     * Muestra solo los últimos 4 caracteres
      *
-     * @param dto El DTO de propietario cuya clave fiscal será desencriptada
+     * @param dto El DTO de propietario cuya clave fiscal será enmascarada
      */
     private void desencriptarClaveFiscal(PropietarioDTO dto) {
         if (dto != null && dto.getClaveFiscal() != null && !dto.getClaveFiscal().trim().isEmpty()) {
             try {
-                dto.setClaveFiscal(encryptionService.desencriptar(dto.getClaveFiscal()));
+                // Desencriptar para obtener la longitud real
+                String claveDesencriptada = encryptionService.desencriptar(dto.getClaveFiscal());
+                int length = claveDesencriptada.length();
+
+                // Enmascarar mostrando solo los últimos 4 caracteres
+                if (length <= 4) {
+                    dto.setClaveFiscal("****");
+                } else {
+                    String ultimosCuatro = claveDesencriptada.substring(length - 4);
+                    dto.setClaveFiscal("*".repeat(length - 4) + ultimosCuatro);
+                }
             } catch (Exception e) {
-                logger.error("Error desencriptando clave fiscal para propietario ID: {}", dto.getId(), e);
+                logger.error("Error procesando clave fiscal para propietario ID: {}", dto.getId(), e);
                 dto.setClaveFiscal(null);
             }
         }
+    }
+
+    /**
+     * Obtiene la clave fiscal desencriptada de un propietario
+     * Este método es SOLO para uso interno del backend
+     *
+     * @param propietarioId ID del propietario
+     * @return Clave fiscal desencriptada
+     * @throws BusinessException si el propietario no existe o no tiene clave fiscal
+     */
+    public String obtenerClaveFiscalDesencriptada(Long propietarioId) {
+        Propietario propietario = propietarioRepository.findById(propietarioId)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.PROPIETARIO_NO_ENCONTRADO,
+                "Propietario no encontrado con ID: " + propietarioId,
+                HttpStatus.NOT_FOUND
+            ));
+
+        if (propietario.getClaveFiscal() == null || propietario.getClaveFiscal().trim().isEmpty()) {
+            throw new BusinessException(
+                ErrorCodes.DATOS_INCOMPLETOS,
+                "El propietario no tiene clave fiscal configurada",
+                HttpStatus.BAD_REQUEST
+            );
+        }
+
+        try {
+            return encryptionService.desencriptar(propietario.getClaveFiscal());
+        } catch (Exception e) {
+            logger.error("Error desencriptando clave fiscal para propietario ID: {}", propietarioId, e);
+            throw new BusinessException(
+                ErrorCodes.ERROR_INTERNO,
+                "Error al procesar la clave fiscal",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
+     * Revela la clave fiscal completa desencriptada
+     * Requiere autenticación del usuario
+     *
+     * @param propietarioId ID del propietario
+     * @param username Usuario que solicita la clave
+     * @param password Contraseña del usuario para validación
+     * @param ipAddress Dirección IP desde donde se hace la solicitud
+     * @return Clave fiscal desencriptada
+     * @throws BusinessException si las credenciales son inválidas
+     */
+    @Transactional(readOnly = true)
+    public String revelarClaveFiscal(Long propietarioId, String username, String password, String ipAddress) {
+        // Validar que el usuario existe
+        com.alquileres.model.Usuario usuario = usuarioRepository.findByUsername(username)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.VALIDACION_ERROR,
+                "Usuario no encontrado",
+                HttpStatus.UNAUTHORIZED
+            ));
+
+        // Validar la contraseña
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            logger.warn("⚠️ Intento fallido de revelar clave fiscal - Usuario: {}, IP: {}", username, ipAddress);
+            throw new BusinessException(
+                ErrorCodes.VALIDACION_ERROR,
+                "Contraseña incorrecta",
+                HttpStatus.UNAUTHORIZED
+            );
+        }
+
+        // Obtener clave fiscal desencriptada
+        String claveFiscal = obtenerClaveFiscalDesencriptada(propietarioId);
+
+        // Registrar en log de auditoría
+        logger.warn("⚠️ CLAVE FISCAL REVELADA - Propietario ID: {}, Usuario: {}, IP: {}",
+                    propietarioId, username, ipAddress);
+
+        return claveFiscal;
     }
 }

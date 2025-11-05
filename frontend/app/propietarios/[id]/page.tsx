@@ -2,6 +2,7 @@
 
 import InmuebleIcon from "@/components/inmueble-icon";
 import Loading from "@/components/loading";
+import ClaveFiscalSecura from "@/components/clave-fiscal-secura";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Inmueble } from "@/types/Inmueble";
@@ -93,9 +94,12 @@ export default function PropietarioDetalles() {
                                 <p>{propietario?.cuil}</p>
                             </div>
                             {(auth.getUserRoles().includes("ROLE_ADMINISTRADOR") || auth.getUserRoles().includes("ROLE_ABOGADA")) && (
-                                <div className="flex gap-3">
+                                <div className="flex flex-col gap-2">
                                     <h2 className="font-bold">Clave Fiscal:</h2>
-                                    <p>{propietario?.claveFiscal || "No especifica"}</p>
+                                    <ClaveFiscalSecura
+                                        propietarioId={id}
+                                        claveFiscalEnmascarada={propietario?.claveFiscal || null}
+                                    />
                                 </div>
                             )}
                             <div className="flex gap-3">
