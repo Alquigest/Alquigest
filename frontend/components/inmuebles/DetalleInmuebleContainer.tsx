@@ -67,10 +67,21 @@ export default function DetalleInmuebleContainer({ id }: { id: string }) {
 
     const fetchContratos = async () => {
       try {
-        const data = await fetchWithToken(`${BACKEND_URL}/contratos/inmueble/${inmueble.id}`)
-        setContratos(data)
+        // Primero verificar si tiene contrato vigente
+        const tieneContratoVigente = await fetchWithToken(
+          `${BACKEND_URL}/contratos/inmueble/${inmueble.id}/tiene-contrato-vigente`
+        )
+        
+        // Si tiene contrato vigente, traer los contratos
+        if (tieneContratoVigente) {
+          const data = await fetchWithToken(`${BACKEND_URL}/contratos/inmueble/${inmueble.id}`)
+          setContratos(data)
+        } else {
+          setContratos([])
+        }
       } catch (err) {
         console.error("Error al traer contrato vigente:", err)
+        setContratos([])
       } finally {
         setLoadingContratos(false)
       }
