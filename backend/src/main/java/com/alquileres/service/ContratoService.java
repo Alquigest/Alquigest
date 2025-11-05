@@ -496,10 +496,10 @@ public class ContratoService {
     }
 
     /**
-     * Valida que el inmueble no tenga un contrato vigente
-     * 
+     * Valida que el inmueble no tenga un contrato vigente y esté en estado "Disponible"
+     *
      * @param inmueble Inmueble a validar
-     * @throws BusinessException si el inmueble ya está alquilado
+     * @throws BusinessException si el inmueble ya está alquilado o no está en estado "Disponible"
      */
     private void validarDisponibilidadInmueble(Inmueble inmueble) {
         if (contratoRepository.existsContratoVigenteByInmueble(inmueble)) {
@@ -507,6 +507,25 @@ public class ContratoService {
                 ErrorCodes.INMUEBLE_YA_ALQUILADO, 
                 "El inmueble ya tiene un contrato vigente", 
                 HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // Validar que el inmueble esté en estado "Disponible"
+        Optional<EstadoInmueble> estadoInmuebleOpt = estadoInmuebleRepository.findById(inmueble.getEstado());
+        if (estadoInmuebleOpt.isPresent()) {
+            String nombreEstado = estadoInmuebleOpt.get().getNombre();
+            if (!"Disponible".equals(nombreEstado)) {
+                throw new BusinessException(
+                    ErrorCodes.INMUEBLE_NO_DISPONIBLE,
+                    "El inmueble debe estar en estado 'Disponible' para crear un contrato. Estado actual: " + nombreEstado,
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+        } else {
+            throw new BusinessException(
+                ErrorCodes.ESTADO_INMUEBLE_NO_ENCONTRADO,
+                "No se pudo verificar el estado del inmueble",
+                HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
