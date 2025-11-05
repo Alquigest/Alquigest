@@ -13,6 +13,7 @@ public class ErrorCodes {
     public static final String INMUEBLE_YA_ALQUILADO = "INMUEBLE_YA_ALQUILADO";
     public static final String INMUEBLE_NO_DISPONIBLE = "INMUEBLE_NO_DISPONIBLE";
     public static final String INMUEBLE_TIENE_CONTRATOS_VIGENTES = "INMUEBLE_TIENE_CONTRATOS_VIGENTES";
+    public static final String ESTADO_INMUEBLE_NO_ENCONTRADO = "ESTADO_INMUEBLE_NO_ENCONTRADO";
 
     // TipoInmueble error codes
     public static final String TIPO_INMUEBLE_DUPLICADO = "TIPO_INMUEBLE_DUPLICADO";

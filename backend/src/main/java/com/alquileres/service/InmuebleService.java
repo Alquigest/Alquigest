@@ -72,10 +72,10 @@ public class InmuebleService {
         return inmuebleRepository.countByEsActivoTrue();
     }
 
-    // Obtener inmuebles disponibles (no alquilados)
+    // Obtener inmuebles disponibles (estado "Disponible" solamente, excluye "En reparación")
     @Cacheable(value = "inmuebles", key = "'disponibles'")
     public List<InmuebleDTO> obtenerInmueblesDisponibles() {
-        List<Inmueble> inmuebles = inmuebleRepository.findByEsAlquiladoFalseAndEsActivoTrue();
+        List<Inmueble> inmuebles = inmuebleRepository.findInmueblesRealmenteDisponibles();
         return inmuebles.stream()
                 .map(InmuebleDTO::new)
                 .collect(Collectors.toList());

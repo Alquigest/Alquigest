@@ -496,10 +496,10 @@ public class ContratoService {
     }
 
     /**
-     * Valida que el inmueble no tenga un contrato vigente
-     * 
+     * Valida que el inmueble no tenga un contrato vigente y esté en estado "Disponible"
+     *
      * @param inmueble Inmueble a validar
-     * @throws BusinessException si el inmueble ya está alquilado
+     * @throws BusinessException si el inmueble ya está alquilado o no está en estado "Disponible"
      */
     private void validarDisponibilidadInmueble(Inmueble inmueble) {
         if (contratoRepository.existsContratoVigenteByInmueble(inmueble)) {
@@ -507,6 +507,25 @@ public class ContratoService {
                 ErrorCodes.INMUEBLE_YA_ALQUILADO, 
                 "El inmueble ya tiene un contrato vigente", 
                 HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // Validar que el inmueble esté en estado "Disponible"
+        Optional<EstadoInmueble> estadoInmuebleOpt = estadoInmuebleRepository.findById(inmueble.getEstado());
+        if (estadoInmuebleOpt.isPresent()) {
+            String nombreEstado = estadoInmuebleOpt.get().getNombre();
+            if (!"Disponible".equals(nombreEstado)) {
+                throw new BusinessException(
+                    ErrorCodes.INMUEBLE_NO_DISPONIBLE,
+                    "El inmueble debe estar en estado 'Disponible' para crear un contrato. Estado actual: " + nombreEstado,
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+        } else {
+            throw new BusinessException(
+                ErrorCodes.ESTADO_INMUEBLE_NO_ENCONTRADO,
+                "No se pudo verificar el estado del inmueble",
+                HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -1212,7 +1231,7 @@ public class ContratoService {
      * @param fechaInicio Fecha de inicio del contrato (en el pasado)
      * @param fechaActual Fecha actual
      */
-    @Transactional
+
     private void crearAlquileresRetroactivos(Contrato contrato, LocalDate fechaInicio, LocalDate fechaActual) {
         try {
             logger.info("Iniciando creación de alquileres retroactivos para contrato ID: {}", contrato.getId());
@@ -1223,7 +1242,8 @@ public class ContratoService {
             // Variables para el control de aumentos
             BigDecimal montoActual = contrato.getMonto();
             LocalDate fechaProximoAumento = calcularFechaProximoAumento(fechaInicio, contrato.getPeriodoAumento());
-            
+            LocalDate fechaUltimoAumento = fechaInicio.withDayOfMonth(1); // Rastrear la fecha del último aumento aplicado
+
             // Crear el primer alquiler con la fecha de inicio del contrato
             LocalDate fechaAlquiler = fechaInicio;
             String fechaVencimientoISO = fechaAlquiler.format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -1248,16 +1268,20 @@ public class ContratoService {
                     !fechaAlquiler.isBefore(fechaProximoAumento.withDayOfMonth(1))) {
                     
                     BigDecimal montoAnterior = montoActual;
-                    
+                    LocalDate fechaSiguienteAumento = fechaProximoAumento.withDayOfMonth(1);
+
                     // Aplicar aumento según el tipo configurado
                     if (Boolean.TRUE.equals(contrato.getAumentaConIcl())) {
-                        // Aumento por ICL
-                        montoActual = aplicarAumentoICL(contrato, montoAnterior, fechaProximoAumento, fechaAlquiler, aumentosRetroactivos);
+                        // Aumento por ICL: usar fechaUltimoAumento y fechaSiguienteAumento
+                        montoActual = aplicarAumentoICL(contrato, montoAnterior, fechaUltimoAumento, fechaSiguienteAumento, aumentosRetroactivos);
                     } else {
                         // Aumento por porcentaje fijo
                         montoActual = aplicarAumentoFijo(contrato, montoAnterior, fechaAlquiler, aumentosRetroactivos);
                     }
                     
+                    // Actualizar la fecha del último aumento
+                    fechaUltimoAumento = fechaSiguienteAumento;
+
                     // Calcular la siguiente fecha de aumento
                     fechaProximoAumento = calcularFechaProximoAumento(fechaProximoAumento, contrato.getPeriodoAumento());
                     
