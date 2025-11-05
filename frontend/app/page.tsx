@@ -15,8 +15,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
-import BACKEND_URL from "@/utils/backendURL"
+import { fetchJSON } from "@/utils/functions/fetchWithCredentials"
 import Loading from "@/components/loading"
 import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 
@@ -34,10 +33,10 @@ export default function HomePage() {
   const fetchContadores = async () => {
 
     try {
-      const cantInmuebles = await fetchWithToken(`${BACKEND_URL}/inmuebles/count/activos`);
-      const cantContratos = await fetchWithToken(`${BACKEND_URL}/contratos/count/vigentes`);
-      const cantServicios = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/count/pendientes`)
-      const honorarios = await fetchWithToken(`${BACKEND_URL}/alquileres/honorarios`)
+      const cantInmuebles = await fetchJSON<number>('/inmuebles/count/activos');
+      const cantContratos = await fetchJSON<number>('/contratos/count/vigentes');
+      const cantServicios = await fetchJSON<number>('/pagos-servicios/count/pendientes')
+      const honorarios = await fetchJSON<number>('/alquileres/honorarios')
 
       setContadores({
         cantInmueblesActivos: cantInmuebles,

@@ -13,8 +13,11 @@ import ModalEditarInmueble, { EditingInmueble } from "@/components/modal-editar-
 import ModalError from "@/components/modal-error"
 import BarraBusqueda from "../busqueda/barra-busqueda"
 import { set } from "lodash"
+import { useAuth } from "@/contexts/AuthProvider"
 
 export default function InmueblesContainer() {
+  const { hasPermission } = useAuth();
+
   const [inmueblesBD, setInmueblesBD] = useState<Inmueble[]>([])
   const [inmueblesMostrar, setInmueblesMostrar] = useState<Inmueble[]>([])
   const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([])
@@ -37,7 +40,7 @@ export default function InmueblesContainer() {
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
 
-  const canEdit = auth.tienePermiso("modificar_inmueble")
+  const canEdit = hasPermission("modificar_inmueble")
 
   useEffect(() => {
     const fetchPropietarios = async () => {

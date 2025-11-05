@@ -11,17 +11,19 @@ import {  Phone, User, Edit, SquareX, SquareCheck } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import HeaderAlquigest from "@/components/header"
-import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading"
 import NuevoInquilinoModal from "./nuevoInquilinoModal"
 import { Inquilino } from "@/types/Inquilino"
-import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
+import { fetchWithCredentials } from "@/utils/functions/fetchWithCredentials"
+import { useAuth } from "@/contexts/AuthProvider"
 import { Switch } from "@/components/ui/switch"
-import auth from "@/utils/functions/auth-functions/auth"
 import ModalError from "@/components/modal-error"
 import BarraBusqueda from "@/components/busqueda/barra-busqueda"
 
 export default function InquilinosPage() {
+
+  // Obtener función de verificación de permisos desde AuthProvider
+  const { hasPermission } = useAuth();
 
   //DATOS REALES
   const [InquilinosBD, setInquilinosBD] = useState<Inquilino[]>([]);
@@ -29,7 +31,7 @@ export default function InquilinosPage() {
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
-  const [loadingActualizacion, setLoadingActualizacion] = useState(false) // nuevo estado para loading
+  const [loadingActualizacion, setLoadingActualizacion] = useState(false)
   const [filtroInactivos, setFiltroInactivos] = useState(false);
  
   useEffect(() => {
@@ -37,20 +39,21 @@ export default function InquilinosPage() {
 
     const fetchInquilinos = async () => {
       const url = filtroInactivos
-        ? `${BACKEND_URL}/inquilinos/inactivos`
-        : `${BACKEND_URL}/inquilinos/activos`;
+        ? '/inquilinos/inactivos'
+        : '/inquilinos/activos';
 
       try{
         console.log("Ejecutando fetch de inquilinos...")
-          const data = await fetchWithToken(url)
-          console.log("Datos parseados del backend:", data)
+          const data = await fetchWithCredentials(url)
+          const jsonData = await data.json()
+          console.log("Datos parseados del backend:", jsonData)
           // Ordenar por apellido ascendente
-          const dataOrdenada = data.sort((a: Inquilino, b: Inquilino) =>
+          const dataOrdenada = jsonData.sort((a: Inquilino, b: Inquilino) =>
             a.apellido.localeCompare(b.apellido));
           setInquilinosBD(dataOrdenada)
           setLoading(false)
       } catch(err) {
-        console.log("Error al traer inqiilinos: ", err)
+        console.log("Error al traer inquilinos: ", err)
         setLoading(false)
       
       } finally {
@@ -76,7 +79,7 @@ export default function InquilinosPage() {
   }
 
   const handleUpdateInquilino = async () => {
-    setLoadingActualizacion(true); // Activar loading
+    setLoadingActualizacion(true);
     try {
       let updatedInquilino;
 
@@ -84,15 +87,14 @@ export default function InquilinosPage() {
       if (!editingInquilino.esActivo) {
         console.log("Inactivando inquilino...");
 
-        await fetchWithToken(
-          `${BACKEND_URL}/inquilinos/${(editingInquilino as any).id}/desactivar`,
+        const response = await fetchWithCredentials(
+          `/inquilinos/${(editingInquilino as any).id}/desactivar`,
           {
             method: "PATCH",
           }
         );
 
         // ✅ Manejar respuesta 204 (sin contenido)
-        // Como el backend retorna 204, crear manualmente el inquilino actualizado
         updatedInquilino = {
           ...editingInquilino,
           esActivo: false
@@ -102,13 +104,15 @@ export default function InquilinosPage() {
         // Caso normal: actualización de datos
         console.log("Actualizando datos del inquilino...");
 
-        updatedInquilino = await fetchWithToken(
-          `${BACKEND_URL}/inquilinos/${(editingInquilino as any).id}`,
+        const response = await fetchWithCredentials(
+          `/inquilinos/${(editingInquilino as any).id}`,
           {
             method: "PUT",
             body: JSON.stringify(editingInquilino),
           }
         );
+
+        updatedInquilino = await response.json();
       }
 
       // ✅ VALIDACIÓN AGREGADA
@@ -137,7 +141,7 @@ export default function InquilinosPage() {
       setErrorCarga(error?.message || "Error del servidor...");
       setMostrarError(true);
     } finally {
-      setLoadingActualizacion(false); // Desactivar loading
+      setLoadingActualizacion(false);
     }
   };
 
@@ -231,7 +235,7 @@ export default function InquilinosPage() {
                     size="sm"
                     className="flex-1 bg-transparent"
                     onClick={() => handleEditInquilino(inquilino)}
-                    disabled={!auth.tienePermiso("modificar_inquilino")}
+                    disabled={!hasPermission("modificar_inquilino")}
                   >
                     <Edit className="h-3 w-3 mr-1" />
                     Editar

@@ -1,32 +1,21 @@
 "use client"
-import { useState, useEffect, createContext, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import ModalLogin from "@/components/modal-login";
-import auth from "@/utils/functions/auth-functions/auth";
+import { useAuth } from "@/contexts/AuthProvider";
 import HeaderAlquigest from "@/components/header";
 import { usePathname } from "next/navigation";
-import { Home, Plus } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import NuevoPropietarioModal from "./propietarios/nuevoPropietarioModal";
-import NuevoInquilinoModal from "./inquilinos/nuevoInquilinoModal";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import Footer from "@/components/footer";
 import QuickActions from "@/components/quick-actions";
 import ModalNotificacionesInicio from "@/components/notifications/modal-notificaciones-inicio";
 
-export const AuthContext = createContext({
-  username: "",
-  setUsername: (user: string) => {},
-});
-
 export default function ClientRootLayout({ children }: { children: ReactNode }) {
-  const [username, setUsername] = useState("");
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [showNotificaciones, setShowNotificaciones] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [notificationDot, setNotificationDot] = useState(true); // para el punto de notificación
-  const [needsReload, setNeedsReload] = useState(false); // flag para recargar después de ver notificaciones
-  const pathname = usePathname(); // Obtener la ruta actual
+  const [notificationDot, setNotificationDot] = useState(true);
+  const [needsReload, setNeedsReload] = useState(false);
+  const pathname = usePathname();
   const isPublicRoute = pathname?.startsWith("/auth/") === true;
 
   // Mapear las rutas a títulos específicos
@@ -36,36 +25,23 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
     if (path.startsWith("/inquilinos")) return "Locatarios";
     if (path.startsWith("/alquileres")) return "Alquileres";
     if (path.startsWith("/contratos")) return "Contratos";
-    return "Gestiones"; // Título por defecto
+    return "Gestiones";
   };
 
+  // Mostrar modal de login si no está autenticado
   useEffect(() => {
-    if (auth.UserEstaLogeado()) {
-      const token = auth.getToken();
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          setUsername(payload.sub);
-        } catch {
-          auth.logout();
-          if (!isPublicRoute) setShowModal(true);
-        }
-      }
-    } else {
-      if (!isPublicRoute) setShowModal(true);
-    }
-
-    // Sincronizar el estado con la clase ya aplicada por el script inline
-    const savedTheme = localStorage.getItem("theme");
-    setIsDarkMode(savedTheme === "dark");
-  }, [isPublicRoute]);
-
-  // Si navegamos a la ruta pública, asegurarse de ocultar el modal de login
-  useEffect(() => {
-    if (isPublicRoute && showModal) {
+    if (!isLoading && !isAuthenticated && !isPublicRoute) {
+      setShowModal(true);
+    } else if (isAuthenticated) {
       setShowModal(false);
     }
-  }, [isPublicRoute]);
+  }, [isLoading, isAuthenticated, isPublicRoute]);
+
+  // Sincronizar tema
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    setIsDarkMode(savedTheme === "dark");
+  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode((prev) => {
@@ -81,41 +57,47 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
     });
   };
 
-  return (
-    <AuthContext.Provider value={{ username, setUsername }}>
-      {/* Header visible en todas las páginas */}
-      <div>
-        <HeaderAlquigest
-          tituloPagina={getTituloPagina(pathname)}
-          username={username}
-          toggleTheme={toggleTheme}
-          isDarkMode={isDarkMode}
-          onBellClick={() => setShowNotificaciones(true)}
-          showNotificationDot={notificationDot}
-        />
-        <QuickActions />
-        {children}
-        <Footer />
+  // Mostrar loading mientras verifica sesión
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
+    );
+  }
+
+  return (
+    <div>
+      <HeaderAlquigest
+        tituloPagina={getTituloPagina(pathname)}
+        username={user?.username || ""}
+        toggleTheme={toggleTheme}
+        isDarkMode={isDarkMode}
+        onBellClick={() => setShowNotificaciones(true)}
+        showNotificationDot={notificationDot}
+      />
+      <QuickActions />
+      {children}
+      <Footer />
+
       {showModal && (
         <ModalLogin
           isDarkMode={isDarkMode}
-          onClose={(user, justLoggedIn) => {
-            setUsername(user);
+          onClose={(username, justLoggedIn) => {
             setShowModal(false);
             if (justLoggedIn) {
               setShowNotificaciones(true);
-              setNeedsReload(true); // marcar que necesita recarga después
+              setNeedsReload(true);
             }
           }}
         />
       )}
+
       {showNotificaciones && (
         <ModalNotificacionesInicio
           isOpen={showNotificaciones}
           onClose={() => {
             setShowNotificaciones(false);
-            // Si venimos de un login reciente, recargar la página ahora
             if (needsReload) {
               window.location.reload();
             }
@@ -123,6 +105,6 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
           setNotificationDot={setNotificationDot}
         />
       )}
-    </AuthContext.Provider>
+    </div>
   );
 }

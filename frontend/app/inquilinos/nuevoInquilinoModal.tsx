@@ -9,7 +9,8 @@ import { useState, useEffect } from "react"
 import BACKEND_URL from "@/utils/backendURL"
 import ModalError from "@/components/modal-error"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
-import auth from "@/utils/functions/auth-functions/auth"
+import { useAuth } from "@/contexts/AuthProvider"
+
 
 type NuevoInquilinoModalProps = {
   text?: string
@@ -21,6 +22,8 @@ type NuevoInquilinoModalProps = {
 }
 
 export default function NuevoInquilinoModal({ text = "Nuevo Locatario", onInquilinoCreado, disabled, open, onOpenChange, showTrigger = true }: NuevoInquilinoModalProps) {
+
+  const { hasPermission, hasRole, user } = useAuth();
 
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
@@ -46,7 +49,7 @@ export default function NuevoInquilinoModal({ text = "Nuevo Locatario", onInquil
 
   // Verificar permisos solo en cliente y después de montar
   useEffect(() => {
-    setPuedeCrear(auth.tienePermiso("crear_inquilino"));
+    setPuedeCrear(hasPermission("crear_inquilino"));
   }, []);
 
   const handleNuevoInquilino = async () => {

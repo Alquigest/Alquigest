@@ -16,8 +16,11 @@ import BarraBusqueda from "@/components/busqueda/barra-busqueda";
 import StatCard from "@/components/alquileres/StatCard";
 import AlquileresToolbar from "@/components/alquileres/AlquileresToolbar";
 import ContratoAlquilerCard from "@/components/alquileres/ContratoAlquilerCard";
+import { useAuth } from "@/contexts/AuthProvider"
 
 export default function AlquileresPage() {
+
+  const { hasPermission, hasRole, user } = useAuth();
 
   const [contratosBD, setContatosBD] = useState<ContratoDetallado[]>([])
   const [contratosMostrar, setContratosMostrar] = useState<ContratoDetallado[]>([])
@@ -147,7 +150,7 @@ export default function AlquileresPage() {
             <ArrowLeft className="h-4 w-4 mr-2" /> Volver </Button> 
           </div> 
           <div className="flex items-center space-x-4">
-            {auth.tienePermiso("crear_contrato") ? (
+            {hasPermission("crear_contrato") ? (
               <Link href={"/contratos/nuevo"}>
                 <Button size="sm">
                   <FileText className="h-4 w-4 mr-2" />

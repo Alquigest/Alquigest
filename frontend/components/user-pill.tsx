@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import auth from "@/utils/functions/auth-functions/auth";
+import { useAuth } from "@/contexts/AuthProvider";
 import { useEffect, useState } from "react";
 
 export default function PildoraUsuario({
@@ -16,15 +16,16 @@ export default function PildoraUsuario({
   isDarkMode,
   toggleTheme,
 }: { username: string; isDarkMode: boolean; toggleTheme: () => void }) {
+  const { logout, hasRole } = useAuth();
+  
   const handleLogout = () => {
-    auth.logout(); // Llama al método logout
-    window.location.href = "/"; // Redirige al usuario a la página de login
+    logout(); // Llama al método logout del AuthProvider (ya maneja la redirección)
   };
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const isRoleAdmin = auth.hasRol("ROLE_ADMINISTRADOR")
+  const isRoleAdmin = hasRole("ROLE_ADMINISTRADOR");
   
   var gradientVar = "bg-muted text-primary"
   if(isRoleAdmin){

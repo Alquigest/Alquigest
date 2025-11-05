@@ -18,9 +18,12 @@ import ModalCargarPdf from "@/components/contratos/modal-cargar-pdf";
 import ModalDefault from "@/components/modal-default";
 import ModalError from "@/components/modal-error";
 import PDFContratoCard from "./pdf-contrato-card";
+import { useAuth } from "@/contexts/AuthProvider"
 
 
 export default function DetalleContratoPage(){
+
+    const { hasPermission, hasRole, user } = useAuth();
 
     const params = useParams(); 
     const id = params.id as string;
@@ -140,7 +143,7 @@ export default function DetalleContratoPage(){
                             </Button>
                             {contratoBD && (
                                 <ChangeEstadoContrato
-                                    disabled={!auth.tienePermiso("cambiar_estado_contrato")}
+                                    disabled={!hasPermission("cambiar_estado_contrato")}
                                     contratoId={contratoBD.id}
                                     estadoActualId={contratoBD.estadoContratoId || 1}
                                     onEstadoActualizado={handleEstadoActualizado}

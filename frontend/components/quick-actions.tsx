@@ -1,24 +1,26 @@
 import NuevoInquilinoModal from "@/app/inquilinos/nuevoInquilinoModal";
 import NuevoPropietarioModal from "@/app/propietarios/nuevoPropietarioModal";
 import { useMemo, useState } from "react";
-import auth from "@/utils/functions/auth-functions/auth";
+
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { FastForward, FileText, Home, Plus, SquareArrowOutUpRight, UserCircle2, UserPlus } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import NuevoInmuebleModal from "@/app/inmuebles/nuevo/nuevoInmuebleModal";
+import { useAuth } from "@/contexts/AuthProvider";
 
 export default function QuickActions() {
+  const { hasPermission, hasRole, user } = useAuth();
   const [openInquilino, setOpenInquilino] = useState(false)
   const [openPropietario, setOpenPropietario] = useState(false)
   const [openInmueble, setOpenInmueble] = useState(false)
   // permisos
   const perms = useMemo(() => ({
-    crearPropietario: auth.tienePermiso("crear_propietario"),
-    crearInquilino: auth.tienePermiso("crear_inquilino"),
-    crearInmueble: auth.tienePermiso("crear_inmueble"),
-    crearUsuario: auth.tienePermiso("crear_usuario_abogada"), //CAMBIAR PROVISORIO!!!!
-    crearContrato: auth.tienePermiso("crear_contrato"),
+    crearPropietario: hasPermission("crear_propietario"),
+    crearInquilino: hasPermission("crear_inquilino"),
+    crearInmueble: hasPermission("crear_inmueble"),
+    crearUsuario: hasPermission("crear_usuario_abogada"), //CAMBIAR PROVISORIO!!!!
+    crearContrato: hasPermission("crear_contrato"),
   }), [])
   return (
     <div>

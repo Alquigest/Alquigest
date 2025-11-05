@@ -11,6 +11,7 @@ import BACKEND_URL from "@/utils/backendURL"
 import ModalError from "@/components/modal-error"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import auth from "@/utils/functions/auth-functions/auth"
+import { useAuth } from "@/contexts/AuthProvider"
 
 
 type NuevoPropietarioModalProps = {
@@ -23,6 +24,9 @@ type NuevoPropietarioModalProps = {
 }
 
 export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps) {
+
+  const { hasPermission, hasRole, user } = useAuth();
+
   const { text = "Nuevo Locador", onPropietarioCreado, disabled, open, onOpenChange, showTrigger = true } = props;
   const [errorCarga, setErrorCarga] = useState("")
   const [mostrarError, setMostrarError] = useState(false)
@@ -49,7 +53,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
   const [puedeCrear, setPuedeCrear] = useState(false)
 
   useEffect(() => {
-    setPuedeCrear(auth.tienePermiso("crear_propietario"));
+    setPuedeCrear(hasPermission("crear_propietario"));
   }, []);
 
   const handleNuevoPropietario = async () => {

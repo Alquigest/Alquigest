@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import ClientRootLayout from "./client-root-latout";
+import { AuthProvider } from "@/contexts/AuthProvider";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-            <ClientRootLayout>{children}</ClientRootLayout>
+        <AuthProvider>
+          <ClientRootLayout>{children}</ClientRootLayout>
+        </AuthProvider>
       </body>
     </html>
   );

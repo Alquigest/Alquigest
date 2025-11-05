@@ -14,6 +14,8 @@ import auth from "@/utils/functions/auth-functions/auth";
 import NuevoPropietarioModal from "@/app/propietarios/nuevoPropietarioModal";
 import ModalError from "@/components/modal-error";
 
+import { useAuth } from "@/contexts/AuthProvider"
+
 type NuevoInmuebleModalProps = {
   text?: string
   disabled?: boolean
@@ -24,6 +26,8 @@ type NuevoInmuebleModalProps = {
 }
 
 export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
+    const { hasPermission, hasRole, user } = useAuth();
+
     const { text = "Nuevo Inmueble", onInmuebleCreado, disabled, open, onOpenChange, showTrigger = true } = props;
     const [errorCarga, setErrorCarga] = useState("")
     const [mostrarError, setMostrarError] = useState(false)
@@ -43,7 +47,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
     const [puedeCrear, setPuedeCrear] = useState(false)
 
     useEffect(() => {
-        setPuedeCrear(auth.tienePermiso("crear_propietario"));
+        setPuedeCrear(hasPermission("crear_propietario"));
     }, []);
   
     // Modal de confirmación por dirección duplicada
@@ -52,7 +56,7 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
   
     // PARA DATOS PROPIETARIOS
     const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([]);
-  const [loadingPropietarios, setLoadingPropietarios] = useState(false);
+    const [loadingPropietarios, setLoadingPropietarios] = useState(false);
   
     const [formData, setFormData] = useState({
       propietarioId: "",

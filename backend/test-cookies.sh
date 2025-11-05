@@ -12,7 +12,7 @@ echo ""
 BACKEND_URL="http://localhost:8081"
 COOKIES_FILE="test_cookies.txt"
 USERNAME="admin"
-PASSWORD="password"
+PASSWORD="123456"
 
 # Colores para output
 GREEN='\033[0;32m'

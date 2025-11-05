@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { useState, FormEvent } from "react"
 import { Input } from "./ui/input"
-import auth from "@/utils/functions/auth-functions/auth"
+import { useAuth } from "@/contexts/AuthProvider"
 import { DialogDescription } from "@radix-ui/react-dialog"
 import Link from "next/link"
 
@@ -14,11 +14,12 @@ type ModalDefaultProps = {
 }
 
 export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
+  const { login } = useAuth();
   const [isOpen, setIsOpen] = useState(true)
   const [username, setUsernameInput] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const [loadingInicioSesion, setLoadingInicioSesion] = useState(false) // nuevo estado para loading
+  const [loadingInicioSesion, setLoadingInicioSesion] = useState(false)
 
   const urlLogoAlquigest = isDarkMode? "/alquigest-white.png" : "/alquigest-dark.png"
 
@@ -29,29 +30,17 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault()
-    setLoadingInicioSesion(true); // Activar loading
+    setLoadingInicioSesion(true);
     try {
-      
-      // Llamar a la función de autenticación
-      const user = await auth.login(username, password) // Ejemplo, retorna username
-      setIsOpen(false) // Cerrar el modal
-      onClose(user.username, true) // Pasar el username y flag de login exitoso al componente padre
+      // Llamar a la función de login del AuthProvider
+      await login(username, password);
+      setIsOpen(false);
+      onClose(username, true); // Login exitoso
     } catch (err: any) {
       // Mostrar mensajes específicos devueltos por el backend
-      // 401: Credenciales incorrectas (puede incluir advertencia de delay)
-      // 500 u otros: problemas de servidor u otros errores
-      if (err?.status && err.status >= 500) {
-        setError(err?.message || "Error del servidor. Intente nuevamente más tarde.")
-      } else if (err?.status === 401) {
-        setError(err?.message || "Credenciales incorrectas.")
-      } else if (typeof err?.message === "string" && err.message.trim().length > 0) {
-        setError(err.message)
-      } else {
-        setError("No se pudo iniciar sesión. Verifique su conexión e intente nuevamente.")
-      }
-    }
-    finally {
-      setLoadingInicioSesion(false); // Desactivar loading
+      setError(err?.message || "No se pudo iniciar sesión. Verifique su conexión e intente nuevamente.");
+    } finally {
+      setLoadingInicioSesion(false);
     }
   }
 

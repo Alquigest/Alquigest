@@ -15,8 +15,12 @@ import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import auth from "@/utils/functions/auth-functions/auth"
 import { Switch } from "@/components/ui/switch"
 import BarraBusqueda from "@/components/busqueda/barra-busqueda"
+import { useAuth } from "@/contexts/AuthProvider"
 
 export default function PropietariosPage() {
+
+  const { hasPermission, hasRole, user } = useAuth();
+
   //DATOS REALES
   const [propietariosBD, setPropietariosBD] = useState<Propietario[]>([]);
   const [propietariosMostrar, setPropietariosMostrar] = useState<Propietario[]>([]);
@@ -172,7 +176,7 @@ useEffect(() => {
                     size="sm"
                     className="flex-1 bg-transparent"
                     onClick={() => handleEditOwner(propietario)}
-                    disabled={!auth.tienePermiso("modificar_propietario")}
+                    disabled={!hasPermission("modificar_propietario")}
                   >
                     <Edit className="h-3 w-3 mr-1" />
                     Editar

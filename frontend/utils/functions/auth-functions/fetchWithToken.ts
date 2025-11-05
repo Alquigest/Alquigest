@@ -1,16 +1,18 @@
-import auth from "@/utils/functions/auth-functions/auth";
+// ⚠️ MIGRADO A COOKIES HTTPONLY
+// Esta función ahora usa cookies en lugar de localStorage
+// El comportamiento de retorno se mantiene igual para compatibilidad
 
 export const fetchWithToken = async (url: string, options: RequestInit = {}) => {
-  const token = auth.getToken();
-  if (!token) throw new Error("No hay token disponible");
+  
+  // Construir la URL completa si es relativa
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8081/api";
+  const fullUrl = url.startsWith("http") ? url : `${BACKEND_URL}${url.startsWith("/") ? url : `/${url}`}`;
 
   // Construir headers dinámicamente: no forzar Content-Type si el body es FormData
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
-    Authorization: `Bearer ${token}`,
   };
 
-  // Solo establecer application/json cuando NO se esté enviando FormData y el caller no definió Content-Type
   const isFormData =
     typeof FormData !== "undefined" && options.body instanceof FormData;
   const hasContentTypeHeader = Object.keys(headers).some(
@@ -20,25 +22,26 @@ export const fetchWithToken = async (url: string, options: RequestInit = {}) => 
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(fullUrl, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   const contentType = res.headers.get("content-type") || "";
 
-  // Manejo de errores primero con parse según content-type
   if (!res.ok) {
     let message = "Error al procesar la solicitud";
     if (res.status === 401 || res.status === 403) {
-      auth.logout();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:expired'));
+      }
       message = "No autorizado, inicia sesión de nuevo";
     } else if (contentType.includes("application/json")) {
       try {
         const errJson = await res.json();
         message = errJson.message || errJson.error || message;
       } catch {
-        // ignore, use default message
       }
     } else {
       try {
