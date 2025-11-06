@@ -43,13 +43,13 @@ public class ContratoCreateDTO {
     }
 
     public ContratoCreateDTO(Long inmuebleId, Long inquilinoId, String fechaInicio,
-                            String fechaFin, BigDecimal monto) {
+                            String fechaFin, BigDecimal monto, boolean aumentaConIcl) {
         this.inmuebleId = inmuebleId;
         this.inquilinoId = inquilinoId;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.monto = monto;
-        this.aumentaConIcl = true;
+        this.aumentaConIcl = aumentaConIcl;
     }
 
     // Método para convertir a ContratoDTO

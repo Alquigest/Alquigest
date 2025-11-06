@@ -36,7 +36,8 @@ public class CacheConfig {
                 "servicios",
                 "estadosContrato",
                 "alquileres-no-pagados",
-                "contratos-por-vencer"
+                "contratos-por-vencer",
+                "pagosPendientes"
         );
     }
 }
