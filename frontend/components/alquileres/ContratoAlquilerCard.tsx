@@ -10,6 +10,7 @@ import VencimientoBadge from "@/components/contratos/vencimiento-badge";
 import EstadoBadge from "@/components/contratos/estado-badge";
 import { CalendarCheck, Import, Receipt, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ContratoDetallado } from "@/types/ContratoDetallado";
 import { MouseEvent } from "react";
 
@@ -21,6 +22,7 @@ type Props = {
   onToggle: (id: number) => void;
   alquileresPendientes: AlquilerPendiente[];
   onRegistrarPago: (contrato: ContratoDetallado) => void;
+  loadingPendientes?: boolean;
 };
 
 export default function ContratoAlquilerCard({
@@ -29,6 +31,7 @@ export default function ContratoAlquilerCard({
   onToggle,
   alquileresPendientes,
   onRegistrarPago,
+  loadingPendientes = false,
 }: Props) {
   const estaPendiente = alquileresPendientes.some((a) => a.contratoId === contrato.id);
 
@@ -76,8 +79,10 @@ export default function ContratoAlquilerCard({
             <EstadoBadge estado={contrato.estadoContratoNombre} />
           </div>
           {/* ESTADO PAGO ALQUILER */}
-          <div className="flex items-center justify-end sm:justify-end md:justify-end gap-2">
-            {estaPendiente ? (
+          <div className="flex items-center justify-end sm:justify-end md:justify-end gap-2 min-h-6">
+            {loadingPendientes ? (
+              <Skeleton className="h-6 w-30" />
+            ) : estaPendiente ? (
               <Badge className="bg-red-300 text-red-950">Alquiler No Pago</Badge>
             ) : (
               <Badge className="bg-emerald-300 text-emerald-950">Mes Alquiler Pagado</Badge>

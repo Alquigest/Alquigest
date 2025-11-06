@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { FastForward, FileText, Home, Plus, SquareArrowOutUpRight, UserCircle2, UserPlus } from "lucide-react";
+import { FastForward, FilePlus2, FileText, Home, HousePlusIcon, Plus, SquareArrowOutUpRight, UserCircle2, UserPlus, UserPlus2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import NuevoInmuebleModal from "@/app/inmuebles/nuevo/nuevoInmuebleModal";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -26,31 +26,31 @@ export default function QuickActions() {
     <div>
         {/* Dropdown Menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="fixed bg-primary bottom-15 right-15 rounded-2xl p-4 shadow-lg shadow-foreground/40 hover:scale-110 transform transition cursor-pointer z-999">
+          <DropdownMenuTrigger className="fixed bg-primary bottom-15 right-15 rounded-2xl p-4 shadow-lg shadow-black/60 hover:scale-110 transform transition cursor-pointer z-999">
             <div className="flex items-center space-x-2 text-background">
               <SquareArrowOutUpRight className="w-6 h-6 " />
               <span>Accesos Directos</span>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="w-full">
             {/* Nuevo Locador */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearPropietario) setOpenPropietario(true) }}>
-              <Button  size="sm" className="w-full" disabled={!perms.crearPropietario}>
-                <UserCircle2 className="h-5 w-5 mr-2 text-background" />
+              <Button  size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearPropietario}>
+                <UserPlus className="mr-2 text-background" />
                 Nuevo Locador
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Locatario */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearInquilino) setOpenInquilino(true) }}>
-              <Button size="sm" className="w-full" disabled={!perms.crearInquilino}>
-                <UserCircle2 className="h-5 w-5 mr-2 text-background" />
+              <Button size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearInquilino}>
+                <UserPlus className=" mr-2 text-background" />
                 Nuevo Locatario
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Inmueble */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearInmueble) setOpenInmueble(true) }}>
-              <Button  size="sm" className="w-full" disabled={!perms.crearInmueble}>
-                <UserCircle2 className="h-5 w-5 mr-2 text-background" />
+              <Button  size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearInmueble}>
+                <HousePlusIcon className="mr-2 text-background" />
                 Nuevo Inmueble
               </Button>
             </DropdownMenuItem>
@@ -58,14 +58,14 @@ export default function QuickActions() {
             <DropdownMenuItem>
               {perms.crearContrato ? (
                 <Link href={"/contratos/nuevo"}>
-                  <Button size="sm" className="w-full">
-                    <FileText className="h-5 w-5 mr-2 text-background" />
+                  <Button size="sm" className="w-full flex items-center justify-start">
+                    <FileText className="mr-2 text-background" />
                     Nuevo Contrato
                   </Button>
                 </Link>
               ) : (
-                <Button size="sm" className="w-full" disabled>
-                  <FileText className="h-5 w-5 mr-2 text-background" />
+                <Button size="sm" className="w-full flex items-center justify-start" disabled>
+                  <FilePlus2 className="mr-2 text-background" />
                   Nuevo Contrato
                 </Button>
               )}
@@ -75,7 +75,7 @@ export default function QuickActions() {
               {perms.crearUsuario ? (
                 <Link href={"/auth/signup"}>
                   <Button variant="outline" size="sm">
-                    <UserPlus className="h-5 w-5 mr-2" />
+                    <UserPlus2 className="h-5 w-5 mr-2" />
                     Nuevo Usuario
                   </Button>
                 </Link>

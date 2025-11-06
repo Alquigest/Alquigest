@@ -22,11 +22,12 @@ import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 export default function HomePage() {
 
   const [loading, setLoading] = useState(false)
+  const [cargandoContadores, setCargandoContadores] = useState(true)
   const [contadores, setContadores] = useState({
-    cantInmueblesActivos: 0,
-    cantContratosVigentes: 0,
+    cantInmueblesActivos: -99,
+    cantContratosVigentes: -99,
     cantServiciosNoPagos: -99,
-    honorariosDelMes: 0,
+    honorariosDelMes: -99,
   })
 
   useEffect(() => {
@@ -44,6 +45,8 @@ export default function HomePage() {
         cantServiciosNoPagos: cantServicios.serviciosPendientes,
         honorariosDelMes: honorarios
       });
+
+      setCargandoContadores(false);
     } catch (err: any) {
       console.error("Error al traer contadores:", err.message);
     } finally {
@@ -83,6 +86,7 @@ export default function HomePage() {
             icono={<AlertCircle className="h-6 w-6 text-orange-500" />}
             subtitulo="Servicios aún no pagados"
             tituloAyuda="Cantidad de facturas de servicios que figuran como no pagadas en el sistema"
+            cargando={cargandoContadores}
           />
 
           <EstadisticaCard
@@ -91,6 +95,7 @@ export default function HomePage() {
             icono={<CheckCircle2 className="h-6 w-6 text-green-500" />}
             subtitulo="Con contrato/s vigente/s"
             tituloAyuda="Cantidad de alquileres que se encuentran activos en el sistema"
+            cargando={cargandoContadores}
           />
 
           <EstadisticaCard
@@ -99,6 +104,7 @@ export default function HomePage() {
             icono={<Building2 className="h-6 w-6 text-muted-foreground" />}
             subtitulo="Bajo administración"
             tituloAyuda="Cantidad de inmuebles activos bajo administración del estudio jurídico"
+            cargando={cargandoContadores}
           />
 
           <EstadisticaCard
@@ -107,6 +113,7 @@ export default function HomePage() {
             icono={<BarChart3 className="h-6 w-6 text-muted-foreground" />}
             subtitulo="Cálculo real acumulativo"
             tituloAyuda="Suma de los honorarios correspondientes a los alquileres ya pagos del mes actual"
+            cargando={cargandoContadores}
           />
         </div>
 
