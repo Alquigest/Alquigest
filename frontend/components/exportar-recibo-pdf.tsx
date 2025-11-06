@@ -18,7 +18,7 @@ interface ExportarReciboPDFProps {
     apellidoPropietario: string
   }
   alquilerMonto: string
-  servicios: { [key: number]: number | "" }
+  servicios: { [key: number]: number | string | "" }
   serviciosBase: ServicioBase[]
   total: number
   // Optional callback to run before generating the PDF (e.g., sync to backend)
@@ -33,6 +33,14 @@ export default function ExportarReciboPDF({
   total
   , onBeforeGenerate
 }: ExportarReciboPDFProps) {
+  
+  // Función auxiliar para convertir valores con coma decimal a número
+  const obtenerValorNumerico = (valor: string | number | ""): number => {
+    if (valor === "") return 0;
+    if (typeof valor === "number") return valor;
+    // Convertir coma a punto para parseFloat
+    return parseFloat(valor.replace(',', '.')) || 0;
+  }
   
   const cargarImagen = (src: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -115,7 +123,7 @@ export default function ExportarReciboPDF({
     
     // Servicios
     let yPosition = 120
-  const serviciosConMonto = serviciosBase.filter(servicio => Number(servicios[servicio.tipoServicioId] ?? 0) > 0)
+  const serviciosConMonto = serviciosBase.filter(servicio => obtenerValorNumerico(servicios[servicio.tipoServicioId] ?? "") > 0)
     
     if (serviciosConMonto.length > 0) {
       doc.setFont('helvetica', 'bold')
@@ -132,11 +140,11 @@ export default function ExportarReciboPDF({
       doc.setFontSize(12)
       
       serviciosConMonto.forEach(servicio => {
-        const monto = Number(servicios[servicio.tipoServicioId] ?? 0)
+        const monto = obtenerValorNumerico(servicios[servicio.tipoServicioId] ?? "")
         // Concepto del servicio (izquierda)
         doc.text(`• ${TIPO_SERVICIO_LABEL[servicio.tipoServicioId]}`, 25, yPosition)
         // Monto del servicio (derecha)
-        doc.text(`$${monto.toLocaleString()}`, 160, yPosition)
+        doc.text(`$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 160, yPosition)
         yPosition += 8
       })
     }

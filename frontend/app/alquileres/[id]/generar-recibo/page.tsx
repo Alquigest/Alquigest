@@ -27,7 +27,7 @@ export default function GenerarReciboPage() {
   type ServicioBase = { tipoServicioId: number }
 
   const [serviciosBase, setServiciosBase] = useState<ServicioBase[]>([])
-  const [servicios, setServicios] = useState<Record<number, number | "">>({})
+  const [servicios, setServicios] = useState<Record<number, string | "">>({})
   const [alquilerMonto, setAlquilerMonto] = useState<number>(0)
   const [alquilerPagado, setAlquilerPagado] = useState<boolean>(false)
 
@@ -61,13 +61,20 @@ export default function GenerarReciboPage() {
           tipoServicioId: item.servicioXContrato?.tipoServicio?.id,
         }))
         setServiciosBase(base)
-        // Inicializar montos desde backend; si viene null, dejamos "" para no setear 0
-        const initMontos: Record<number, number | ""> = {}
+        console.log("Servicios no pagados:", serviciosNoPagados);
+        // Inicializar montos desde backend con formato de coma
+        const initMontos: Record<number, string | ""> = {}
         serviciosNoPagados.forEach((p) => {
           const id = p.servicioXContrato?.tipoServicio?.id
-          if (id) initMontos[id] = p.monto ?? ""
+          if (id) {
+            const monto = p.monto ?? 0
+            // Convertir a string con coma como separador decimal
+            initMontos[id] = monto > 0 ? monto.toString().replace('.', ',') : ""
+          }
         })
         setServicios(initMontos)
+
+        console.log("Servicios no pagados:", serviciosNoPagados);
 
         // 2) Alquiler pendiente: tomar el último; si no hay, marcar como pagado
         const alquileresPend = await fetchWithToken(`${BACKEND_URL}/alquileres/contrato/${alquilerId}/pendientes`)
@@ -89,17 +96,34 @@ export default function GenerarReciboPage() {
   }, [alquilerId])
 
   // Handler de cambio de monto de servicios
-
   const handleServicioChange = (servicio: string | number, valor: string) => {
+    // Permitir solo números, coma como separador decimal y borrado completo
+    const valorLimpio = valor.replace(/[^\d,]/g, ''); // Solo dígitos y comas
+    
+    // Permitir máximo una coma
+    const partesDecimal = valorLimpio.split(',');
+    if (partesDecimal.length > 2) return; // Más de una coma, no actualizar
+    
+    // Si hay decimal, limitar a 2 decimales
+    if (partesDecimal.length === 2 && partesDecimal[1].length > 2) return;
+    
+    // Actualizar el estado con el valor formateado (con coma)
     setServicios((prev) => ({
       ...prev,
-      [servicio]: valor === "" ? "" : (Number.parseFloat(valor) || 0),
+      [servicio]: valorLimpio === "" ? "" : valorLimpio,
     }))
+  }
+
+  const obtenerValorNumerico = (valor: string | number | ""): number => {
+    if (valor === "") return 0;
+    if (typeof valor === "number") return valor;
+    // Convertir coma a punto para parseFloat
+    return parseFloat(valor.replace(',', '.')) || 0;
   }
 
   const calcularTotal = () => {
     const totalServicios = Object.values(servicios || {})
-      .map(v => (v === "" ? 0 : Number(v)))
+      .map(v => obtenerValorNumerico(v))
       .reduce((sum, value) => sum + value, 0)
     return Number((alquilerMonto || 0) + totalServicios)
   }
@@ -229,15 +253,13 @@ export default function GenerarReciboPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">$</span>
                             <Input
-                              type="number"
+                              type="text"
                               inputMode='decimal'
-                              placeholder="0.00"
-                              min={"0"}
+                              placeholder="0,00"
+                              maxLength={10}
                               value={servicios[servicio.tipoServicioId] ?? ""}
                               onChange={(e) => handleServicioChange(servicio.tipoServicioId, e.target.value)}
                               className="text-sm h-8 w-40"
-                              step="0.1"
-                              
                             />
                           </div>
                         </div>
@@ -269,7 +291,8 @@ export default function GenerarReciboPage() {
                   <p className="text-xs font-medium text-muted-foreground mb-1">Servicios:</p>
                   {serviciosBase.map((servicio) => {
                     const valor = servicios[servicio.tipoServicioId]
-                    if (Number(valor ?? 0) > 0) {
+                    const valorNum = obtenerValorNumerico(valor ?? "")
+                    if (valorNum > 0) {
                       
                       return (
                         <div key={servicio.tipoServicioId} className="flex justify-between items-center my-2">
@@ -277,7 +300,7 @@ export default function GenerarReciboPage() {
                             <TipoServicioIcon tipoServicio={servicio.tipoServicioId} className={`h-6 w-6`} />
                             {TIPO_SERVICIO_LABEL[servicio.tipoServicioId]}
                           </span>
-                          <span className="font-medium">${Number(valor).toLocaleString()}</span>
+                          <span className="font-medium">${valorNum.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                       )
                     }
@@ -312,7 +335,7 @@ export default function GenerarReciboPage() {
                       const actualizaciones = serviciosBase
                         .map(s => {
                           const val = servicios[s.tipoServicioId]
-                          const montoNum = val === "" ? 0 : Number(val)
+                          const montoNum = obtenerValorNumerico(val ?? "")
                           return { tipoServicioId: s.tipoServicioId, nuevoMonto: montoNum }
                         })
                         .filter(item => item.nuevoMonto > 0)

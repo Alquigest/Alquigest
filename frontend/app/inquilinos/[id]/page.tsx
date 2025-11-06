@@ -31,7 +31,7 @@ export default function DetalleInquilino() {
 
   if (loading) return (
     <div>
-      <Loading text="Cargando datos del inquilino..." tituloHeader="Inquilinos" />
+      <Loading text="Cargando datos del Locatario..." />
     </div>
   );
 

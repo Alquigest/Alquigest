@@ -15,8 +15,12 @@ import { ArrowLeft, Building, Building2, User } from "lucide-react";
 import Link from "next/link"
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthProvider";
+
 
 export default function PropietarioDetalles() {
+    const { hasPermission, hasRole, user } = useAuth();
+
     const params = useParams(); 
     const id = params.id as string; 
     const [propietario, setPropietario] = useState<Propietario | null>(null);
@@ -93,7 +97,7 @@ export default function PropietarioDetalles() {
                                 <h2 className="font-bold">CUIL:</h2>
                                 <p>{propietario?.cuil}</p>
                             </div>
-                            {(auth.getUserRoles().includes("ROLE_ADMINISTRADOR") || auth.getUserRoles().includes("ROLE_ABOGADA")) && (
+                            {(hasRole("ROLE_ADMINISTRADOR") || hasRole("ROLE_ABOGADA")) && (
                                 <div className="flex flex-col gap-2">
                                     <h2 className="font-bold">Clave Fiscal:</h2>
                                     <ClaveFiscalSecura

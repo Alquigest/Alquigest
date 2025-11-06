@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Eye, Copy, EyeOff } from 'lucide-react';
 import { fetchWithToken } from '@/utils/functions/auth-functions/fetchWithToken';
 import BACKEND_URL from '@/utils/backendURL';
+import ModalInput from '@/components/modal-input';
+import ModalError from '@/components/modal-error';
 
 interface ClaveFiscalSecuraProps {
   propietarioId: string;
@@ -20,6 +21,8 @@ export default function ClaveFiscalSecura({
   const [claveFiscal, setClaveFiscal] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [modalPasswordOpen, setModalPasswordOpen] = useState(false);
+  const [errorModal, setErrorModal] = useState({ open: false, mensaje: "" });
 
   // Timer para auto-ocultar después de 30 segundos
   useEffect(() => {
@@ -43,12 +46,7 @@ export default function ClaveFiscalSecura({
     };
   }, [claveFiscalVisible, timeLeft]);
 
-  const revelarClaveFiscal = async () => {
-    // Solicitar confirmación con contraseña
-    const password = prompt("⚠️ Por seguridad, ingresa tu contraseña para revelar la clave fiscal:");
-
-    if (!password) return;
-
+  const revelarClaveFiscal = async (password: string) => {
     setLoading(true);
 
     try {
@@ -69,9 +67,9 @@ export default function ClaveFiscalSecura({
 
     } catch (error: any) {
       if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-        alert("❌ Contraseña incorrecta");
+        setErrorModal({ open: true, mensaje: "Contraseña incorrecta" });
       } else {
-        alert("❌ Error al revelar la clave fiscal: " + (error.message || 'Error desconocido'));
+        setErrorModal({ open: true, mensaje: "Error al revelar la clave fiscal" });
       }
       console.error("Error revelando clave fiscal:", error);
     } finally {
@@ -79,10 +77,13 @@ export default function ClaveFiscalSecura({
     }
   };
 
+  const handleRevelarClick = () => {
+    setModalPasswordOpen(true);
+  };
+
   const copiarClave = () => {
     if (claveFiscal) {
       navigator.clipboard.writeText(claveFiscal);
-      alert("✅ Clave fiscal copiada al portapapeles");
     }
   };
 
@@ -95,19 +96,18 @@ export default function ClaveFiscalSecura({
   return (
     <div className="flex flex-col gap-2">
       {!claveFiscalVisible ? (
-        <div className="flex items-center gap-3">
-          <code className="px-3 py-2 bg-muted rounded-md font-mono text-sm border">
+        <div className="flex items-center gap-2">
+          <code className="px-3 py-2 bg-muted rounded-md font-mono text-sm">
             {claveFiscalEnmascarada || '****'}
           </code>
           <Button
-            onClick={revelarClaveFiscal}
+            onClick={handleRevelarClick}
             disabled={loading}
             variant="outline"
             size="sm"
-            className="border-yellow-600 text-yellow-700 hover:bg-yellow-50"
           >
             {loading ? (
-              <>⏳ Procesando...</>
+              <>Cargando...</>
             ) : (
               <>
                 <Eye className="h-4 w-4 mr-2" />
@@ -117,46 +117,55 @@ export default function ClaveFiscalSecura({
           </Button>
         </div>
       ) : (
-        <Card className="border-red-500 border-2 bg-yellow-50 p-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <strong className="text-red-600 text-sm">
-                ⚠️ CLAVE FISCAL CONFIDENCIAL
-              </strong>
-              <span className="text-sm text-muted-foreground">
-                Se ocultará en {timeLeft}s
-              </span>
-            </div>
-
-            <code className="px-4 py-3 bg-white rounded-md font-mono text-lg font-bold border-2 border-red-500 select-all cursor-text">
-              {claveFiscal}
-            </code>
-
-            <div className="flex gap-2">
-              <Button
-                onClick={copiarClave}
-                size="sm"
-                variant="default"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copiar
-              </Button>
-              <Button
-                onClick={ocultarClave}
-                size="sm"
-                variant="destructive"
-              >
-                <EyeOff className="h-4 w-4 mr-2" />
-                Ocultar
-              </Button>
-            </div>
-
-            <p className="text-xs text-yellow-800 italic">
-              ⚠️ Esta clave es confidencial. No la compartas con terceros.
-            </p>
+        <div className="flex flex-col gap-3 p-3 bg-muted/50 rounded-md border">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>Clave Fiscal</span>
+            <span>Se ocultará en {timeLeft}s</span>
           </div>
-        </Card>
+
+          <code className="px-3 py-2 bg-background rounded-md font-mono text-base border select-all">
+            {claveFiscal}
+          </code>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={copiarClave}
+              size="sm"
+              variant="default"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copiar
+            </Button>
+            <Button
+              onClick={ocultarClave}
+              size="sm"
+              variant="outline"
+            >
+              <EyeOff className="h-4 w-4 mr-2" />
+              Ocultar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ModalInput
+        titulo="Verificación de Identidad"
+        descripcion="Por seguridad, ingresa tu contraseña para revelar la clave fiscal"
+        label="Contraseña"
+        type="password"
+        placeholder="Ingresa tu contraseña..."
+        open={modalPasswordOpen}
+        onOpenChange={setModalPasswordOpen}
+        onConfirm={revelarClaveFiscal}
+        textoConfirmar="Revelar"
+      />
+
+      {errorModal.open && (
+        <ModalError
+          titulo="Error"
+          mensaje={errorModal.mensaje}
+          onClose={() => setErrorModal({ open: false, mensaje: "" })}
+        />
       )}
     </div>
   );

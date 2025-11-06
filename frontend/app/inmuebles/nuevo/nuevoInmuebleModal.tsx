@@ -15,6 +15,7 @@ import NuevoPropietarioModal from "@/app/propietarios/nuevoPropietarioModal";
 import ModalError from "@/components/modal-error";
 
 import { useAuth } from "@/contexts/AuthProvider"
+import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable";
 
 type NuevoInmuebleModalProps = {
   text?: string
@@ -253,26 +254,15 @@ export default function NuevoInmuebleModal(props: NuevoInmuebleModalProps) {
                 <div className="space-y-2">
                   <Label htmlFor="propietario">Locador *</Label>
                   <div className="flex flex-1 min-w-0 gap-2 ">
-                    <Select
-                      required
-                      value={formData.propietarioId}
-                      onValueChange={(value) => handleInputChange("propietarioId", value)}
-                    >
-                      <SelectTrigger className="w-55">
-                        <SelectValue className="overflow-hidden text-ellipsis" placeholder="Seleccionar Locador" />
-                      </SelectTrigger>
-                      <SelectContent className="">
-                        {propietariosBD.map((propietario) => (
-                          <SelectItem
-                            key={propietario.id}
-                            value={propietario.id.toString()}
-                            className="overflow-auto text-ellipsis"
-                          >
-                            {propietario.nombre} {propietario.apellido} | CUIL: {propietario.cuil}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <BusquedaDesplegable
+                      items={propietariosBD}
+                        className='w-full'
+                        placeholder={loadingPropietarios ? "Cargando propietarios..." : "Buscar por apellido, nombre o CUIL ..."}
+                        propiedadesBusqueda={['apellido', 'nombre', 'cuil']}
+                        getItemLabel={(inq) => `${inq.apellido}, ${inq.nombre} | CUIL: ${inq.cuil}`}
+                        onSelect={(value) => handleInputChange("propietarioId", value.id.toString())}
+                    />
+
 
                     {/* BOTON PARA ABRIR MODAL NUEVO PROPIETARIO */}
                     <NuevoPropietarioModal 
