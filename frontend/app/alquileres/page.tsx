@@ -3,12 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Calendar, ArrowLeft, AlertCircle, FileText } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import Loading from "@/components/loading";
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ContratoDetallado } from "@/types/ContratoDetallado";
 import auth from "@/utils/functions/auth-functions/auth";
@@ -86,6 +87,9 @@ export default function AlquileresPage() {
   //ESTADÍSTICAS
   const [cantidadProxVencer, setCantidadProxVencer] = useState(0);
   const [cantAlquileresNoPagos, setAlquileresNoPagos] = useState(0)
+  const [loadingProxVencer, setLoadingProxVencer] = useState(true)
+  const [loadingContadores, setLoadingContadores] = useState(true)
+  const [loadingPendientes, setLoadingPendientes] = useState(true)
 
   const handleAbrirModalPago = (contrato: ContratoDetallado) => {
     setContratoSeleccionado(contrato);
@@ -94,57 +98,67 @@ export default function AlquileresPage() {
 
   // Traer cantidad de contratos a vencer en 30 dias
   useEffect(() => {
+    setLoadingProxVencer(true)
     fetchWithToken(`${BACKEND_URL}/contratos/count/proximos-vencer`)
       .then((data) => setCantidadProxVencer(data || 0))
-      .catch((err) => console.error("Error contratos a vencer:", err));
+      .catch((err) => console.error("Error contratos a vencer:", err))
+      .finally(() => setLoadingProxVencer(false))
   }, []);
 
   useEffect(() => {
-    // Principal: contratos filtrados + alquileres pendientes (maneja loading)
-    const fetchPrincipal = async () => {
-      console.log("Ejecutando fetch principal: Contratos y Alquileres pendientes...");
+    // Principal: cargar SOLO contratos y manejar loading
+    let cancelled = false;
+    const fetchContratos = async () => {
       setLoading(true);
-
-
       try {
-        const [data, alquileresPend] = await Promise.all([
-          fetchWithToken(`${BACKEND_URL}/contratos/${filtroContrato}`),
-          fetchWithToken(`${BACKEND_URL}/alquileres/pendientes`),
-        ]);
-
-        console.log("Datos contratos:", data);
-        console.log("Alquileres pendientes:", alquileresPend);
-
+        const data = await fetchWithToken(`${BACKEND_URL}/contratos/${filtroContrato}`);
+        if (cancelled) return;
         setContatosBD(data);
         setContratosMostrar(data); // para búsqueda
-        setAlquileresPendientes(alquileresPend);
-        setLoading(false);
-
       } catch (err: any) {
-        console.error("Error en fetch principal:", err.message);
-        setLoading(false);
+        console.error("Error al obtener contratos:", err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
 
-    fetchPrincipal();
-  }, [filtroContrato, modalPagoOpen]);
+    fetchContratos();
+    return () => { cancelled = true };
+  }, [filtroContrato]);
 
   useEffect(() => {
-    // Secundario: contadores (no toca loading)
+    // Secundario: alquileres pendientes (no toca loading principal)
+    const fetchPendientes = async () => {
+      setLoadingPendientes(true)
+      try {
+        const alquileresPend = await fetchWithToken(`${BACKEND_URL}/alquileres/pendientes`);
+        setAlquileresPendientes(alquileresPend);
+      } catch (err: any) {
+        console.error("Error al obtener alquileres pendientes:", err.message);
+      } finally {
+        setLoadingPendientes(false)
+      }
+    };
+    fetchPendientes();
+  }, [modalPagoOpen]);
+
+  useEffect(() => {
+    // Secundario: contadores (no toca loading). Se actualiza al montar y al cerrar modal de pago
     const fetchContadores = async () => {
+      setLoadingContadores(true)
       try {
         const [total, alqNoPagos] = await Promise.all([
           fetchWithToken(`${BACKEND_URL}/contratos/count/vigentes`),
           fetchWithToken(`${BACKEND_URL}/alquileres/count/pendientes`),
         ]);
-        
         setTotalContratos(total);
         setAlquileresNoPagos(alqNoPagos);
       } catch (err: any) {
         console.error("Error al traer contadores:", err.message);
+      } finally {
+        setLoadingContadores(false)
       }
     };
-
     fetchContadores();
   }, [modalPagoOpen]);
 
@@ -159,20 +173,22 @@ export default function AlquileresPage() {
     if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
     return new Date(y, m, d);
   };
-  const contratosOrdenados: ContratoDetallado[] = [...contratosBD].sort((a, b) => {
-    const dirFactor = orden.dir === 'asc' ? 1 : -1;
-    if (orden.campo === 'direccion') {
-      return a.direccionInmueble.localeCompare(b.direccionInmueble, 'es', { sensitivity: 'base' }) * dirFactor;
-    }
-    if (orden.campo === 'locador') {
-      return a.apellidoPropietario.localeCompare(b.apellidoPropietario, 'es', { sensitivity: 'base' }) * dirFactor;
-    }
-    const da = parseFecha(a.fechaAumento);
-    const db = parseFecha(b.fechaAumento);
-    const ta = da ? da.getTime() : (orden.dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
-    const tb = db ? db.getTime() : (orden.dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
-    return (ta - tb) * dirFactor;
-  });
+  const contratosOrdenados: ContratoDetallado[] = useMemo(() => {
+    return [...contratosBD].sort((a, b) => {
+      const dirFactor = orden.dir === 'asc' ? 1 : -1;
+      if (orden.campo === 'direccion') {
+        return a.direccionInmueble.localeCompare(b.direccionInmueble, 'es', { sensitivity: 'base' }) * dirFactor;
+      }
+      if (orden.campo === 'locador') {
+        return a.apellidoPropietario.localeCompare(b.apellidoPropietario, 'es', { sensitivity: 'base' }) * dirFactor;
+      }
+      const da = parseFecha(a.fechaAumento);
+      const db = parseFecha(b.fechaAumento);
+      const ta = da ? da.getTime() : (orden.dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+      const tb = db ? db.getTime() : (orden.dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+      return (ta - tb) * dirFactor;
+    });
+  }, [contratosBD, orden]);
 
 
   if(loading){
@@ -212,29 +228,23 @@ export default function AlquileresPage() {
         </div> 
         
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Contratos Vigentes"
-            value={totalContratos || "N/A"}
+            value={loadingContadores ? <Skeleton className="h-8 w-10" /> : (totalContratos || "N/A")}
             description="Vigentes actualmente"
             icon={<Calendar className="h-5 w-5 text-foreground" />}
           />
           <StatCard
             title="Contratos por vencer"
-            value={<span className="text-orange-600">{cantidadProxVencer}</span>}
+            value={loadingProxVencer ? <Skeleton className="h-8 w-10" /> : <span className="text-orange-600">{cantidadProxVencer}</span>}
             description="Vencen el mes que viene"
             icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
           />
           <StatCard
             title="Alquileres No Pagos"
-            value={<span className="text-orange-600">{cantAlquileresNoPagos}</span>}
+            value={loadingContadores ? <Skeleton className="h-8 w-14" /> : <span className="text-orange-600">{cantAlquileresNoPagos}</span>}
             description="No pagaron antes del día 10"
-            icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
-          />
-          <StatCard
-            title="Servicios No Pagos"
-            value={<span className="text-orange-600">N/A</span>}
-            description="Pendientes de pagar"
             icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
           />
         </div>
@@ -262,14 +272,14 @@ export default function AlquileresPage() {
         </div>
 
           <BarraBusqueda 
-            arrayDatos={contratosBD}
-            placeholder="No Disponible [En Desarrollo]..."
+            arrayDatos={contratosOrdenados}
+            placeholder="Busque por dirección o propietario..."
             setDatosFiltrados={setContratosMostrar}
             propiedadesBusqueda={["direccionInmueble", "nombrePropietario", "apellidoPropietario"]}
           />
 
         <div className="grid gap-4">
-          {contratosOrdenados?.map((contrato) => {
+          {contratosMostrar?.map((contrato) => {
             const isExpanded = vistaDetallada || expandedCard === contrato.id;
             return (
               <ContratoAlquilerCard
@@ -278,6 +288,7 @@ export default function AlquileresPage() {
                 isExpanded={isExpanded}
                 onToggle={toggleCard}
                 alquileresPendientes={alquileresPendientes as unknown as { contratoId: number }[]}
+                loadingPendientes={loadingPendientes}
                 onRegistrarPago={handleAbrirModalPago}
               />
             );

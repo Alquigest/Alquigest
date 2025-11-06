@@ -75,7 +75,7 @@ export default function BarraBusqueda({
                 </div>
             </form>
             <div className="text-sm text-secondary">
-                {query ? <p >Hay {resultados.length} coincidencias</p> : <p>. </p>}
+                {query ? <p >Hay {resultados.length} coincidencias</p> : <p className="text-background">Alquigest</p>}
             </div>
         </div>
     );
