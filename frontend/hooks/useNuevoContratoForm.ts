@@ -25,7 +25,7 @@ const contratoInicial: Contrato = {
   monto: 0,
   porcentajeAumento: 0,
   estadoContratoId: 1,
-  aumentaConIcl: true,
+  aumentaConIcl: false,
   porcentajeHonorario: 10,
   tipoAumento: '',
   periodoAumento: 1,

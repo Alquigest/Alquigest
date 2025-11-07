@@ -12,7 +12,11 @@ interface Paso2Props {
 
 export default function Paso2Fechas({ formData, onChange }: Paso2Props) {
   const fechaActual = new Date().toISOString().split('T')[0]
-  formData.fechaInicio = fechaActual
+  
+  // Inicializar fechaInicio solo si está vacía (una sola vez)
+  if (!formData.fechaInicio) {
+    onChange('fechaInicio', fechaActual)
+  }
 
   return (
     <>

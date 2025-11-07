@@ -68,6 +68,8 @@ export default function Paso3DatosAlquiler({
           value={formData.tipoAumento}
           onValueChange={(value) => {
             onChange('tipoAumento', value);
+            // Actualizar aumentaConIcl según el tipo seleccionado
+            onChange('aumentaConIcl', value === 'ICL');
             if (value === 'ICL') {
               onChange('porcentajeAumento', '0');
             }
