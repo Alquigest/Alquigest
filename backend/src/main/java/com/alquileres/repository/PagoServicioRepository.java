@@ -76,4 +76,20 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
            "AND e.nombre = 'Vigente' " +
            "GROUP BY p.servicioXContrato.contrato.id")
     List<Object[]> countPagosNoPagadosPorContratoYPeriodo(@Param("periodo") String periodo);
+
+    // Para Informe 4: Obtener pagos de servicios del mes actual con todos los detalles
+    @Query("SELECT p.id, p.fechaPago, p.monto, p.periodo, ts.nombre, p.estaPagado, " +
+           "c.id, i.direccion, i.propietarioId, inq.nombre, inq.apellido, " +
+           "a.id, a.monto, a.fechaVencimientoPago, a.estaPagado " +
+           "FROM PagoServicio p " +
+           "JOIN p.servicioXContrato sxc " +
+           "JOIN sxc.tipoServicio ts " +
+           "JOIN sxc.contrato c " +
+           "JOIN c.inmueble i " +
+           "JOIN c.inquilino inq " +
+           "LEFT JOIN Alquiler a ON a.contrato.id = c.id AND a.esActivo = true " +
+           "AND SUBSTRING(a.fechaVencimientoPago, 4, 7) = :periodo " +
+           "WHERE p.periodo = :periodo " +
+           "ORDER BY c.id, p.id")
+    List<Object[]> findPagosServiciosDelMesActualConDetalle(@Param("periodo") String periodo);
 }

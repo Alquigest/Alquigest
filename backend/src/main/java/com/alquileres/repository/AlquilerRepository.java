@@ -68,5 +68,28 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     // Buscar alquileres activos que necesitan aumento manual
     @Query("SELECT a FROM Alquiler a WHERE a.necesitaAumentoManual = true AND a.esActivo = true")
     List<Alquiler> findByNecesitaAumentoManualTrueAndEsActivoTrue();
+
+    // Para Informe 1: Alquileres pagados del mes actual de contratos vigentes
+    @Query("SELECT a FROM Alquiler a " +
+           "JOIN a.contrato c " +
+           "JOIN c.estadoContrato e " +
+           "WHERE a.estaPagado = true " +
+           "AND MONTH(CAST(a.fechaVencimientoPago AS date)) = :mes " +
+           "AND YEAR(CAST(a.fechaVencimientoPago AS date)) = :anio " +
+           "AND e.nombre = 'Vigente'")
+    List<Alquiler> findAlquileresPagadosPorMesYAnio(@Param("mes") int mes, @Param("anio") int anio);
+
+    // Para Informe 2: Todos los alquileres del mes actual de contratos vigentes
+    @Query("SELECT a FROM Alquiler a " +
+           "JOIN a.contrato c " +
+           "JOIN c.estadoContrato e " +
+           "WHERE MONTH(CAST(a.fechaVencimientoPago AS date)) = :mes " +
+           "AND YEAR(CAST(a.fechaVencimientoPago AS date)) = :anio " +
+           "AND e.nombre = :estadoContrato")
+    List<Alquiler> findAlquileresPorMesYAnioYEstadoContrato(
+        @Param("mes") int mes,
+        @Param("anio") int anio,
+        @Param("estadoContrato") String estadoContrato
+    );
 }
 

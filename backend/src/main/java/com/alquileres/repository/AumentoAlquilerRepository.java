@@ -29,5 +29,9 @@ public interface AumentoAlquilerRepository extends JpaRepository<AumentoAlquiler
     // Buscar aumentos en un rango de fechas
     @Query("SELECT a FROM AumentoAlquiler a WHERE a.contrato.id = :contratoId AND a.fechaAumento >= :fechaInicio AND a.fechaAumento <= :fechaFin ORDER BY a.fechaAumento DESC")
     List<AumentoAlquiler> findByContratoIdAndFechaAumentoBetween(@Param("contratoId") Long contratoId, @Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin);
+
+    // Para Informe 3: Buscar todos los aumentos en un rango de fechas (para todos los contratos)
+    @Query("SELECT a FROM AumentoAlquiler a WHERE a.fechaAumento >= :fechaInicio AND a.fechaAumento <= :fechaFin ORDER BY a.contrato.id, a.fechaAumento DESC")
+    List<AumentoAlquiler> findAumentosPorRangoFecha(@Param("fechaInicio") String fechaInicio, @Param("fechaFin") String fechaFin);
 }
 
