@@ -10,7 +10,6 @@ import com.alquileres.repository.ServicioXContratoRepository;
 import com.alquileres.repository.TipoServicioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,20 +27,24 @@ public class ServicioXContratoService {
     private static final Logger logger = LoggerFactory.getLogger(ServicioXContratoService.class);
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
 
-    @Autowired
-    private ServicioXContratoRepository servicioXContratoRepository;
+    private final ServicioXContratoRepository servicioXContratoRepository;
+    private final ContratoRepository contratoRepository;
+    private final TipoServicioRepository tipoServicioRepository;
+    private final ConfiguracionPagoServicioService configuracionPagoServicioService;
+    private final ServicioActualizacionService servicioActualizacionService;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private TipoServicioRepository tipoServicioRepository;
-
-    @Autowired
-    private ConfiguracionPagoServicioService configuracionPagoServicioService;
-
-    @Autowired
-    private ServicioActualizacionService servicioActualizacionService;
+    public ServicioXContratoService(
+            ServicioXContratoRepository servicioXContratoRepository,
+            ContratoRepository contratoRepository,
+            TipoServicioRepository tipoServicioRepository,
+            ConfiguracionPagoServicioService configuracionPagoServicioService,
+            ServicioActualizacionService servicioActualizacionService) {
+        this.servicioXContratoRepository = servicioXContratoRepository;
+        this.contratoRepository = contratoRepository;
+        this.tipoServicioRepository = tipoServicioRepository;
+        this.configuracionPagoServicioService = configuracionPagoServicioService;
+        this.servicioActualizacionService = servicioActualizacionService;
+    }
 
     /**
      * Crea un nuevo servicio para un contrato
@@ -188,37 +191,6 @@ public class ServicioXContratoService {
             
             logger.info("Servicio reactivado ID: {}", servicioId);
         }
-    }
-
-    /**
-     * Actualiza los datos de un servicio
-     *
-     * @param servicioId ID del servicio
-     * @param nroCuenta Nuevo número de cuenta
-     * @param nroContrato Nuevo número de contrato
-     * @param nroContratoServicio Nuevo número de contrato de servicio
-     * @return El servicio actualizado
-     */
-    @Transactional
-    public ServicioXContrato actualizarServicio(Integer servicioId, String nroCuenta, String nroContrato, String nroContratoServicio) {
-        ServicioXContrato servicio = servicioXContratoRepository.findById(servicioId)
-                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + servicioId));
-        
-        servicio.setNroCuenta(nroCuenta);
-        servicio.setNroContrato(nroContrato);
-        servicio.setNroContratoServicio(nroContratoServicio);
-
-        return servicioXContratoRepository.save(servicio);
-    }
-
-    /**
-     * Obtiene un servicio por ID
-     *
-     * @param servicioId ID del servicio
-     * @return El servicio si existe
-     */
-    public Optional<ServicioXContrato> obtenerServicioPorId(Integer servicioId) {
-        return servicioXContratoRepository.findById(servicioId);
     }
 
     /**

@@ -5,7 +5,6 @@ import com.alquileres.model.Propietario;
 import com.alquileres.repository.PropietarioRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.security.EncryptionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,23 +22,27 @@ public class PropietarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(PropietarioService.class);
 
-    @Autowired
-    private PropietarioRepository propietarioRepository;
+    private final PropietarioRepository propietarioRepository;
+    private final InmuebleService inmuebleService;
+    private final ContratoRepository contratoRepository;
+    private final EncryptionService encryptionService;
+    private final com.alquileres.repository.UsuarioRepository usuarioRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private InmuebleService inmuebleService;
-
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private EncryptionService encryptionService;
-
-    @Autowired
-    private com.alquileres.repository.UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    public PropietarioService(
+            PropietarioRepository propietarioRepository,
+            InmuebleService inmuebleService,
+            ContratoRepository contratoRepository,
+            EncryptionService encryptionService,
+            com.alquileres.repository.UsuarioRepository usuarioRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+        this.propietarioRepository = propietarioRepository;
+        this.inmuebleService = inmuebleService;
+        this.contratoRepository = contratoRepository;
+        this.encryptionService = encryptionService;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // Obtener todos los propietarios
     public List<PropietarioDTO> obtenerTodosLosPropietarios() {

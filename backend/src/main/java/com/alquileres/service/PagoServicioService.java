@@ -10,7 +10,6 @@ import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.PagoServicioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -30,11 +29,15 @@ public class PagoServicioService {
 
     private static final Logger logger = LoggerFactory.getLogger(PagoServicioService.class);
 
-    @Autowired
-    private PagoServicioRepository pagoServicioRepository;
+    private final PagoServicioRepository pagoServicioRepository;
+    private final ContratoRepository contratoRepository;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
+    public PagoServicioService(
+            PagoServicioRepository pagoServicioRepository,
+            ContratoRepository contratoRepository) {
+        this.pagoServicioRepository = pagoServicioRepository;
+        this.contratoRepository = contratoRepository;
+    }
 
     /**
      * Actualiza los montos de los pagos de servicios no pagados de un contrato

@@ -6,7 +6,6 @@ import com.alquileres.repository.InquilinoRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
@@ -19,11 +18,15 @@ import java.util.stream.Collectors;
 @Service
 public class InquilinoService {
 
-    @Autowired
-    private InquilinoRepository inquilinoRepository;
+    private final InquilinoRepository inquilinoRepository;
+    private final ContratoRepository contratoRepository;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
+    public InquilinoService(
+            InquilinoRepository inquilinoRepository,
+            ContratoRepository contratoRepository) {
+        this.inquilinoRepository = inquilinoRepository;
+        this.contratoRepository = contratoRepository;
+    }
 
     // Obtener todos los inquilinos
     @Cacheable(value = "inquilinos", key = "'all'")
@@ -197,7 +200,7 @@ public class InquilinoService {
     // Activar inquilino (reactivación)
     public void activarInquilino(Long id) {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(id);
-        if (!inquilino.isPresent()) {
+        if (inquilino.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INQUILINO_NO_ENCONTRADO,
                 "No se encontró el inquilino con ID: " + id,

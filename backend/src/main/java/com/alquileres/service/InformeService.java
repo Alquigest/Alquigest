@@ -5,7 +5,6 @@ import com.alquileres.model.*;
 import com.alquileres.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,20 +24,29 @@ public class InformeService {
 
     private static final Logger logger = LoggerFactory.getLogger(InformeService.class);
 
-    @Autowired
-    private AlquilerRepository alquilerRepository;
+    private final AlquilerRepository alquilerRepository;
+    private final PagoServicioRepository pagoServicioRepository;
+    private final AumentoAlquilerRepository aumentoAlquilerRepository;
+    private final PropietarioRepository propietarioRepository;
 
-    @Autowired
-    private PagoServicioRepository pagoServicioRepository;
-
-    @Autowired
-    private AumentoAlquilerRepository aumentoAlquilerRepository;
-
-    @Autowired
-    private PropietarioRepository propietarioRepository;
-
-    @Autowired
-    private InmuebleRepository inmuebleRepository;
+    /**
+     * Constructor para inyección de dependencias
+     *
+     * @param alquilerRepository Repository de alquileres
+     * @param pagoServicioRepository Repository de pagos de servicios
+     * @param aumentoAlquilerRepository Repository de aumentos de alquileres
+     * @param propietarioRepository Repository de propietarios
+     */
+    public InformeService(
+            AlquilerRepository alquilerRepository,
+            PagoServicioRepository pagoServicioRepository,
+            AumentoAlquilerRepository aumentoAlquilerRepository,
+            PropietarioRepository propietarioRepository) {
+        this.alquilerRepository = alquilerRepository;
+        this.pagoServicioRepository = pagoServicioRepository;
+        this.aumentoAlquilerRepository = aumentoAlquilerRepository;
+        this.propietarioRepository = propietarioRepository;
+    }
 
     /**
      * Genera el Informe 1: Honorarios por inmueble del mes actual

@@ -17,7 +17,6 @@ import com.alquileres.repository.EstadoInmuebleRepository;
 import com.alquileres.repository.MotivoCancelacionRepository;
 import com.alquileres.repository.TipoServicioRepository;
 import com.alquileres.repository.AmbitoPDFRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -28,35 +27,39 @@ import java.util.Set;
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private RolRepository rolRepository;
+    private final RolRepository rolRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TipoInmuebleRepository tipoInmuebleRepository;
+    private final EstadoContratoRepository estadoContratoRepository;
+    private final EstadoInmuebleRepository estadoInmuebleRepository;
+    private final MotivoCancelacionRepository motivoCancelacionRepository;
+    private final TipoServicioRepository tipoServicioRepository;
+    private final AmbitoPDFRepository ambitoPDFRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private TipoInmuebleRepository tipoInmuebleRepository;
-
-    @Autowired
-    private EstadoContratoRepository estadoContratoRepository;
-
-    @Autowired
-    private EstadoInmuebleRepository estadoInmuebleRepository;
-
-    @Autowired
-    private MotivoCancelacionRepository motivoCancelacionRepository;
-
-    @Autowired
-    private TipoServicioRepository tipoServicioRepository;
-
-    @Autowired
-    private AmbitoPDFRepository ambitoPDFRepository;
+    public DataInitializer(
+            RolRepository rolRepository,
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder,
+            TipoInmuebleRepository tipoInmuebleRepository,
+            EstadoContratoRepository estadoContratoRepository,
+            EstadoInmuebleRepository estadoInmuebleRepository,
+            MotivoCancelacionRepository motivoCancelacionRepository,
+            TipoServicioRepository tipoServicioRepository,
+            AmbitoPDFRepository ambitoPDFRepository) {
+        this.rolRepository = rolRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.tipoInmuebleRepository = tipoInmuebleRepository;
+        this.estadoContratoRepository = estadoContratoRepository;
+        this.estadoInmuebleRepository = estadoInmuebleRepository;
+        this.motivoCancelacionRepository = motivoCancelacionRepository;
+        this.tipoServicioRepository = tipoServicioRepository;
+        this.ambitoPDFRepository = ambitoPDFRepository;
+    }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         // Inicializar roles si no existen
         if (rolRepository.count() == 0) {
             rolRepository.save(new Rol(RolNombre.ROLE_ADMINISTRADOR));

@@ -16,7 +16,6 @@ import com.alquileres.exception.ErrorCodes;
 import com.alquileres.util.FechaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -32,20 +31,24 @@ public class AlquilerService {
 
     private static final Logger logger = LoggerFactory.getLogger(AlquilerService.class);
 
-    @Autowired
-    private AlquilerRepository alquilerRepository;
+    private final AlquilerRepository alquilerRepository;
+    private final ContratoRepository contratoRepository;
+    private final com.alquileres.repository.PropietarioRepository propietarioRepository;
+    private final AumentoAlquilerService aumentoAlquilerService;
+    private final com.alquileres.util.BCRAApiClient bcraApiClient;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private com.alquileres.repository.PropietarioRepository propietarioRepository;
-
-    @Autowired
-    private AumentoAlquilerService aumentoAlquilerService;
-
-    @Autowired
-    private com.alquileres.util.BCRAApiClient bcraApiClient;
+    public AlquilerService(
+            AlquilerRepository alquilerRepository,
+            ContratoRepository contratoRepository,
+            com.alquileres.repository.PropietarioRepository propietarioRepository,
+            AumentoAlquilerService aumentoAlquilerService,
+            com.alquileres.util.BCRAApiClient bcraApiClient) {
+        this.alquilerRepository = alquilerRepository;
+        this.contratoRepository = contratoRepository;
+        this.propietarioRepository = propietarioRepository;
+        this.aumentoAlquilerService = aumentoAlquilerService;
+        this.bcraApiClient = bcraApiClient;
+    }
 
     // Obtener todos los alquileres
     public List<AlquilerDTO> obtenerTodosLosAlquileres() {
@@ -68,7 +71,7 @@ public class AlquilerService {
     // Obtener alquileres por contrato
     public List<AlquilerDTO> obtenerAlquileresPorContrato(Long contratoId) {
         Optional<Contrato> contrato = contratoRepository.findById(contratoId);
-        if (!contrato.isPresent()) {
+        if (contrato.isEmpty()) {
             throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO, "Contrato no encontrado con ID: " + contratoId, HttpStatus.NOT_FOUND);
         }
 
@@ -97,7 +100,7 @@ public class AlquilerService {
     // Obtener alquileres pendientes por contrato
     public List<AlquilerDTO> obtenerAlquileresPendientesPorContrato(Long contratoId) {
         Optional<Contrato> contrato = contratoRepository.findById(contratoId);
-        if (!contrato.isPresent()) {
+        if (contrato.isEmpty()) {
             throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO, "Contrato no encontrado con ID: " + contratoId, HttpStatus.NOT_FOUND);
         }
 
@@ -134,7 +137,7 @@ public class AlquilerService {
     public AlquilerDTO crearAlquiler(AlquilerCreateDTO alquilerDTO) {
         // Validar que existe el contrato
         Optional<Contrato> contrato = contratoRepository.findById(alquilerDTO.getContratoId());
-        if (!contrato.isPresent()) {
+        if (contrato.isEmpty()) {
             throw new BusinessException(ErrorCodes.CONTRATO_NO_ENCONTRADO, "No existe el contrato indicado", HttpStatus.BAD_REQUEST);
         }
 
@@ -179,7 +182,7 @@ public class AlquilerService {
     public AlquilerDTO actualizarAlquiler(Long id, AlquilerCreateDTO alquilerDTO) {
         // Verificar que existe el alquiler
         Optional<Alquiler> alquilerExistente = alquilerRepository.findById(id);
-        if (!alquilerExistente.isPresent()) {
+        if (alquilerExistente.isEmpty()) {
             throw new BusinessException(ErrorCodes.ALQUILER_NO_ENCONTRADO, "Alquiler no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
         }
 
@@ -209,7 +212,7 @@ public class AlquilerService {
     public AlquilerDTO marcarComoPagado(Long id, RegistroPagoDTO registroPagoDTO) {
         // Verificar que existe el alquiler
         Optional<Alquiler> alquilerExistente = alquilerRepository.findById(id);
-        if (!alquilerExistente.isPresent()) {
+        if (alquilerExistente.isEmpty()) {
             throw new BusinessException(ErrorCodes.ALQUILER_NO_ENCONTRADO, "Alquiler no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
         }
 
@@ -235,59 +238,9 @@ public class AlquilerService {
         return new AlquilerDTO(alquilerActualizado);
     }
 
-    // Eliminar alquiler
-    public void eliminarAlquiler(Long id) {
-        Optional<Alquiler> alquiler = alquilerRepository.findById(id);
-        if (!alquiler.isPresent()) {
-            throw new BusinessException(ErrorCodes.ALQUILER_NO_ENCONTRADO, "Alquiler no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
-        }
-
-        alquilerRepository.deleteById(id);
-    }
-
     // Verificar si existe un alquiler
     public boolean existeAlquiler(Long id) {
         return alquilerRepository.existsById(id);
-    }
-
-    // Crear alquileres para contratos vigentes que no tengan alquileres pendientes
-    public int crearAlquileresParaContratosVigentes() {
-        int alquileresCreados = 0;
-
-        // Obtener todos los contratos vigentes
-        List<Contrato> contratosVigentes = contratoRepository.findAll().stream()
-                .filter(c -> c.getEstadoContrato() != null && "Vigente".equals(c.getEstadoContrato().getNombre()))
-                .collect(Collectors.toList());
-
-        logger.info("Encontrados {} contratos vigentes para verificar alquileres", contratosVigentes.size());
-
-        for (Contrato contrato : contratosVigentes) {
-            try {
-                // Verificar si el contrato ya tiene alquileres pendientes
-                List<Alquiler> alquileresPendientes = alquilerRepository.findAlquileresPendientesByContratoId(contrato.getId());
-
-                if (alquileresPendientes.isEmpty()) {
-                    // No tiene alquileres pendientes, crear uno nuevo
-                    LocalDate fechaActual = LocalDate.now();
-                    LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
-                    String fechaVencimientoISO = fechaVencimiento.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-                    Alquiler nuevoAlquiler = new Alquiler(contrato, fechaVencimientoISO, contrato.getMonto());
-                    nuevoAlquiler.setEsActivo(true);
-                    alquilerRepository.save(nuevoAlquiler);
-
-                    alquileresCreados++;
-                    logger.info("Alquiler creado automáticamente para contrato ID: {}", contrato.getId());
-                } else {
-                    logger.debug("Contrato ID {} ya tiene alquileres pendientes, se omite creación", contrato.getId());
-                }
-            } catch (Exception e) {
-                logger.error("Error al crear alquiler para contrato ID {}: {}", contrato.getId(), e.getMessage());
-            }
-        }
-
-        logger.info("Proceso de creación de alquileres completado. Total creados: {}", alquileresCreados);
-        return alquileresCreados;
     }
 
     // Calcular honorarios (suma de porcentajes específicos de cada contrato para alquileres pagados del mes actual)
@@ -309,10 +262,9 @@ public class AlquilerService {
                     }
 
                     // Calcular honorario: monto * (porcentaje / 100)
-                    BigDecimal honorarioAlquiler = monto.multiply(porcentajeHonorario)
-                            .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
 
-                    return honorarioAlquiler;
+                    return monto.multiply(porcentajeHonorario)
+                            .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -339,7 +291,7 @@ public class AlquilerService {
             // Calcular honorario: monto * (porcentaje / 100)
             BigDecimal honorario = alquiler.getMonto()
                     .multiply(porcentajeHonorario)
-                    .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                    .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
 
             logger.info("Honorario calculado para alquiler {}: {} ({}% de {})",
                        alquilerId, honorario, porcentajeHonorario, alquiler.getMonto());
@@ -371,7 +323,7 @@ public class AlquilerService {
             }
             honorarios = alquiler.getMonto()
                     .multiply(porcentajeHonorario)
-                    .divide(new BigDecimal("100"), 2, BigDecimal.ROUND_HALF_UP);
+                    .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
         }
 
         return new AlquilerDetalladoDTO(
@@ -441,13 +393,13 @@ public class AlquilerService {
         }
 
         // Calcular tasa de aumento
-        BigDecimal tasaAumento = indiceFinal.divide(indiceInicial, 10, BigDecimal.ROUND_HALF_UP);
+        BigDecimal tasaAumento = indiceFinal.divide(indiceInicial, 10, java.math.RoundingMode.HALF_UP);
 
         // Obtener el monto actual (antes del aumento)
         BigDecimal montoAnterior = alquiler.getMonto();
 
         // Calcular nuevo monto
-        BigDecimal nuevoMonto = montoAnterior.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal nuevoMonto = montoAnterior.multiply(tasaAumento).setScale(2, java.math.RoundingMode.HALF_UP);
 
         // Calcular porcentaje de aumento
         BigDecimal porcentajeAumento = tasaAumento.subtract(BigDecimal.ONE)

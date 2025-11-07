@@ -11,7 +11,6 @@ import com.alquileres.repository.TipoInmuebleRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
@@ -24,20 +23,24 @@ import java.util.stream.Collectors;
 @Service
 public class InmuebleService {
 
-    @Autowired
-    private InmuebleRepository inmuebleRepository;
+    private final InmuebleRepository inmuebleRepository;
+    private final PropietarioRepository propietarioRepository;
+    private final EstadoInmuebleRepository estadoInmuebleRepository;
+    private final TipoInmuebleRepository tipoInmuebleRepository;
+    private final ContratoRepository contratoRepository;
 
-    @Autowired
-    private PropietarioRepository propietarioRepository;
-
-    @Autowired
-    private EstadoInmuebleRepository estadoInmuebleRepository;
-
-    @Autowired
-    private TipoInmuebleRepository tipoInmuebleRepository;
-
-    @Autowired
-    private ContratoRepository contratoRepository;
+    public InmuebleService(
+            InmuebleRepository inmuebleRepository,
+            PropietarioRepository propietarioRepository,
+            EstadoInmuebleRepository estadoInmuebleRepository,
+            TipoInmuebleRepository tipoInmuebleRepository,
+            ContratoRepository contratoRepository) {
+        this.inmuebleRepository = inmuebleRepository;
+        this.propietarioRepository = propietarioRepository;
+        this.estadoInmuebleRepository = estadoInmuebleRepository;
+        this.tipoInmuebleRepository = tipoInmuebleRepository;
+        this.contratoRepository = contratoRepository;
+    }
 
     // Obtener todos los inmuebles
     @Cacheable(value = "inmuebles", key = "'all'")
@@ -160,7 +163,7 @@ public class InmuebleService {
     public InmuebleDTO actualizarInmueble(Long id, InmuebleDTO inmuebleDTO) {
         Optional<Inmueble> inmuebleExistente = inmuebleRepository.findById(id);
 
-        if (!inmuebleExistente.isPresent()) {
+        if (inmuebleExistente.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INMUEBLE_NO_ENCONTRADO,
                 "No se encontró el inmueble con ID: " + id,
@@ -215,7 +218,7 @@ public class InmuebleService {
     @CacheEvict(value = "inmuebles", allEntries = true)
     public void eliminarInmueble(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
-        if (!inmueble.isPresent()) {
+        if (inmueble.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INMUEBLE_NO_ENCONTRADO,
                 "No se encontró el inmueble con ID: " + id,
@@ -329,7 +332,7 @@ public class InmuebleService {
     public InmuebleDTO cambiarTipoInmueble(Long id, Long tipoInmuebleId) {
         // Verificar que existe el inmueble
         Optional<Inmueble> inmuebleExistente = inmuebleRepository.findById(id);
-        if (!inmuebleExistente.isPresent()) {
+        if (inmuebleExistente.isEmpty()) {
             throw new BusinessException(ErrorCodes.INMUEBLE_NO_ENCONTRADO, "Inmueble no encontrado con ID: " + id, HttpStatus.NOT_FOUND);
         }
 
@@ -344,7 +347,7 @@ public class InmuebleService {
 
         // Validar que existe el tipo de inmueble
         Optional<TipoInmueble> tipoInmueble = tipoInmuebleRepository.findById(tipoInmuebleId);
-        if (!tipoInmueble.isPresent()) {
+        if (tipoInmueble.isEmpty()) {
             throw new BusinessException(ErrorCodes.TIPO_INMUEBLE_NO_ENCONTRADO,
                 "No existe el tipo de inmueble con ID: " + tipoInmuebleId, HttpStatus.BAD_REQUEST);
         }
@@ -364,7 +367,7 @@ public class InmuebleService {
     // Activar inmueble (reactivación)
     public void activarInmueble(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
-        if (!inmueble.isPresent()) {
+        if (inmueble.isEmpty()) {
             throw new BusinessException(
                 ErrorCodes.INMUEBLE_NO_ENCONTRADO,
                 "No se encontró el inmueble con ID: " + id,

@@ -1,7 +1,6 @@
 package com.alquileres.service;
 
 import com.alquileres.security.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +14,14 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TokenBlacklistService {
 
-    @Autowired
-    @Lazy
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
     // Almacenamos el token junto con su fecha de expiración
     private final Map<String, Date> blacklistedTokens = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public TokenBlacklistService() {
+    public TokenBlacklistService(@Lazy JwtUtils jwtUtils) {
+        this.jwtUtils = jwtUtils;
         // Limpiar tokens expirados cada hora
         scheduler.scheduleAtFixedRate(this::cleanupExpiredTokens, 1, 1, TimeUnit.HOURS);
     }

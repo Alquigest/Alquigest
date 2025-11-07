@@ -14,10 +14,8 @@ import com.alquileres.repository.TipoServicioRepository;
 import com.alquileres.repository.ServicioXContratoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -41,26 +39,30 @@ public class ServicioActualizacionService {
      */
     private static final String CLAVE_ULTIMO_MES_PROCESADO = "ULTIMO_MES_PROCESADO_PAGOS_SERVICIOS";
 
-    @Autowired
-    private ConfiguracionPagoServicioRepository configuracionPagoServicioRepository;
+    private final ConfiguracionPagoServicioRepository configuracionPagoServicioRepository;
+    private final PagoServicioRepository pagoServicioRepository;
+    private final ConfiguracionPagoServicioService configuracionPagoServicioService;
+    private final ConfiguracionSistemaRepository configuracionSistemaRepository;
+    private final ContratoRepository contratoRepository;
+    private final TipoServicioRepository tipoServicioRepository;
+    private final ServicioXContratoRepository servicioXContratoRepository;
 
-    @Autowired
-    private PagoServicioRepository pagoServicioRepository;
-
-    @Autowired
-    private ConfiguracionPagoServicioService configuracionPagoServicioService;
-
-    @Autowired
-    private ConfiguracionSistemaRepository configuracionSistemaRepository;
-
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private TipoServicioRepository tipoServicioRepository;
-
-    @Autowired
-    private ServicioXContratoRepository servicioXContratoRepository;
+    public ServicioActualizacionService(
+            ConfiguracionPagoServicioRepository configuracionPagoServicioRepository,
+            PagoServicioRepository pagoServicioRepository,
+            ConfiguracionPagoServicioService configuracionPagoServicioService,
+            ConfiguracionSistemaRepository configuracionSistemaRepository,
+            ContratoRepository contratoRepository,
+            TipoServicioRepository tipoServicioRepository,
+            ServicioXContratoRepository servicioXContratoRepository) {
+        this.configuracionPagoServicioRepository = configuracionPagoServicioRepository;
+        this.pagoServicioRepository = pagoServicioRepository;
+        this.configuracionPagoServicioService = configuracionPagoServicioService;
+        this.configuracionSistemaRepository = configuracionSistemaRepository;
+        this.contratoRepository = contratoRepository;
+        this.tipoServicioRepository = tipoServicioRepository;
+        this.servicioXContratoRepository = servicioXContratoRepository;
+    }
 
     /**
      * Procesa todas las configuraciones activas que tienen pagos pendientes de generar
@@ -69,6 +71,7 @@ public class ServicioActualizacionService {
      *
      * @return Cantidad de facturas generadas
      */
+    @Transactional
     public int procesarPagosPendientes() {
         try {
             logger.info("=== INICIO procesarPagosPendientes ===");
@@ -125,7 +128,7 @@ public class ServicioActualizacionService {
                                configuracion.getId(), configuracion.getProximoPago());
 
                     // Generar la nueva factura para este período
-                    boolean generado = generarFacturaParaPeriodo(configuracion, fechaActual);
+                    boolean generado = generarFacturaParaPeriodo(configuracion);
 
                     if (generado) {
                         facturasGeneradas++;
@@ -170,7 +173,6 @@ public class ServicioActualizacionService {
      *
      * @param mesActual El mes actual en formato MM/yyyy
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void actualizarUltimoMesProcesado(String mesActual) {
         try {
             logger.info("Intentando actualizar último mes procesado a: {}", mesActual);
@@ -203,11 +205,9 @@ public class ServicioActualizacionService {
      * y actualiza la configuración con el próximo pago
      *
      * @param configuracion La configuración de pago
-     * @param fechaActual Fecha actual para validaciones
      * @return true si se generó la factura, false si ya existía o hubo error
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected boolean generarFacturaParaPeriodo(ConfiguracionPagoServicio configuracion, String fechaActual) {
+    protected boolean generarFacturaParaPeriodo(ConfiguracionPagoServicio configuracion) {
         try {
             ServicioXContrato servicio = configuracion.getServicioXContrato();
 
@@ -293,7 +293,7 @@ public class ServicioActualizacionService {
 
         // Eliminar la configuración para forzar el procesamiento
         configuracionSistemaRepository.findByClave(CLAVE_ULTIMO_MES_PROCESADO)
-            .ifPresent(config -> configuracionSistemaRepository.delete(config));
+            .ifPresent(configuracionSistemaRepository::delete);
 
         logger.info("Forzando procesamiento de pagos. Último mes procesado era: {}", mesAnterior);
 
@@ -324,7 +324,7 @@ public class ServicioActualizacionService {
             Optional<ConfiguracionPagoServicio> configOpt =
                 configuracionPagoServicioRepository.findById(configuracionId);
 
-            if (!configOpt.isPresent()) {
+            if (configOpt.isEmpty()) {
                 logger.warn("Configuración no encontrada con ID: {}", configuracionId);
                 return 0;
             }
@@ -344,7 +344,7 @@ public class ServicioActualizacionService {
             while (configuracion.getProximoPago() != null &&
                    configuracion.getProximoPago().compareTo(fechaActual) <= 0) {
 
-                boolean generado = generarFacturaParaPeriodo(configuracion, fechaActual);
+                boolean generado = generarFacturaParaPeriodo(configuracion);
 
                 if (generado) {
                     pagosGenerados++;

@@ -54,50 +54,51 @@ public class ContratoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ContratoService.class);
 
-    @Autowired
-    private ContratoRepository contratoRepository;
+    private final ContratoRepository contratoRepository;
+    private final InmuebleRepository inmuebleRepository;
+    private final InquilinoRepository inquilinoRepository;
+    private final EstadoContratoRepository estadoContratoRepository;
+    private final EstadoInmuebleRepository estadoInmuebleRepository;
+    private final PropietarioRepository propietarioRepository;
+    private final TipoInmuebleRepository tipoInmuebleRepository;
+    private final CancelacionContratoRepository cancelacionContratoRepository;
+    private final MotivoCancelacionRepository motivoCancelacionRepository;
+    private final AlquilerRepository alquilerRepository;
+    private final ServicioXContratoService servicioXContratoService;
+    private final EncryptionService encryptionService;
+    private final PDFService pdfService;
+    private final BCRAApiClient bcraApiClient;
 
-    @Autowired
-    private InmuebleRepository inmuebleRepository;
-
-    @Autowired
-    private InquilinoRepository inquilinoRepository;
-
-    @Autowired
-    private EstadoContratoRepository estadoContratoRepository;
-
-    @Autowired
-    private EstadoInmuebleRepository estadoInmuebleRepository;
-
-    @Autowired
-    private PropietarioRepository propietarioRepository;
-
-    @Autowired
-    private TipoInmuebleRepository tipoInmuebleRepository;
-
-    @Autowired
-    private CancelacionContratoRepository cancelacionContratoRepository;
-
-    @Autowired
-    private MotivoCancelacionRepository motivoCancelacionRepository;
-
-    @Autowired
-    private AlquilerRepository alquilerRepository;
-
-    @Autowired
-    private AlquilerActualizacionService alquilerActualizacionService;
-
-    @Autowired
-    private ServicioXContratoService servicioXContratoService;
-
-    @Autowired
-    private EncryptionService encryptionService;
-
-    @Autowired
-    private PDFService pdfService;
-
-    @Autowired
-    private BCRAApiClient bcraApiClient;
+    public ContratoService(
+            ContratoRepository contratoRepository,
+            InmuebleRepository inmuebleRepository,
+            InquilinoRepository inquilinoRepository,
+            EstadoContratoRepository estadoContratoRepository,
+            EstadoInmuebleRepository estadoInmuebleRepository,
+            PropietarioRepository propietarioRepository,
+            TipoInmuebleRepository tipoInmuebleRepository,
+            CancelacionContratoRepository cancelacionContratoRepository,
+            MotivoCancelacionRepository motivoCancelacionRepository,
+            AlquilerRepository alquilerRepository,
+            ServicioXContratoService servicioXContratoService,
+            EncryptionService encryptionService,
+            PDFService pdfService,
+            BCRAApiClient bcraApiClient) {
+        this.contratoRepository = contratoRepository;
+        this.inmuebleRepository = inmuebleRepository;
+        this.inquilinoRepository = inquilinoRepository;
+        this.estadoContratoRepository = estadoContratoRepository;
+        this.estadoInmuebleRepository = estadoInmuebleRepository;
+        this.propietarioRepository = propietarioRepository;
+        this.tipoInmuebleRepository = tipoInmuebleRepository;
+        this.cancelacionContratoRepository = cancelacionContratoRepository;
+        this.motivoCancelacionRepository = motivoCancelacionRepository;
+        this.alquilerRepository = alquilerRepository;
+        this.servicioXContratoService = servicioXContratoService;
+        this.encryptionService = encryptionService;
+        this.pdfService = pdfService;
+        this.bcraApiClient = bcraApiClient;
+    }
 
     @Autowired
     private AumentoAlquilerService aumentoAlquilerService;

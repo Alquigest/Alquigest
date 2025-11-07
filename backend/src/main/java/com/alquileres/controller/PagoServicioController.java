@@ -173,9 +173,7 @@ public class PagoServicioController {
             @PathVariable Integer pagoId,
             @Valid @RequestBody ActualizarPagoServicioRequest request) {
         try {
-            PagoServicio pagoActualizado = pagoServicioService.actualizarPagoServicio(pagoId, request);
-            PagoServicioResponseDTO dto = new PagoServicioResponseDTO(pagoActualizado);
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(new PagoServicioResponseDTO(pagoServicioService.actualizarPagoServicio(pagoId, request)));
         } catch (RuntimeException e) {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
