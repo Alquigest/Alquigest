@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CreditCard, Blocks, ArrowLeft } from "lucide-react"
 import { ContratoDetallado } from "@/types/ContratoDetallado"
@@ -22,6 +22,16 @@ export default function PagoServiciosPage() {
     cantServiciosNoPagos: 0,
     cantServicios: 0,
   })
+
+  // Ordenar contratos por cantidad de servicios pendientes (descendente)
+  const contratosOrdenados = useMemo(() => {
+    return [...contratos].sort((a, b) => {
+      const pa = contratosServiciosNoPagos[a.id.toString()] || 0
+      const pb = contratosServiciosNoPagos[b.id.toString()] || 0
+      if (pb !== pa) return pb - pa
+      return a.id - b.id
+    })
+  }, [contratos, contratosServiciosNoPagos])
 
   useEffect(() => {
     // Fetch principal: contratos (bloquea el loading principal)
@@ -195,8 +205,9 @@ export default function PagoServiciosPage() {
           )}
 
           {/* Cards de contratos */}
-          <div className="space-y-6">
-            {contratos.map((contrato: ContratoDetallado) => (
+          {/** Lista ordenada: primero contratos con más servicios pendientes */}
+          <div className="grid grid-cols-1 gap-4 ">
+            {contratosOrdenados.map((contrato: ContratoDetallado) => (
               <ContratoServiciosCard 
                 key={contrato.id} 
                 contrato={contrato} 
