@@ -118,7 +118,7 @@ export default function ModalNotificacionesInicio({ isOpen, onClose, setNotifica
                     </div>
                   </div>
                 </div>
-                <Link href="/alquileres" onClick={onClose}>
+                <Link href="/alquileres?filtro=proximos-vencer&ordenCampo=direccion&ordenDir=asc" onClick={onClose}>
                   <Button
                     className="w-full mt-3 bg-red-600 hover:bg-red-700 text-white"
                     size="sm"

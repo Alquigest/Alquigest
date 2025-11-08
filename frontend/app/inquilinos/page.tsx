@@ -14,7 +14,7 @@ import HeaderAlquigest from "@/components/header"
 import Loading from "@/components/loading"
 import NuevoInquilinoModal from "./nuevoInquilinoModal"
 import { Inquilino } from "@/types/Inquilino"
-import { fetchWithCredentials } from "@/utils/functions/fetchWithCredentials"
+import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import { useAuth } from "@/contexts/AuthProvider"
 import { Switch } from "@/components/ui/switch"
 import ModalError from "@/components/modal-error"
@@ -44,11 +44,10 @@ export default function InquilinosPage() {
 
       try{
         console.log("Ejecutando fetch de inquilinos...")
-          const data = await fetchWithCredentials(url)
-          const jsonData = await data.json()
-          console.log("Datos parseados del backend:", jsonData)
+          const data = await fetchWithToken(url)
+          console.log("Datos parseados del backend:", data)
           // Ordenar por apellido ascendente
-          const dataOrdenada = jsonData.sort((a: Inquilino, b: Inquilino) =>
+          const dataOrdenada = data.sort((a: Inquilino, b: Inquilino) =>
             a.apellido.localeCompare(b.apellido));
           setInquilinosBD(dataOrdenada)
           setLoading(false)
@@ -87,7 +86,7 @@ export default function InquilinosPage() {
       if (!editingInquilino.esActivo) {
         console.log("Inactivando inquilino...");
 
-        const response = await fetchWithCredentials(
+        const response = await fetchWithToken(
           `/inquilinos/${(editingInquilino as any).id}/desactivar`,
           {
             method: "PATCH",
@@ -104,7 +103,7 @@ export default function InquilinosPage() {
         // Caso normal: actualización de datos
         console.log("Actualizando datos del inquilino...");
 
-        const response = await fetchWithCredentials(
+        const response = await fetchWithToken(
           `/inquilinos/${(editingInquilino as any).id}`,
           {
             method: "PUT",
@@ -112,7 +111,7 @@ export default function InquilinosPage() {
           }
         );
 
-        updatedInquilino = await response.json();
+        updatedInquilino = response;
       }
 
       // ✅ VALIDACIÓN AGREGADA
