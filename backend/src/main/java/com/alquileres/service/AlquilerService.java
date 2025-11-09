@@ -222,6 +222,9 @@ public class AlquilerService {
         // Marcar como pagado
         alquiler.setEstaPagado(true);
 
+        // Setear la fecha de pago a la fecha actual
+        alquiler.setFechaPago(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
         // Actualizar información de pago
         if (registroPagoDTO.getCuentaBanco() != null) {
             alquiler.setCuentaBanco(registroPagoDTO.getCuentaBanco());
