@@ -1160,26 +1160,35 @@ public class ContratoService {
      */
     private void anularAlquileresDelContrato(Long contratoId) {
         try {
-            List<com.alquileres.model.Alquiler> alquileres = 
-                alquilerRepository.findByContratoId(contratoId);
-            
+            // Buscar TODOS los alquileres del contrato (activos e inactivos)
+            List<com.alquileres.model.Alquiler> alquileres =
+                alquilerRepository.findAllByContratoId(contratoId);
+
             if (alquileres != null && !alquileres.isEmpty()) {
                 // Marcar todos los alquileres como inactivos (borrado lógico)
+                int alquileresDesactivados = 0;
                 for (com.alquileres.model.Alquiler alquiler : alquileres) {
-                    alquiler.setEsActivo(false);
+                    if (alquiler.getEsActivo()) {
+                        alquiler.setEsActivo(false);
+                        alquileresDesactivados++;
+                    }
                 }
-                alquilerRepository.saveAll(alquileres);
-                
-                logger.info("Se anularon {} alquileres del contrato ID: {} (borrado lógico)", 
-                    alquileres.size(), contratoId);
+
+                if (alquileresDesactivados > 0) {
+                    alquilerRepository.saveAll(alquileres);
+                    logger.info("Se anularon {} alquileres del contrato ID: {} (borrado lógico)",
+                        alquileresDesactivados, contratoId);
+                } else {
+                    logger.info("Todos los alquileres del contrato ID: {} ya estaban inactivos", contratoId);
+                }
             } else {
                 logger.info("No hay alquileres para anular en el contrato ID: {}", contratoId);
             }
         } catch (Exception e) {
-            logger.error("Error al desactivar servicios del contrato ID: {}", contratoId, e);
+            logger.error("Error al desactivar alquileres del contrato ID: {}", contratoId, e);
             throw new BusinessException(
                 ErrorCodes.ERROR_INTERNO,
-                "Error al desactivar los servicios del contrato", 
+                "Error al desactivar los alquileres del contrato",
                 HttpStatus.INTERNAL_SERVER_ERROR
             );
         }

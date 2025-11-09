@@ -21,6 +21,10 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     @Query("SELECT a FROM Alquiler a WHERE a.contrato.id = :contratoId AND a.esActivo = true")
     List<Alquiler> findByContratoId(@Param("contratoId") Long contratoId);
 
+    // Buscar TODOS los alquileres por contrato ID (activos e inactivos) - usado para anular al dar de baja
+    @Query("SELECT a FROM Alquiler a WHERE a.contrato.id = :contratoId")
+    List<Alquiler> findAllByContratoId(@Param("contratoId") Long contratoId);
+
     // Buscar alquileres activos pagados o no pagados
     @Query("SELECT a FROM Alquiler a WHERE a.estaPagado = :estaPagado AND a.esActivo = true")
     List<Alquiler> findByEstaPagado(@Param("estaPagado") Boolean estaPagado);
@@ -92,4 +96,3 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
         @Param("estadoContrato") String estadoContrato
     );
 }
-
