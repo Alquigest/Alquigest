@@ -3,6 +3,7 @@ package com.alquileres.model;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "aumento_alquiler")
@@ -45,7 +46,7 @@ public class AumentoAlquiler {
         this.montoAnterior = montoAnterior;
         this.montoNuevo = montoNuevo;
         this.porcentajeAumento = porcentajeAumento;
-        this.createdAt = java.time.LocalDateTime.now().toString();
+        this.createdAt = LocalDateTime.now().toString();
     }
 
     // Getters y Setters

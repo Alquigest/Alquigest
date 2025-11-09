@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -121,7 +123,7 @@ public class AumentoAlquilerService {
         aumento.setMontoNuevo(aumentoDTO.getMontoNuevo());
         aumento.setPorcentajeAumento(porcentajeAumento);
         aumento.setDescripcion(aumentoDTO.getDescripcion());
-        aumento.setCreatedAt(java.time.LocalDateTime.now().toString());
+        aumento.setCreatedAt(LocalDateTime.now().toString());
 
         AumentoAlquiler aumentoGuardado = aumentoAlquilerRepository.save(aumento);
         return new AumentoAlquilerDTO(aumentoGuardado);
@@ -143,12 +145,12 @@ public class AumentoAlquilerService {
 
         AumentoAlquiler aumento = new AumentoAlquiler();
         aumento.setContrato(contrato);
-        aumento.setFechaAumento(java.time.LocalDate.now().toString());
+        aumento.setFechaAumento(LocalDate.now().toString());
         aumento.setMontoAnterior(montoAnterior);
         aumento.setMontoNuevo(montoNuevo);
         aumento.setPorcentajeAumento(porcentajeAumento != null ? porcentajeAumento : BigDecimal.ZERO);
         aumento.setDescripcion("Aumento automático registrado");
-        aumento.setCreatedAt(java.time.LocalDateTime.now().toString());
+        aumento.setCreatedAt(LocalDateTime.now().toString());
 
         AumentoAlquiler aumentoGuardado = aumentoAlquilerRepository.save(aumento);
         return new AumentoAlquilerDTO(aumentoGuardado);
@@ -212,12 +214,12 @@ public class AumentoAlquilerService {
                                                    BigDecimal montoNuevo, BigDecimal porcentajeAumento) {
         AumentoAlquiler aumento = new AumentoAlquiler();
         aumento.setContrato(contrato);
-        aumento.setFechaAumento(java.time.LocalDate.now().toString());
+        aumento.setFechaAumento(LocalDate.now().toString());
         aumento.setMontoAnterior(montoAnterior);
         aumento.setMontoNuevo(montoNuevo);
         aumento.setPorcentajeAumento(porcentajeAumento != null ? porcentajeAumento : BigDecimal.ZERO);
         aumento.setDescripcion("Aumento automático registrado");
-        aumento.setCreatedAt(java.time.LocalDateTime.now().toString());
+        aumento.setCreatedAt(LocalDateTime.now().toString());
         return aumento;
     }
 
