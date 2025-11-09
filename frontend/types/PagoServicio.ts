@@ -7,7 +7,7 @@
     monto: number | null
     pdfPath: string | null
     periodo: string
-    servicioXContrato: {
+    servicioContrato: {
       id: number
       nroCuenta: string | null
       esDeInquilino: boolean

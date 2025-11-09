@@ -91,13 +91,13 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(e => !e)}>
           
             <div className="flex items-center gap-3">
-                <TipoServicioIcon tipoServicio={pagoServicio.servicioXContrato.tipoServicio.id} className="h-9 w-9"/>
+                <TipoServicioIcon tipoServicio={pagoServicio.servicioContrato.tipoServicio.id} className="h-9 w-9"/>
                 <div>
-                <p className="font-bold text-base">{pagoServicio.servicioXContrato.tipoServicio.nombre}</p>
+                <p className="font-bold text-base">{pagoServicio.servicioContrato.tipoServicio.nombre}</p>
                 <p className="text-sm text-muted-foreground">Período: {pagoServicio.periodo}</p>
-                <p className="text-sm text-muted-foreground">Nro Cuenta: {pagoServicio.servicioXContrato.nroCuenta || "No Especificado"}</p>
-                {pagoServicio.servicioXContrato.nroContratoServicio !== "" && (
-                  <p className="text-sm text-muted-foreground">Nro Contrato Servicio: {pagoServicio.servicioXContrato.nroContratoServicio || "No Especificado"}</p>
+                <p className="text-sm text-muted-foreground">Nro Cuenta: {pagoServicio.servicioContrato.nroCuenta || "No Especificado"}</p>
+                {pagoServicio.servicioContrato.nroContratoServicio !== "" && (
+                  <p className="text-sm text-muted-foreground">Nro Contrato Servicio: {pagoServicio.servicioContrato.nroContratoServicio || "No Especificado"}</p>
                 )}
                 </div>
             </div>
@@ -112,7 +112,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                 </div>
 
                 <div>
-                    {pagoServicio.servicioXContrato.esDeInquilino ? (
+                    {pagoServicio.servicioContrato.esDeInquilino ? (
                       <Badge variant={"secondary"}>Paga Locatario</Badge>
                     ) : (
                       <Badge>Paga Estudio</Badge>
@@ -189,7 +189,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                 triggerLabel={loading ? "Procesando..." : "Registrar pago"}
                 items={[{
                   id: pagoServicio.id,
-                  titulo: pagoServicio.servicioXContrato.tipoServicio.nombre,
+                  titulo: pagoServicio.servicioContrato.tipoServicio.nombre,
                   subtitulo: `${pagoServicio.periodo} | ${medioPago}${vencido === 'SI' ? ' | Vencido' : ''}`,
                   monto: typeof monto === 'number' ? monto : parseFloat(String(monto).replace(',', '.'))
                 }]}

@@ -21,7 +21,7 @@ interface PagoServicioItem {
   medioPago: string | null
   monto: number | null
   periodo: string
-  servicioXContrato: {
+  servicioContrato: {
     id: number
     nroCuenta: string | null
     esDeInquilino: boolean
@@ -141,8 +141,8 @@ export default function HistorialPagosServiciosPage() {
                         return String(pa).localeCompare(String(pb)) * sign
                       }
                       if (sortBy === "tipo") {
-                        va = a.servicioXContrato.tipoServicio.nombre
-                        vb = b.servicioXContrato.tipoServicio.nombre
+                        va = a.servicioContrato.tipoServicio.nombre
+                        vb = b.servicioContrato.tipoServicio.nombre
                         return String(va).localeCompare(String(vb)) * sign
                       }
                       // fechaPago: nulls al final siempre
@@ -159,20 +159,20 @@ export default function HistorialPagosServiciosPage() {
                           : (<Badge className="bg-emerald-300 text-black">Pagado</Badge>) 
                           : (<Badge className="bg-red-300 text-black">Pendiente</Badge>)
 
-                    const aCargoDe = item.servicioXContrato.esDeInquilino 
+                    const aCargoDe = item.servicioContrato.esDeInquilino 
                         ? (<Badge variant={"secondary"}>Locatario</Badge>) 
                         : (<Badge>Estudio Jurídico</Badge>)
 
                     const tipoServicio = <div className="flex gap-2 items-center"> 
-                                            <TipoServicioIcon className="h-6 w-6" tipoServicio={item.servicioXContrato.tipoServicio.id}/>
-                                            {item.servicioXContrato.tipoServicio.nombre}
+                                            <TipoServicioIcon className="h-6 w-6" tipoServicio={item.servicioContrato.tipoServicio.id}/>
+                                            {item.servicioContrato.tipoServicio.nombre}
                                           </div>
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-semibold">{item.periodo}</TableCell>
                         <TableCell>{tipoServicio}</TableCell>
                         <TableCell>{item.monto ? `$${item.monto.toLocaleString()}` : "-"}</TableCell>
-                        <TableCell>{item.servicioXContrato.nroCuenta ?? "-"}</TableCell>
+                        <TableCell>{item.servicioContrato.nroCuenta ?? "-"}</TableCell>
                         <TableCell>{estadoPago}</TableCell>
                         <TableCell>{item.medioPago ?? "-"}</TableCell>
                         <TableCell>{item.fechaPago ?? "-"}</TableCell>

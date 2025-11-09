@@ -58,14 +58,14 @@ export default function GenerarReciboPage() {
         // 1) Servicios no pagados del contrato
         const serviciosNoPagados: PagoServicio[] = await fetchWithToken(`${BACKEND_URL}/pagos-servicios/contrato/${alquilerId}/no-pagados`)
         const base: ServicioBase[] = (serviciosNoPagados || []).map((item) => ({
-          tipoServicioId: item.servicioXContrato?.tipoServicio?.id,
+          tipoServicioId: item.servicioContrato?.tipoServicio?.id,
         }))
         setServiciosBase(base)
         console.log("Servicios no pagados:", serviciosNoPagados);
         // Inicializar montos desde backend con formato de coma
         const initMontos: Record<number, string | ""> = {}
         serviciosNoPagados.forEach((p) => {
-          const id = p.servicioXContrato?.tipoServicio?.id
+          const id = p.servicioContrato?.tipoServicio?.id
           if (id) {
             const monto = p.monto ?? 0
             // Convertir a string con coma como separador decimal
