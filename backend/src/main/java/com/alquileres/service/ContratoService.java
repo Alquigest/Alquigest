@@ -67,6 +67,7 @@ public class ContratoService {
     private final EncryptionService encryptionService;
     private final PDFService pdfService;
     private final BCRAApiClient bcraApiClient;
+    private final ClockService clockService;
 
     public ContratoService(
             ContratoRepository contratoRepository,
@@ -82,7 +83,8 @@ public class ContratoService {
             ServicioContratoService servicioContratoService,
             EncryptionService encryptionService,
             PDFService pdfService,
-            BCRAApiClient bcraApiClient) {
+            BCRAApiClient bcraApiClient,
+            ClockService clockService) {
         this.contratoRepository = contratoRepository;
         this.inmuebleRepository = inmuebleRepository;
         this.inquilinoRepository = inquilinoRepository;
@@ -97,6 +99,7 @@ public class ContratoService {
         this.encryptionService = encryptionService;
         this.pdfService = pdfService;
         this.bcraApiClient = bcraApiClient;
+        this.clockService = clockService;
     }
 
     @Autowired
@@ -371,9 +374,9 @@ public class ContratoService {
      */
     @Cacheable(value = "contratos-por-vencer", key = "'proximos_' + #diasAntes")
     public List<ContratoDTO> obtenerContratosProximosAVencer(int diasAntes) {
-        String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        
+        String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         List<Contrato> contratos = contratoRepository.findContratosVigentesProximosAVencer(
             fechaActual, 
             fechaLimite
@@ -392,9 +395,9 @@ public class ContratoService {
      */
     @Cacheable(value = "contratos-por-vencer", key = "'count_proximos_' + #diasAntes")
     public Long contarContratosProximosAVencer(int diasAntes) {
-        String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        
+        String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         return contratoRepository.countContratosVigentesProximosAVencer(fechaActual, fechaLimite);
     }
 

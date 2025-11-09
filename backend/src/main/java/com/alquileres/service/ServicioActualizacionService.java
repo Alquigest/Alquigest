@@ -46,6 +46,7 @@ public class ServicioActualizacionService {
     private final ContratoRepository contratoRepository;
     private final TipoServicioRepository tipoServicioRepository;
     private final ServicioContratoRepository servicioContratoRepository;
+    private final ClockService clockService;
 
     public ServicioActualizacionService(
             ConfiguracionPagoServicioRepository configuracionPagoServicioRepository,
@@ -54,7 +55,8 @@ public class ServicioActualizacionService {
             ConfiguracionSistemaRepository configuracionSistemaRepository,
             ContratoRepository contratoRepository,
             TipoServicioRepository tipoServicioRepository,
-            ServicioContratoRepository servicioContratoRepository) {
+            ServicioContratoRepository servicioContratoRepository,
+            ClockService clockService) {
         this.configuracionPagoServicioRepository = configuracionPagoServicioRepository;
         this.pagoServicioRepository = pagoServicioRepository;
         this.configuracionPagoServicioService = configuracionPagoServicioService;
@@ -62,6 +64,7 @@ public class ServicioActualizacionService {
         this.contratoRepository = contratoRepository;
         this.tipoServicioRepository = tipoServicioRepository;
         this.servicioContratoRepository = servicioContratoRepository;
+        this.clockService = clockService;
     }
 
     /**
@@ -93,7 +96,7 @@ public class ServicioActualizacionService {
             logger.info("Iniciando procesamiento de facturas de servicios pendientes para el mes {}", mesActual);
 
             // Obtener la fecha actual en formato ISO
-            String fechaActual = LocalDate.now().format(FORMATO_FECHA);
+            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
             logger.info("Fecha actual (ISO): {}", fechaActual);
 
             // DEBUG: Mostrar todas las configuraciones activas
@@ -274,7 +277,7 @@ public class ServicioActualizacionService {
         } catch (Exception e) {
             logger.error("Error al calcular período desde fecha: {}", fechaISO, e);
             // En caso de error, retornar formato actual
-            return LocalDate.now().format(FORMATO_PERIODO);
+            return clockService.getCurrentDate().format(FORMATO_PERIODO);
         }
     }
 
@@ -336,7 +339,7 @@ public class ServicioActualizacionService {
                 return 0;
             }
 
-            String fechaActual = LocalDate.now().format(FORMATO_FECHA);
+            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
             int pagosGenerados = 0;
 
             // Generar pagos mientras el próximo pago sea menor o igual a la fecha actual
@@ -404,7 +407,7 @@ public class ServicioActualizacionService {
             }
 
             // Obtener el mes actual
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             String periodoActual = fechaActual.format(FORMATO_PERIODO);
 
             // Verificar si ya existe una factura para este servicio y período actual
@@ -471,7 +474,7 @@ public class ServicioActualizacionService {
             List<ServicioContrato> todosLosServicios = servicioContratoRepository.findAll();
 
             int serviciosCreados = 0;
-            String fechaActual = LocalDate.now().format(FORMATO_FECHA);
+            String fechaActual = clockService.getCurrentDate().format(FORMATO_FECHA);
 
             // Listas para batch processing
             List<ServicioContrato> serviciosACrear = new java.util.ArrayList<>();

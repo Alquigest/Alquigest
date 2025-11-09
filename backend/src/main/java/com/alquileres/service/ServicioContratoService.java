@@ -31,18 +31,21 @@ public class ServicioContratoService {
     private final TipoServicioRepository tipoServicioRepository;
     private final ConfiguracionPagoServicioService configuracionPagoServicioService;
     private final ServicioActualizacionService servicioActualizacionService;
+    private final ClockService clockService;
 
     public ServicioContratoService(
             ServicioContratoRepository servicioContratoRepository,
             ContratoRepository contratoRepository,
             TipoServicioRepository tipoServicioRepository,
             ConfiguracionPagoServicioService configuracionPagoServicioService,
-            ServicioActualizacionService servicioActualizacionService) {
+            ServicioActualizacionService servicioActualizacionService,
+            ClockService clockService) {
         this.servicioContratoRepository = servicioContratoRepository;
         this.contratoRepository = contratoRepository;
         this.tipoServicioRepository = tipoServicioRepository;
         this.configuracionPagoServicioService = configuracionPagoServicioService;
         this.servicioActualizacionService = servicioActualizacionService;
+        this.clockService = clockService;
     }
 
     /**
@@ -125,7 +128,7 @@ public class ServicioContratoService {
                    contratoId, tipoServicio.getNombre(), !servicio.getEsAnual());
 
         // Crear la configuración de pago automática
-        String fechaInicioFinal = fechaInicio != null ? fechaInicio : LocalDate.now().format(FORMATO_FECHA);
+        String fechaInicioFinal = fechaInicio != null ? fechaInicio : clockService.getCurrentDate().format(FORMATO_FECHA);
         ConfiguracionPagoServicio configuracion = configuracionPagoServicioService.crearConfiguracion(servicioGuardado, fechaInicioFinal);
         logger.info("Configuración de pago creada para servicio ID: {}", servicioGuardado.getId());
 
@@ -204,7 +207,7 @@ public class ServicioContratoService {
      */
     @Transactional
     public void reactivarServicio(Integer servicioId) {
-        reactivarServicioConFecha(servicioId, LocalDate.now().format(FORMATO_FECHA));
+        reactivarServicioConFecha(servicioId, clockService.getCurrentDate().format(FORMATO_FECHA));
     }
 
     /**
@@ -269,7 +272,7 @@ public class ServicioContratoService {
      * Obtiene servicios que necesitan generar pagos
      */
     public List<ServicioContrato> getServiciosConPagosPendientes() {
-        return servicioContratoRepository.findServiciosConPagosPendientes(LocalDate.now());
+        return servicioContratoRepository.findServiciosConPagosPendientes(clockService.getCurrentDate());
     }
 
     /**
@@ -285,7 +288,7 @@ public class ServicioContratoService {
 
         LocalDate ultimoPago = servicio.getUltimoPagoGenerado();
         if (ultimoPago == null) {
-            ultimoPago = LocalDate.now();
+            ultimoPago = clockService.getCurrentDate();
         }
 
         LocalDate proximoPago;

@@ -28,6 +28,7 @@ public class InformeService {
     private final PagoServicioRepository pagoServicioRepository;
     private final AumentoAlquilerRepository aumentoAlquilerRepository;
     private final PropietarioRepository propietarioRepository;
+    private final ClockService clockService;
 
     /**
      * Constructor para inyección de dependencias
@@ -36,16 +37,19 @@ public class InformeService {
      * @param pagoServicioRepository Repository de pagos de servicios
      * @param aumentoAlquilerRepository Repository de aumentos de alquileres
      * @param propietarioRepository Repository de propietarios
+     * @param clockService Servicio de reloj para manejo de fechas
      */
     public InformeService(
             AlquilerRepository alquilerRepository,
             PagoServicioRepository pagoServicioRepository,
             AumentoAlquilerRepository aumentoAlquilerRepository,
-            PropietarioRepository propietarioRepository) {
+            PropietarioRepository propietarioRepository,
+            ClockService clockService) {
         this.alquilerRepository = alquilerRepository;
         this.pagoServicioRepository = pagoServicioRepository;
         this.aumentoAlquilerRepository = aumentoAlquilerRepository;
         this.propietarioRepository = propietarioRepository;
+        this.clockService = clockService;
     }
 
     /**
@@ -57,7 +61,7 @@ public class InformeService {
     public InformeHonorariosDTO generarInformeHonorarios() {
         logger.info("Generando informe de honorarios para el mes actual");
 
-        LocalDate fechaActual = LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         int mes = fechaActual.getMonthValue();
         int anio = fechaActual.getYear();
         String periodo = String.format("%02d/%d", mes, anio);
@@ -114,7 +118,7 @@ public class InformeService {
     public InformeAlquileresDTO generarInformeAlquileres() {
         logger.info("Generando informe de alquileres para el mes actual");
 
-        LocalDate fechaActual = LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         int mes = fechaActual.getMonthValue();
         int anio = fechaActual.getYear();
         String periodo = String.format("%02d/%d", mes, anio);
@@ -180,7 +184,7 @@ public class InformeService {
 
         logger.info("Generando informe de aumentos de los últimos {} meses", meses);
 
-        LocalDate fechaActual = LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         LocalDate fechaDesde = fechaActual.minusMonths(meses);
 
         String fechaDesdeStr = fechaDesde.format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -253,7 +257,7 @@ public class InformeService {
     public InformePagosServiciosDTO generarInformePagosServicios() {
         logger.info("Generando informe de pagos de servicios para el mes actual");
 
-        LocalDate fechaActual = LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         int mes = fechaActual.getMonthValue();
         int anio = fechaActual.getYear();
         String periodo = String.format("%02d/%d", mes, anio);

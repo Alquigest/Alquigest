@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 
 /**
  * Servicio para la gestión de pagos de servicios
@@ -31,12 +32,15 @@ public class PagoServicioService {
 
     private final PagoServicioRepository pagoServicioRepository;
     private final ContratoRepository contratoRepository;
+    private final ClockService clockService;
 
     public PagoServicioService(
             PagoServicioRepository pagoServicioRepository,
-            ContratoRepository contratoRepository) {
+            ContratoRepository contratoRepository,
+            ClockService clockService) {
         this.pagoServicioRepository = pagoServicioRepository;
         this.contratoRepository = contratoRepository;
+        this.clockService = clockService;
     }
 
     /**
@@ -207,7 +211,7 @@ public class PagoServicioService {
         logger.debug("Contando pagos de servicio del mes actual");
 
         // Obtener el período actual en formato mm/yyyy
-        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         String periodoActual = String.format("%02d/%d",
             fechaActual.getMonthValue(),
             fechaActual.getYear()
@@ -308,7 +312,7 @@ public class PagoServicioService {
         }
 
         // Obtener el período actual en formato mm/yyyy
-        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         String periodoActual = String.format("%02d/%d",
             fechaActual.getMonthValue(),
             fechaActual.getYear()
@@ -334,7 +338,7 @@ public class PagoServicioService {
         logger.debug("Contando pagos no pagados del mes actual agrupados por contrato");
 
         // Obtener el período actual en formato mm/yyyy
-        java.time.LocalDate fechaActual = java.time.LocalDate.now();
+        LocalDate fechaActual = clockService.getCurrentDate();
         String periodoActual = String.format("%02d/%d",
             fechaActual.getMonthValue(),
             fechaActual.getYear()
