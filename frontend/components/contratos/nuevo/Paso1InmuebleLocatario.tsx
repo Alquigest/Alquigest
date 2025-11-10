@@ -11,7 +11,8 @@ import { TIPOS_INMUEBLES } from '@/utils/constantes';
 import { DatosAdicionales } from '@/hooks/useNuevoContratoForm';
 import { Contrato } from '@/types/Contrato';
 import NuevoInmuebleModal from '@/app/inmuebles/nuevo/nuevoInmuebleModal';
-import BusquedaDesplegable from '@/components/busqueda/busqueda-desplegable';
+import BusquedaDesplegable, { BusquedaDesplegableRef } from '@/components/busqueda/busqueda-desplegable';
+import { useRef } from 'react';
 
 interface Paso1Props {
   inmuebles: any[];
@@ -36,6 +37,9 @@ export default function Paso1InmuebleLocatario({
   onInquilinoCreado,
   onInmuebleCreado,
 }: Paso1Props) {
+  const inmuebleRef = useRef<BusquedaDesplegableRef>(null);
+  const inquilinoRef = useRef<BusquedaDesplegableRef>(null);
+
   return (
     <>
       <Separator aria-setsize={4} />
@@ -49,6 +53,7 @@ export default function Paso1InmuebleLocatario({
         </Label>
         <div className="flex items-center gap-5">
           <BusquedaDesplegable
+            ref={inmuebleRef}
             items={inmuebles}
             className='w-full max-w-90'
             placeholder='Buscar por dirección...'
@@ -56,12 +61,16 @@ export default function Paso1InmuebleLocatario({
             onSelect={(item) => {
               const propietario = propietarios.find(p => p.id === item.propietarioId);
               onSelectInmueble(item, propietario);
+              inmuebleRef.current?.setDisplayValue(item.direccion);
             }}
           />
           <div>
             <NuevoInmuebleModal
               text="Nuevo"
-              onInmuebleCreado={onInmuebleCreado}
+              onInmuebleCreado={(nuevo) => {
+                onInmuebleCreado(nuevo);
+                inmuebleRef.current?.setDisplayValue(nuevo.direccion);
+              }}
             />
           </div>
         </div>
@@ -93,17 +102,22 @@ export default function Paso1InmuebleLocatario({
         <div className="flex w-full items-center gap-5">
           <div className='w-full max-w-90'>
             <BusquedaDesplegable
+              ref={inquilinoRef}
               items={inquilinos}      
               placeholder='Buscar por apellido, nombre o CUIL'
               propiedadesBusqueda={['apellido', 'nombre', 'cuil']}
               getItemLabel={(inq) => `${inq.apellido}, ${inq.nombre} | CUIL: ${inq.cuil}`}
-              onSelect={onSelectInquilino}
+              onSelect={(inq) => {
+                onSelectInquilino(inq);
+                inquilinoRef.current?.setDisplayValue(`${inq.apellido}, ${inq.nombre} | CUIL: ${inq.cuil}`);
+              }}
             />
           </div>
           <NuevoInquilinoModal
             text="Nuevo"
             onInquilinoCreado={(nuevo) => {
               onInquilinoCreado(nuevo);
+              inquilinoRef.current?.setDisplayValue(`${nuevo.apellido}, ${nuevo.nombre} | CUIL: ${nuevo.cuil}`);
             }}
           />
         </div>

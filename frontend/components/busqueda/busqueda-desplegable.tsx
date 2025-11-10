@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
@@ -17,6 +17,11 @@ export interface BusquedaDesplegableProps<T = any> {
   getItemLabel?: (item: T) => React.ReactNode;
 }
 
+export interface BusquedaDesplegableRef {
+  setDisplayValue: (value: string) => void;
+  clear: () => void;
+}
+
 function defaultGetItemKey<T extends { id?: string | number }>(item: T, index: number) {
   return (item && (item as any).id != null ? String((item as any).id) : String(index)) as string;
 }
@@ -30,7 +35,7 @@ function defaultGetItemLabel<T extends Record<string, any>>(item: T, propiedades
   return parts.join(" · ");
 }
 
-export default function BusquedaDesplegable<T extends Record<string, any>>({
+const BusquedaDesplegable = React.forwardRef<BusquedaDesplegableRef, BusquedaDesplegableProps>(function BusquedaDesplegable<T extends Record<string, any>>({
   items,
   propiedadesBusqueda,
   onSelect,
@@ -40,7 +45,7 @@ export default function BusquedaDesplegable<T extends Record<string, any>>({
   debounceMs = 150,
   getItemKey = defaultGetItemKey,
   getItemLabel,
-}: BusquedaDesplegableProps<T>) {
+}: BusquedaDesplegableProps<T>, ref: React.Ref<BusquedaDesplegableRef>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filtered, setFiltered] = useState<T[]>(items ?? []);
@@ -49,6 +54,16 @@ export default function BusquedaDesplegable<T extends Record<string, any>>({
   const labelFor = useMemo(() => {
     return (item: T) => (getItemLabel ? getItemLabel(item) : defaultGetItemLabel(item, propiedadesBusqueda));
   }, [getItemLabel, propiedadesBusqueda]);
+
+  // Exponer métodos públicos
+  useImperativeHandle(ref, () => ({
+    setDisplayValue: (value: string) => {
+      setQuery(value);
+    },
+    clear: () => {
+      setQuery("");
+    },
+  }));
 
   // Filtrado con debounce
   useEffect(() => {
@@ -131,4 +146,6 @@ export default function BusquedaDesplegable<T extends Record<string, any>>({
       )}
     </div>
   );
-}
+});
+
+export default BusquedaDesplegable;
