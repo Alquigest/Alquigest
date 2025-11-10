@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Calendar, ArrowLeft, AlertCircle, FileText } from "lucide-react"
+import { Calendar, ArrowLeft, AlertCircle, FileText, Handshake, CalendarClock, Banknote } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -20,6 +20,7 @@ import AlquileresToolbar from "@/components/alquileres/AlquileresToolbar";
 import ContratoAlquilerCard from "@/components/alquileres/ContratoAlquilerCard";
 import ContratoHistorialCard from "@/components/alquileres/ContratoHistorialCard";
 import { useAuth } from "@/contexts/AuthProvider"
+import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 
 export default function AlquileresPage() {
 
@@ -231,23 +232,31 @@ export default function AlquileresPage() {
         {/* Stats Summary */}
         {filtroContrato !== 'no-vigentes' && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-          <StatCard
-            title="Contratos Vigentes"
-            value={loadingContadores ? <Skeleton className="h-8 w-10" /> : (totalContratos || "N/A")}
-            description="Vigentes actualmente"
-            icon={<Calendar className="h-5 w-5 text-foreground" />}
+          <EstadisticaCard
+            titulo="Contratos Vigentes"
+            valor={totalContratos}
+            icono={<Handshake className=" text-foreground" />}
+            coloresIcono="bg-secondary/20"
+            subtitulo="Vigentes actualmente"
+            cargando={loadingContadores}
           />
-          <StatCard
-            title="Contratos por vencer"
-            value={loadingProxVencer ? <Skeleton className="h-8 w-10" /> : <span className="text-orange-600">{cantidadProxVencer}</span>}
-            description="Vencen el mes que viene"
-            icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
+
+          <EstadisticaCard
+            titulo="Contratos por vencer"
+            valor={cantidadProxVencer}
+            icono={<CalendarClock className=" text-orange-500" />}
+            coloresIcono="bg-orange-200"
+            subtitulo="Vencen el mes que viene"
+            cargando={loadingProxVencer}
           />
-          <StatCard
-            title="Alquileres No Pagos"
-            value={loadingContadores ? <Skeleton className="h-8 w-14" /> : <span className="text-orange-600">{cantAlquileresNoPagos}</span>}
-            description="No pagaron antes del día 10"
-            icon={<AlertCircle className="h-5 w-5 text-orange-500" />}
+
+          <EstadisticaCard
+            titulo="Alquileres No Pagos"
+            valor={cantAlquileresNoPagos}
+            coloresIcono="bg-red-200"
+            subtitulo="Alquileres pendientes de pago"
+            cargando={loadingContadores}
+            icono={<Banknote className=" text-red-500" />}
           />
         </div>
         )}

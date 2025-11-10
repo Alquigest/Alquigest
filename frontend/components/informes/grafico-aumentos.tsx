@@ -37,9 +37,9 @@ export default function GraficoAumentosContrato({ contrato } : { contrato: any }
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 30, right: 50, bottom: 30, left: 50 }}>
+      <LineChart data={data} margin={{ top: 10, right: 50, bottom: 5, left: 50 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="fecha" label={{ value: 'Fecha de Aumento', position: 'insideBottom' }}/>
+        <XAxis dataKey="fecha"/>
         <YAxis 
           dataKey="porcentajeAumento" 
           label={{ value: '% de Aumento', angle: -90, position: 'left' }}

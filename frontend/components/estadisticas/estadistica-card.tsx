@@ -9,36 +9,45 @@ interface EstadisticaCardProps {
   subtitulo?: string;
   tituloAyuda?: string;
   cargando?: boolean;
+  coloresIcono?: string;
 }
 
-export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitulo, tituloAyuda = "Alquigest S.A.", cargando=false }: EstadisticaCardProps) {
+export default function EstadisticaCard({ titulo, valor = "N/A", icono, subtitulo, tituloAyuda = "Alquigest S.A.", cargando=false, coloresIcono }: EstadisticaCardProps) {
   return (
     <Card>
-      <CardHeader title={tituloAyuda} className="flex flex-row items-center justify-between hover:cursor-help">
-        {cargando ? (
-          <>
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-6 w-6 rounded-full" />
-          </>
-        ) : (
-          <>
-            <CardTitle className="text-md md:text-lg font-medium ">{titulo}</CardTitle>
+      <CardContent className="flex justify-between items-center gap-4">
+        <div>
+          {cargando ? (
+            <>
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-6 w-6 rounded-full" />
+            </>
+          ) : (
+            <>
+              <CardTitle className="text-sm md:text-base font-medium ">{titulo}</CardTitle>
+              
+            </>
+          )}
+
+          {cargando ? (
+            <>
+              <Skeleton className="h-8 w-20 mb-2" />
+              {subtitulo ? <Skeleton className="h-3 w-40" /> : null}
+            </>
+          ) : (
+            <>
+              <div className="text-3xl font-bold font-sans text-foreground/80">{valor}</div>
+              {subtitulo && <p className="text-sm text-muted-foreground">{subtitulo}</p>}
+            </>
+          )}
+        </div>
+        <div>
+          <div className={` p-4 rounded-lg ${coloresIcono}`}>
             {icono}
-          </>
-        )}
-      </CardHeader>
-      <CardContent className="flex flex-col items-center">
-        {cargando ? (
-          <>
-            <Skeleton className="h-8 w-20 mb-2" />
-            {subtitulo ? <Skeleton className="h-3 w-40" /> : null}
-          </>
-        ) : (
-          <>
-            <div className="text-3xl font-bold font-sans text-foreground/80">{valor}</div>
-            {subtitulo && <p className="text-sm text-muted-foreground">{subtitulo}</p>}
-          </>
-        )}
+          </div>
+        </div>
+      
+   
       </CardContent>
     </Card>
   );

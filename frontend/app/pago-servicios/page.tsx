@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CreditCard, Blocks, ArrowLeft } from "lucide-react"
+import { CreditCard, Blocks, ArrowLeft, Receipt } from "lucide-react"
 import { ContratoDetallado } from "@/types/ContratoDetallado"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
@@ -10,6 +10,7 @@ import Loading from "@/components/loading"
 import ContratoServiciosCard from "@/components/pago-servicios/contrato-servicios-card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import EstadisticaCard from "@/components/estadisticas/estadistica-card"
 
 
 export default function PagoServiciosPage() {
@@ -130,69 +131,36 @@ export default function PagoServiciosPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base font-medium">Total de servicios</CardTitle>
-              <Blocks className="h-6 w-6 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center">
-              {loadingContadores ? (
-                <>
-                  <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-40" />
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold font-sans">{contadores.cantServicios}</div>
-                  <p className="text-xs text-muted-foreground">Bajo control del estudio jurídico</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base font-medium">Servicios Pendientes</CardTitle>
-              <CreditCard className="h-6 w-6 text-red-400" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center">
-              {loadingContadores ? (
-                <>
-                  <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-red-400 font-sans">
-                    {contadores.cantServiciosNoPagos}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Aún no pagados</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <EstadisticaCard 
+            titulo="Total de servicios"
+            valor={contadores.cantServicios}
+            icono={<Blocks className=" text-slate-700" />}
+            coloresIcono="bg-slate-300"
+            subtitulo="Bajo control del estudio jurídico"
+            tituloAyuda="Cantidad de servicios bajo control del estudio jurídico"
+            cargando={loadingContadores}
+            />
+          <EstadisticaCard
+            titulo="Servicios Pendientes"
+            valor={contadores.cantServiciosNoPagos}
+            icono={<Receipt className=" text-orange-700" />}
+            coloresIcono="bg-orange-300"
+            subtitulo="Servicios aún no pagados"
+            tituloAyuda="Cantidad de facturas de servicios que figuran como no pagadas en el sistema"
+            cargando={loadingContadores}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Servicios Pagados</CardTitle>
-              <CreditCard className="h-6 w-6 text-green-500" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center">
-              {loadingContadores ? (
-                <>
-                  <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-24" />
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold font-sans text-green-600">
-                    {contadores.cantServicios - contadores.cantServiciosNoPagos}
-                  </div>
-                  <p className="text-xs text-muted-foreground">De este mes</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <EstadisticaCard 
+            titulo="Servicios Pagados"
+            valor={contadores.cantServicios - contadores.cantServiciosNoPagos}
+            icono={<CreditCard className=" text-green-700" />}
+            coloresIcono="bg-green-300"
+            subtitulo="Servicios pagados este mes"
+            tituloAyuda="Cantidad de facturas de servicios que han sido pagadas en el mes actual"
+            cargando={loadingContadores}
+          />
+
         </div>
 
         {/* Contratos List */}

@@ -147,17 +147,30 @@ export function useNuevoContratoForm() {
 
   const construirServiciosContrato = useCallback(() => {
     // Filtrar solo los servicios activos
+    const hoy = new Date();
+    const formatDate = (d: Date) => {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
     return serviciosContrato
       .filter(servicio => servicio.esActivo)
-      .map(servicio => ({
-        tipoServicioId: servicio.tipoServicioId,
-        nroCuenta: servicio.nroCuenta || "",
-        nroContratoServicio: servicio.nroContratoServicio || null,
-        esDeInquilino: servicio.esDeInquilino,
-        esActivo: servicio.esActivo,
-        esAnual: servicio.esAnual,
-        fechaInicio: servicio.fechaInicio ? servicio.fechaInicio : formData.fechaInicio,
-      }));
+      .map(servicio => {
+        // fuente de fecha: servicio.fechaInicio explícita -> formData.fechaInicio -> hoy
+        const fechaCruda = servicio.fechaInicio || '';
+        // si viene vacía usar hoy formateado
+        const fechaFinal = fechaCruda === '' ? formatDate(hoy) : fechaCruda;
+        return {
+          tipoServicioId: servicio.tipoServicioId,
+          nroCuenta: servicio.nroCuenta || "",
+          nroContratoServicio: servicio.nroContratoServicio || null,
+          esDeInquilino: servicio.esDeInquilino,
+          esActivo: servicio.esActivo,
+          esAnual: servicio.esAnual,
+          fechaInicio: fechaFinal,
+        };
+      });
   }, [serviciosContrato, formData.fechaInicio]);
 
   return {

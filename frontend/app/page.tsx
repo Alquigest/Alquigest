@@ -14,6 +14,9 @@ import {
   FileClock,
   FileChartColumnIncreasing,
   EditIcon,
+  Blocks,
+  Receipt,
+  Handshake,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
@@ -222,7 +225,8 @@ export default function HomePage() {
           <EstadisticaCard
             titulo="Facturas Pendientes"
             valor={contadores.cantServiciosNoPagos}
-            icono={<AlertCircle className="h-6 w-6 text-orange-500" />}
+            icono={<Receipt className=" text-orange-700" />}
+            coloresIcono="bg-orange-300"
             subtitulo="Servicios aún no pagados"
             tituloAyuda="Cantidad de facturas de servicios que figuran como no pagadas en el sistema"
             cargando={cargandoContadores}
@@ -231,7 +235,8 @@ export default function HomePage() {
           <EstadisticaCard
             titulo="Alquileres Activos"
             valor={contadores.cantContratosVigentes}
-            icono={<CheckCircle2 className="h-6 w-6 text-green-500" />}
+            icono={<Handshake className=" text-green-700" />}
+            coloresIcono="bg-green-300"
             subtitulo="Con contrato/s vigente/s"
             tituloAyuda="Cantidad de alquileres que se encuentran activos en el sistema"
             cargando={cargandoContadores}
@@ -240,7 +245,8 @@ export default function HomePage() {
           <EstadisticaCard
             titulo="Inmuebles Gestionados"
             valor={contadores.cantInmueblesActivos}
-            icono={<Building2 className="h-6 w-6 text-muted-foreground" />}
+            icono={<Building2 className="text-yellow-700" />}
+            coloresIcono="bg-amber-200"
             subtitulo="Bajo administración"
             tituloAyuda="Cantidad de inmuebles activos bajo administración del estudio jurídico"
             cargando={cargandoContadores}
@@ -249,7 +255,8 @@ export default function HomePage() {
           <EstadisticaCard
             titulo="Honorarios del mes"
             valor={`$ ${contadores.honorariosDelMes.toLocaleString('es-AR')}`}
-            icono={<BarChart3 className="h-6 w-6 text-muted-foreground" />}
+            icono={<BarChart3 className=" text-slate-700" />}
+            coloresIcono="bg-slate-300"
             subtitulo="Cálculo real acumulativo"
             tituloAyuda="Suma de los honorarios correspondientes a los alquileres ya pagos del mes actual"
             cargando={cargandoContadores}
