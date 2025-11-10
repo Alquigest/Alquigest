@@ -363,4 +363,19 @@ public class InmuebleService {
         i.setEsActivo(true);
         inmuebleRepository.save(i);
     }
+
+    // Metodo que se usa cuando se da de baja un contrato automaticamente
+    // Cambia el estado del inmueble a Disponible y esAlquilado = false
+    public void actualizarEstadoInmueble(Inmueble i) {
+        Optional<EstadoInmueble> estadoInmuebleDisponible = estadoInmuebleRepository.findByNombre("Disponible");
+        if (estadoInmuebleDisponible.isEmpty()) {
+            throw new BusinessException(
+                ErrorCodes.ESTADO_INMUEBLE_NO_ENCONTRADO,
+                "Estado 'Disponible' no encontrado en el sistema",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+        i.setEstado(estadoInmuebleDisponible.get().getId());
+        i.setEsAlquilado(false);
+    }
 }

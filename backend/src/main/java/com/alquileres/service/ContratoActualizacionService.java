@@ -2,16 +2,14 @@ package com.alquileres.service;
 
 import com.alquileres.model.Contrato;
 import com.alquileres.model.EstadoContrato;
+import com.alquileres.model.Inmueble;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.EstadoContratoRepository;
-import com.alquileres.util.FechaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -27,13 +25,15 @@ public class ContratoActualizacionService {
     private final ContratoRepository contratoRepository;
     private final EstadoContratoRepository estadoContratoRepository;
     private final ClockService clockService;
+    private final InmuebleService inmuebleService;
 
     public ContratoActualizacionService(ContratoRepository contratoRepository,
-                                       EstadoContratoRepository estadoContratoRepository,
-                                       ClockService clockService) {
+                                        EstadoContratoRepository estadoContratoRepository,
+                                        ClockService clockService, InmuebleService inmuebleService) {
         this.contratoRepository = contratoRepository;
         this.estadoContratoRepository = estadoContratoRepository;
         this.clockService = clockService;
+        this.inmuebleService = inmuebleService;
     }
 
     /**
@@ -68,6 +68,11 @@ public class ContratoActualizacionService {
             int contratosActualizados = 0;
             for (Contrato contrato : contratosVencidos) {
                 contrato.setEstadoContrato(estadoNoVigente);
+
+                // Actualizar inquilino
+                Inmueble i = contrato.getInmueble();
+                inmuebleService.actualizarEstadoInmueble(i);
+
                 contratoRepository.save(contrato);
                 contratosActualizados++;
                 logger.debug("Contrato ID {} actualizado a 'No Vigente'. Fecha fin: {}",
