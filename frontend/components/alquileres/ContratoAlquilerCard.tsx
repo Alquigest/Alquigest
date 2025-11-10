@@ -109,12 +109,26 @@ export default function ContratoAlquilerCard({
         <Separator className="my-4" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-md">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Monto Alquiler</p>
+            <p className="text-md font-medium text-muted-foreground">Monto Alquiler</p>
             <p className="font-bold text-green-600">${contrato.montoUltimoAlquiler.toLocaleString("es-AR") || "No especificado"}</p>
           </div>
           <div>
             <p className="text-md font-medium text-muted-foreground">Próximo Aumento</p>
-            <p className="text-lg font-bold text-orange-500">{contrato.fechaAumento || "No especifiado"}</p>
+            <p className="font-bold text-orange-500">
+              {(() => {
+                if (!contrato.fechaAumento) return "No especificado";
+                const raw = String(contrato.fechaAumento).trim();
+                // Si viene como dd/mm/aaaa, extraemos mm/aaaa directamente
+                const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (m) {
+                  const mes = m[2].padStart(2, "0");
+                  const anio = m[3];
+                  return `${mes}/${anio}`;
+                }
+                // Último recurso: devolver el string original
+                return raw;
+              })()}
+            </p>
           </div>
           <div>
             <p className="text-md font-medium text-muted-foreground">Vencimiento: </p>

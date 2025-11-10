@@ -187,7 +187,21 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                                 </div>
                                 <div className="flex gap-3">
                                     <h2 className="font-bold">Próximo Aumento:</h2>
-                                    <p className="text-orange-500 font-bold">{contratoBD.fechaAumento}</p>
+                                    <p className="text-orange-500 font-bold">
+                                        {(() => {
+                                            if (!contratoBD.fechaAumento) return "No especificado";
+                                            const raw = String(contratoBD.fechaAumento).trim();
+                                            // Si viene como dd/mm/aaaa, extraemos mm/aaaa directamente
+                                            const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                                            if (m) {
+                                            const mes = m[2].padStart(2, "0");
+                                            const anio = m[3];
+                                            return `${mes}/${anio}`;
+                                            }
+                                            // Último recurso: devolver el string original
+                                            return raw;
+                                        })()}
+                                    </p>
                                 </div>
 
                                 <div className="flex gap-3">

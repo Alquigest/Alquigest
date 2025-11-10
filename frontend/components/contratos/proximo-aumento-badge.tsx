@@ -15,7 +15,7 @@ export default function ProximoAumentoBadge({ fechaAumento }: ProximoAumentoBadg
   // Convertir fecha DD/MM/YYYY a formato que entiende JavaScript
   const convertirFecha = (fechaStr: string) => {
     const [dia, mes, año] = fechaStr.split('/')
-    return new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia))
+    return new Date(parseInt(año), parseInt(mes) - 1, parseInt("01")) // Siempre usar el día 1 porque los aumentos siempre son el primero
   }
   
   const fechaAumentoDate = convertirFecha(fechaAumento)
