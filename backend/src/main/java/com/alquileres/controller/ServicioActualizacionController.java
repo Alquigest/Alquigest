@@ -56,25 +56,4 @@ public class ServicioActualizacionController {
                 .body(Map.of("error", "Error al obtener último mes: " + e.getMessage()));
         }
     }
-
-    /**
-     * Crea servicios para contratos vigentes
-     */
-    @PostMapping("/crear-servicios-contratos")
-    @Operation(summary = "Crear servicios para contratos vigentes",
-               description = "Fuerza la creación de servicios para todos los contratos vigentes que no los tengan")
-    public ResponseEntity<?> crearServiciosContratos() {
-        try {
-            int serviciosCreados = servicioActualizacionService.crearServiciosParaContratosVigentes();
-            return ResponseEntity.ok(Map.of(
-                "mensaje", "Servicios creados exitosamente",
-                "serviciosCreados", serviciosCreados
-            ));
-        } catch (Exception e) {
-            return ResponseEntity
-                .status(500)
-                .body(Map.of("error", "Error al crear servicios: " + e.getMessage()));
-        }
-    }
 }
-
