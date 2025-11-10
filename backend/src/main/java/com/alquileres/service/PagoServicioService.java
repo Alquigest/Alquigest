@@ -10,8 +10,6 @@ import com.alquileres.repository.ContratoRepository;
 import com.alquileres.repository.PagoServicioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +48,6 @@ public class PagoServicioService {
      * @return Mapa con resumen de actualizaciones realizadas
      */
     @Transactional
-    @CacheEvict(value = "pagosPendientes", allEntries = true)
     public Map<String, Object> actualizarMontosPagosNoPagados(ActualizacionMontosServiciosRequest request) {
         logger.info("Iniciando actualización de montos para contrato ID: {}", request.getContratoId());
 
@@ -139,7 +136,6 @@ public class PagoServicioService {
      * @return Pago actualizado
      */
     @Transactional
-    @CacheEvict(value = "pagosPendientes", allEntries = true)
     public PagoServicio actualizarPagoServicio(Integer pagoId, ActualizarPagoServicioRequest request) {
         logger.info("Actualizando pago de servicio ID: {}", pagoId);
 
@@ -206,7 +202,6 @@ public class PagoServicioService {
      *
      * @return Mapa con serviciosTotales y serviciosPendientes del mes actual
      */
-    @Cacheable(value = "pagosPendientes", key = "'count'")
     public Map<String, Long> contarPagosPendientes() {
         logger.debug("Contando pagos de servicio del mes actual");
 
@@ -242,7 +237,6 @@ public class PagoServicioService {
      * @return Respuesta con resumen de procesamiento y detalle de cada pago
      */
     @Transactional
-    @CacheEvict(value = "pagosPendientes", allEntries = true)
     public RegistroPagoBatchResponse registrarPagosBatch(RegistroPagoBatchRequest request) {
         logger.info("Iniciando registro de pagos en batch. Total de pagos a procesar: {}",
                    request.getPagos().size());

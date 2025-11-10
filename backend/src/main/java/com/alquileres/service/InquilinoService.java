@@ -6,8 +6,6 @@ import com.alquileres.repository.InquilinoRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.exception.BusinessException;
 import com.alquileres.exception.ErrorCodes;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +27,6 @@ public class InquilinoService {
     }
 
     // Obtener todos los inquilinos
-    @Cacheable(value = "inquilinos", key = "'all'")
     public List<InquilinoDTO> obtenerTodosLosInquilinos() {
         List<Inquilino> inquilinos = inquilinoRepository.findAll();
         return inquilinos.stream()
@@ -38,7 +35,6 @@ public class InquilinoService {
     }
 
     // Obtener solo inquilinos activos
-    @Cacheable(value = "inquilinos", key = "'activos'")
     public List<InquilinoDTO> obtenerInquilinosActivos() {
         List<Inquilino> inquilinos = inquilinoRepository.findByEsActivoTrue();
         return inquilinos.stream()
@@ -47,7 +43,6 @@ public class InquilinoService {
     }
 
     // Obtener solo inquilinos inactivos
-    @Cacheable(value = "inquilinos", key = "'inactivos'")
     public List<InquilinoDTO> obtenerInquilinosInactivos() {
         List<Inquilino> inquilinos = inquilinoRepository.findByEsActivoFalse();
         return inquilinos.stream()
@@ -56,13 +51,11 @@ public class InquilinoService {
     }
 
     // Contar inquilinos activos
-    @Cacheable(value = "inquilinos", key = "'count_activos'")
     public Long contarInquilinosActivos() {
         return inquilinoRepository.countByEsActivoTrue();
     }
 
     // Obtener inquilinos que están alquilando
-    @Cacheable(value = "inquilinos", key = "'alquilando'")
     public List<InquilinoDTO> obtenerInquilinosAlquilando() {
         List<Inquilino> inquilinos = inquilinoRepository.findByEstaAlquilandoTrue();
         return inquilinos.stream()
@@ -71,7 +64,6 @@ public class InquilinoService {
     }
 
     // Obtener inquilinos que no están alquilando
-    @Cacheable(value = "inquilinos", key = "'no_alquilando'")
     public List<InquilinoDTO> obtenerInquilinosNoAlquilando() {
         List<Inquilino> inquilinos = inquilinoRepository.findByEstaAlquilandoFalse();
         return inquilinos.stream()
@@ -80,7 +72,6 @@ public class InquilinoService {
     }
 
     // Obtener inquilino por ID
-    @Cacheable(value = "inquilinos", key = "#id")
     public InquilinoDTO obtenerInquilinoPorId(Long id) {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(id);
         if (inquilino.isPresent()) {
@@ -117,7 +108,6 @@ public class InquilinoService {
     }
 
     // Crear nuevo inquilino
-    @CacheEvict(value = "inquilinos", allEntries = true)
     public InquilinoDTO crearInquilino(InquilinoDTO inquilinoDTO) {
         // Validar CUIL único si se proporciona
         if (inquilinoDTO.getCuil() != null && !inquilinoDTO.getCuil().trim().isEmpty()) {
@@ -135,7 +125,6 @@ public class InquilinoService {
     }
 
     // Actualizar inquilino
-    @CacheEvict(value = "inquilinos", allEntries = true)
     public InquilinoDTO actualizarInquilino(Long id, InquilinoDTO inquilinoDTO) {
         Optional<Inquilino> inquilinoExistente = inquilinoRepository.findById(id);
 
@@ -169,7 +158,6 @@ public class InquilinoService {
     }
 
     // Eliminar inquilino (borrado lógico)
-    @CacheEvict(value = "inquilinos", allEntries = true)
     public void desactivarInquilino(Long id) {
         Optional<Inquilino> inquilino = inquilinoRepository.findById(id);
         if (inquilino.isEmpty()) {
