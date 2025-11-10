@@ -1,6 +1,6 @@
 "use client";
 import { Separator } from '@/components/ui/separator';
-import { BuildingIcon, User, Calendar1Icon, Receipt, ChartColumnIcon, Clock, Blocks, CheckSquareIcon, PercentCircle } from 'lucide-react';
+import { BuildingIcon, User, Calendar1Icon, Receipt, ChartColumnIcon, Clock, Blocks, CheckSquareIcon, PercentCircle, FileText } from 'lucide-react';
 import { Contrato } from '@/types/Contrato';
 import { DatosAdicionales } from '@/hooks/useNuevoContratoForm';
 import { ServicioContrato, TIPO_SERVICIO_LABEL } from '@/types/ServicioContrato';
@@ -11,9 +11,10 @@ interface Paso4Props {
   datosAdicionales: DatosAdicionales;
   serviciosContrato: ServicioContrato[];
   formatMontoVisual: (v: number) => string;
+  pdfFile?: File | null; // archivo PDF opcional cargado en el paso anterior
 }
 
-export default function Paso4Resumen({ formData, datosAdicionales, serviciosContrato, formatMontoVisual }: Paso4Props) {
+export default function Paso4Resumen({ formData, datosAdicionales, serviciosContrato, formatMontoVisual, pdfFile }: Paso4Props) {
   return (
     <>
       <div className="flex items-center gap-2">
@@ -53,6 +54,10 @@ export default function Paso4Resumen({ formData, datosAdicionales, serviciosCont
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
           <p><b>Periodo de Aumento:</b> cada {formData.periodoAumento} meses</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          <p><b>¿Se adjunta PDF?:</b> {pdfFile ? 'Sí' : 'No'}</p>
         </div>
       </div>
       <Separator className="my-4" />

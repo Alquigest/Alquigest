@@ -239,6 +239,7 @@ export default function NuevoContratoPage() {
             formData={formData}
             datosAdicionales={datosAdicionales}
             formatMontoVisual={formatMontoVisual}
+            pdfFile={pdfFile}
           />
         );
       default:
