@@ -19,30 +19,6 @@
     - 2 una función callback que le permita al componente padre (la page), setear el array de objetcs filtrados para que la page sea la encargada de mostrar los objetos.
 
 
-### Contrato - detalle
-- [x] Mostrar motivos de rescincion en detalle Contrato
-
-### Contrato
-- [x] Agregar nuevo paso para carga de servicios
-
-### Inmueble
-- [x] Crear nuevo inmueble con estado disponible o en reparacion
-
-### Pago de servicios
-- [x] Todo
-
-### ALQUILERES
- - [x] Ver historial
- - [x] Registrar Pago
-
-### RESUMEN DE SERVICIOS POR PAGAR
-- [x] Ver de hacer/generar el pdf.
-
-## BACKEND
-- [ ] Estado de inmueble inactivo queda disponible [ P4B ]
-- [ ] Revisar los permisos de secretaria (crear inquilino y propietario) [U2H, U2K]
-- [ ] Permiso crear_usuario
-
-  #### SPRINT 4
-  - [ ] Endpoint contratos tenga un atributo montoAlquiler, que sea el valor del ultimo alquiler.
-  - [ ] Endpoint /inmuebles/disponibles, que filtre solo los que están activos y que no tenga en cuenta los en reparación (ESTADO ID 2)
+  #### ENDPOINTS
+  - [ ] En alquileres agregar fecha de pago (registrar la fecha de pago, es decir, enviarla y al momento del get también traerla para mostrarla en la tabla.)
+    - [ ] Puede haber seteo automático de la fecha en caso de alquileres viejos (en vez de la fecha mostrar "Automático").

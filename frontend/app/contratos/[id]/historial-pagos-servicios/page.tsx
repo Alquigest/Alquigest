@@ -99,12 +99,12 @@ export default function HistorialPagosServiciosPage() {
                 <TableRow>
                   <TableHead className="font-bold text-background">Período</TableHead>
                   <TableHead className="font-bold text-background">Servicio</TableHead>
-                  <TableHead className="font-bold text-background">Monto</TableHead>
                   <TableHead className="font-bold text-background">Nro. Cuenta</TableHead>
+                  <TableHead className="font-bold text-background">A cargo de</TableHead>
                   <TableHead className="font-bold text-background">Estado</TableHead>
+                  <TableHead className="font-bold text-background">Monto</TableHead>
                   <TableHead className="font-bold text-background">Medio de Pago</TableHead>
                   <TableHead className="font-bold text-background">Fecha de pago</TableHead>
-                  <TableHead className="font-bold text-background">A cargo de</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -155,13 +155,13 @@ export default function HistorialPagosServiciosPage() {
 
                     const estadoPago = item.estaPagado 
                         ? item.estaVencido 
-                          ? (<Badge className="bg-yellow-200 text-black">Pagado Vencido</Badge>) 
-                          : (<Badge className="bg-emerald-300 text-black">Pagado</Badge>) 
-                          : (<Badge className="bg-red-300 text-black">Pendiente</Badge>)
+                          ? (<Badge className="bg-yellow-200 text-black w-26">Pagado Vencido</Badge>) 
+                          : (<Badge className="bg-emerald-300 text-black w-26">Pagado</Badge>) 
+                          : (<Badge className="bg-red-300 text-black w-26">Pendiente</Badge>)
 
                     const aCargoDe = item.servicioContrato.esDeInquilino 
-                        ? (<Badge variant={"secondary"}>Locatario</Badge>) 
-                        : (<Badge>Estudio Jurídico</Badge>)
+                        ? (<Badge className="w-26" variant={"secondary"}>Locatario</Badge>) 
+                        : (<Badge className="w-26">Estudio Jurídico</Badge>)
 
                     const tipoServicio = <div className="flex gap-2 items-center"> 
                                             <TipoServicioIcon className="h-6 w-6" tipoServicio={item.servicioContrato.tipoServicio.id}/>
@@ -171,12 +171,12 @@ export default function HistorialPagosServiciosPage() {
                       <TableRow key={item.id}>
                         <TableCell className="font-semibold">{item.periodo}</TableCell>
                         <TableCell>{tipoServicio}</TableCell>
-                        <TableCell>{item.monto ? `$${item.monto.toLocaleString()}` : "-"}</TableCell>
                         <TableCell>{item.servicioContrato.nroCuenta ?? "-"}</TableCell>
+                        <TableCell>{aCargoDe }</TableCell>
                         <TableCell>{estadoPago}</TableCell>
+                        <TableCell>{item.monto ? `$${item.monto.toLocaleString()}` : "-"}</TableCell>
                         <TableCell>{item.medioPago ?? "-"}</TableCell>
                         <TableCell>{item.fechaPago ?? "-"}</TableCell>
-                        <TableCell>{aCargoDe }</TableCell>
                       </TableRow>
                     )
                   })

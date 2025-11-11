@@ -15,11 +15,21 @@ export default function PildoraUsuario({
   username = "",
   isDarkMode,
   toggleTheme,
-}: { username: string; isDarkMode: boolean; toggleTheme: () => void }) {
+  onLoginClick,
+}: { username: string; isDarkMode: boolean; toggleTheme: () => void; onLoginClick?: () => void }) {
   const { logout, hasRole } = useAuth();
   
   const handleLogout = () => {
     logout(); // Llama al método logout del AuthProvider (ya maneja la redirección)
+  };
+
+  const handleLoginOrLogout = () => {
+    if (username === "" && onLoginClick) {
+      onLoginClick(); // Abre el modal de login
+    } else {
+      handleLogout();// Cierra sesión
+      window.location.reload(); 
+    }
   };
 
   const [mounted, setMounted] = useState(false);
@@ -44,13 +54,13 @@ export default function PildoraUsuario({
             >
               <div className="flex items-center space-x-2">
                 <UserCircle2Icon className="h-8 w-8 rounded-full" />
-                <p className="font-bold pr-2">{username || "Inicie sesión..."}</p>
+                <p className="font-bold pr-2">{username || "Inicie sesión"}</p>
                 {mounted && isRoleAdmin && <p>| Modo Administrador</p>}
               </div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleLoginOrLogout(); }}>
               {(username === "") ? <div className="flex"> <LogIn className="h-4 w-4 mr-2"/> Iniciar Sesión </div> : <div className="flex"> <LogOut className="h-4 w-4 mr-2" />
               Cerrar sesión</div> }
               

@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useEffect } from "react"
 import { Input } from "./ui/input"
 import { useAuth } from "@/contexts/AuthProvider"
 import { DialogDescription } from "@radix-ui/react-dialog"
@@ -10,12 +10,13 @@ import Link from "next/link"
 
 type ModalDefaultProps = {
   onClose: (username: string, justLoggedIn: boolean) => void,
-  isDarkMode: Boolean
+  isDarkMode: Boolean,
+  open?: boolean // control opcional desde el padre
 }
 
-export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
+export default function ModalLogin({ onClose, isDarkMode, open}: ModalDefaultProps) {
   const { login } = useAuth();
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(open ?? true)
   const [username, setUsernameInput] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -23,7 +24,14 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
 
   const urlLogoAlquigest = isDarkMode? "/alquigest-white.png" : "/alquigest-dark.png"
 
+  // Sincroniza el estado interno con el padre cuando se controla vía prop
+  useEffect(() => {
+    if (typeof open === 'boolean') {
+      setIsOpen(open)
+    }
+  }, [open])
   const handleClose = () => {
+    console.log("Closing modal")
     setIsOpen(false)
     setError("") // Limpia el mensaje de error al cerrar el modal
   }
@@ -45,7 +53,16 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(v) => {
+        setIsOpen(v)
+        if (!v) {
+          // Notificar al padre para que cierre también
+          onClose("", false)
+        }
+      }}
+    >
       <DialogContent className="flex flex-col gap-12">
         <DialogHeader className="flex flex-col justify-center items-center">
           <img src={urlLogoAlquigest} className="h-7 object-contain md:h-12"></img>
@@ -82,7 +99,7 @@ export default function ModalLogin({ onClose, isDarkMode}: ModalDefaultProps) {
         </form>
 
         <div className="flex items-center justify-center">
-          <Link href={"/auth/recuperar-contrasena"}>
+          <Link href={"/auth/recuperar-contrasena"} onClick={handleClose}>
             <p className="hover:text-amber-900">¿Olvidó su Contraseña?</p>
           </Link>
         </div>

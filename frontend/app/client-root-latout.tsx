@@ -75,23 +75,23 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
         isDarkMode={isDarkMode}
         onBellClick={() => setShowNotificaciones(true)}
         showNotificationDot={notificationDot}
+        onLoginClick={() => {setShowModal(true); console.log("Login click")}}
       />
       <QuickActions />
       {children}
       <Footer />
 
-      {showModal && (
-        <ModalLogin
-          isDarkMode={isDarkMode}
-          onClose={(username, justLoggedIn) => {
-            setShowModal(false);
-            if (justLoggedIn) {
-              setShowNotificaciones(true);
-              setNeedsReload(true);
-            }
-          }}
-        />
-      )}
+      <ModalLogin
+        open={showModal}
+        isDarkMode={isDarkMode}
+        onClose={(username, justLoggedIn) => {
+          setShowModal(false);
+          if (justLoggedIn) {
+            setShowNotificaciones(true);
+            setNeedsReload(true);
+          }
+        }}
+      />
 
       {showNotificaciones && (
         <ModalNotificacionesInicio

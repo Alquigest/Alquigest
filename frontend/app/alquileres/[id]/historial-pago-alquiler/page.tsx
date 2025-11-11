@@ -43,6 +43,13 @@ export default function HistorialPagoAlquilerPage() {
 
   if (loading) return <Loading text="Cargando historial de pagos de alquiler" />
 
+  // Extraer información del primer elemento si existe
+  const primerPago = data.length > 0 ? data[0] : null
+  const direccion = primerPago?.direccionInmueble || ""
+  const nombreCompleto = primerPago 
+    ? `${primerPago.nombreInquilino} ${primerPago.apellidoInquilino}`
+    : ""
+
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8 pt-30">
@@ -57,17 +64,25 @@ export default function HistorialPagoAlquilerPage() {
               <CalendarClockIcon className="h-7 w-7" />
               <CardTitle className="text-xl">Historial de pagos de alquiler</CardTitle>
             </div>
+            {primerPago && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-base text-foreground">
+                  Inmueble: <span className="text-primary">{direccion}</span>
+                </p>
+                <p className="text-base text-foreground">
+                  Locatario: <span className="text-primary">{nombreCompleto}</span>
+                </p>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader className="bg-primary">
                 <TableRow>
                   <TableHead className="font-bold text-background">Período</TableHead>
-                  <TableHead className="font-bold text-background">Inquilino</TableHead>
-                  <TableHead className="font-bold text-background">Inmueble</TableHead>
+                  <TableHead className="font-bold text-background">Estado</TableHead>
                   <TableHead className="font-bold text-background">Monto</TableHead>
                   <TableHead className="font-bold text-background">Vencimiento</TableHead>
-                  <TableHead className="font-bold text-background">Estado</TableHead>
                   <TableHead className="font-bold text-background">Método de Pago</TableHead>
                   <TableHead className="font-bold text-background">Titular</TableHead>
                   <TableHead className="font-bold text-background">Cuenta Banco</TableHead>
@@ -83,17 +98,15 @@ export default function HistorialPagoAlquilerPage() {
                 ) : (
                   data.map((item) => {
                     const estadoPago = item.estaPagado 
-                      ? <Badge className="bg-emerald-300 text-black">Pagado</Badge>
-                      : <Badge className="bg-red-300 text-black">Pendiente</Badge>
+                      ? <Badge className="bg-emerald-300 text-black w-26">Pagado</Badge>
+                      : <Badge className="bg-red-300 text-black w-26">Pendiente</Badge>
 
                     return (
                       <TableRow key={item.id}>
                         <TableCell className="font-semibold">{formatPeriodo(item.fechaVencimientoPago)}</TableCell>
-                        <TableCell>{item.apellidoInquilino}, {item.nombreInquilino}</TableCell>
-                        <TableCell>{item.direccionInmueble}</TableCell>
+                        <TableCell>{estadoPago}</TableCell>
                         <TableCell className="font-semibold">${item.monto.toLocaleString()}</TableCell>
                         <TableCell>{new Date(item.fechaVencimientoPago + 'T12:00:00').toLocaleDateString('es-AR')}</TableCell>
-                        <TableCell>{estadoPago}</TableCell>
                         <TableCell>{item.metodo ?? "-"}</TableCell>
                         <TableCell>{item.titularDePago ?? "-"}</TableCell>
                         <TableCell>{item.cuentaBanco ?? "-"}</TableCell>

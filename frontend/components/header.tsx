@@ -5,7 +5,7 @@ import PildoraUsuario from "./user-pill"
 import { Bell } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
-export default function HeaderAlquigest({ tituloPagina = "", username, toggleTheme, isDarkMode, onBellClick, showNotificationDot }: any) {
+export default function HeaderAlquigest({ tituloPagina = "", username, toggleTheme, isDarkMode, onBellClick, showNotificationDot, onLoginClick }: any) {
   const urlLogoAlquigest = isDarkMode ? "/alquigest-white.png" : "/alquigest-dark.png"
   const gradientVar = "bg-gradient-to-l from-yellow-300 via-[var(--amarillo-alqui)] to-[var(--background)] animate-gradient-x"
   const gradientAlqui = "bg-gradient-to-l from-[var(--amarillo-alqui)] to-[var(--background)]"
@@ -40,6 +40,7 @@ export default function HeaderAlquigest({ tituloPagina = "", username, toggleThe
               username={username}
               isDarkMode={isDarkMode}
               toggleTheme={toggleTheme}
+              onLoginClick={onLoginClick}
             />
           </div>
         </div>

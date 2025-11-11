@@ -224,7 +224,7 @@ export default function HomePage() {
   {/* Cards DATOS ACTUALES */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mx-2">
           <EstadisticaCard
-            titulo="Facturas Pendientes"
+            titulo="Servicios Pendientes"
             valor={contadores.cantServiciosNoPagos}
             icono={<Receipt className=" text-orange-700" />}
             coloresIcono="bg-orange-300"
