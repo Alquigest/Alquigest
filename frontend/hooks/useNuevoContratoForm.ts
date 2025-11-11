@@ -158,7 +158,7 @@ export function useNuevoContratoForm() {
       .filter(servicio => servicio.esActivo)
       .map(servicio => {
         // fuente de fecha: servicio.fechaInicio explícita -> formData.fechaInicio -> hoy
-        const fechaCruda = servicio.fechaInicio || '';
+        const fechaCruda = servicio.fechaInicio || formData.fechaInicio || '';
         // si viene vacía usar hoy formateado
         const fechaFinal = fechaCruda === '' ? formatDate(hoy) : fechaCruda;
         return {

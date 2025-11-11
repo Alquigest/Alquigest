@@ -17,6 +17,7 @@ import {
   Blocks,
   Receipt,
   Handshake,
+  PiggyBank,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
@@ -255,7 +256,7 @@ export default function HomePage() {
           <EstadisticaCard
             titulo="Honorarios del mes"
             valor={`$ ${contadores.honorariosDelMes.toLocaleString('es-AR')}`}
-            icono={<BarChart3 className=" text-slate-700" />}
+            icono={<PiggyBank className=" text-slate-700" />}
             coloresIcono="bg-slate-300"
             subtitulo="Cálculo real acumulativo"
             tituloAyuda="Suma de los honorarios correspondientes a los alquileres ya pagos del mes actual"

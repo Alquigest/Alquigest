@@ -69,7 +69,7 @@ export default function ClaveFiscalSecura({
       if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
         setErrorModal({ open: true, mensaje: "Contraseña incorrecta" });
       } else {
-        setErrorModal({ open: true, mensaje: "Error al revelar la clave fiscal" });
+        setErrorModal({ open: true, mensaje: error.message || "Error al revelar la clave fiscal" });
       }
       console.error("Error revelando clave fiscal:", error);
     } finally {
@@ -98,11 +98,11 @@ export default function ClaveFiscalSecura({
       {!claveFiscalVisible ? (
         <div className="flex items-center gap-2">
           <code className="px-3 py-2 bg-muted rounded-md font-mono text-sm">
-            {claveFiscalEnmascarada || '****'}
+            {claveFiscalEnmascarada || 'No registrada'}
           </code>
           <Button
             onClick={handleRevelarClick}
-            disabled={loading}
+            disabled={loading || !claveFiscalEnmascarada}
             variant="outline"
             size="sm"
           >
