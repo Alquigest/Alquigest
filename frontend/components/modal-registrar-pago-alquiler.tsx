@@ -311,6 +311,7 @@ export default function ModalRegistrarPagoAlquiler({
                         type="date"
                         value={formData.fechaPago}
                         onChange={(e) => handleChange("fechaPago", e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
                         className="pl-10"
                         required
                       />
@@ -320,7 +321,7 @@ export default function ModalRegistrarPagoAlquiler({
                   {/* Cuenta de Banco */}
                   <div className="space-y-2">
                     <Label htmlFor="cuentaBanco">
-                      Cuenta de Banco <span className="text-red-500">*</span>
+                      Cuenta de Banco
                     </Label>
                     <Input
                       id="cuentaBanco"
