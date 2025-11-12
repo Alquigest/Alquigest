@@ -41,6 +41,37 @@ export default function HistorialPagoAlquilerPage() {
     return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`
   }
 
+  // Función para normalizar y formatear fechas a DD/MM/AAAA
+  const formatearFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return "-"
+    
+    // Si ya viene en formato DD/MM/AAAA
+    if (fecha.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      return fecha
+    }
+    
+    // Si viene en formato YYYY-MM-DD
+    if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = fecha.split('-')
+      return `${day}/${month}/${year}`
+    }
+    
+    // Intentar parsear como fecha ISO completa
+    try {
+      const date = new Date(fecha)
+      if (!isNaN(date.getTime())) {
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const year = date.getFullYear()
+        return `${day}/${month}/${year}`
+      }
+    } catch (e) {
+      console.error("Error parseando fecha:", fecha, e)
+    }
+    
+    return fecha // Devolver original si no se puede parsear
+  }
+
   if (loading) return <Loading text="Cargando historial de pagos de alquiler" />
 
   // Extraer información del primer elemento si existe
@@ -106,11 +137,11 @@ export default function HistorialPagoAlquilerPage() {
                       <TableRow key={item.id}>
                         <TableCell className="font-semibold">{formatPeriodo(item.fechaVencimientoPago)}</TableCell>
                         <TableCell className="font-semibold">${item.monto.toLocaleString()}</TableCell>
-                        <TableCell>{new Date(item.fechaVencimientoPago + 'T12:00:00').toLocaleDateString('es-AR')}</TableCell>
+                        <TableCell>{formatearFecha(item.fechaVencimientoPago)}</TableCell>
                         <TableCell>{item.metodo ?? "-"}</TableCell>
                         <TableCell>{item.titularDePago ?? "-"}</TableCell>
                         <TableCell>{item.cuentaBanco ?? "-"}</TableCell>
-                        <TableCell>{"-"}</TableCell>
+                        <TableCell>{formatearFecha(item.fechaPago)}</TableCell>
                         <TableCell>{estadoPago}</TableCell>
                       </TableRow>
                     )

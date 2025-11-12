@@ -220,8 +220,15 @@ public class AlquilerService {
         // Marcar como pagado
         alquiler.setEstaPagado(true);
 
-        // Setear la fecha de pago a la fecha actual
-        alquiler.setFechaPago(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        // Setear la fecha de pago desde el DTO (formato YYYY-MM-DD)
+        if (registroPagoDTO.getFechaPago() != null && !registroPagoDTO.getFechaPago().isEmpty()) {
+            // Convertir de YYYY-MM-DD a dd/MM/yyyy
+            LocalDate fechaPagoDate = LocalDate.parse(registroPagoDTO.getFechaPago());
+            alquiler.setFechaPago(fechaPagoDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        } else {
+            // Si no viene fecha, usar la fecha actual
+            alquiler.setFechaPago(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        }
 
         // Actualizar información de pago
         if (registroPagoDTO.getCuentaBanco() != null) {

@@ -17,15 +17,19 @@ public class RegistroPagoDTO {
     @Size(max = 50, message = "El método no puede exceder 50 caracteres")
     private String metodo;
 
+    @NotNull(message = "La fecha de pago es obligatoria")
+    private String fechaPago; // Formato esperado: YYYY-MM-DD
+
     // Constructor vacío
     public RegistroPagoDTO() {
     }
 
     // Constructor con parámetros
-    public RegistroPagoDTO(String cuentaBanco, String titularDePago, String metodo) {
+    public RegistroPagoDTO(String cuentaBanco, String titularDePago, String metodo, String fechaPago) {
         this.cuentaBanco = cuentaBanco;
         this.titularDePago = titularDePago;
         this.metodo = metodo;
+        this.fechaPago = fechaPago;
     }
 
     // Getters y Setters
@@ -51,6 +55,14 @@ public class RegistroPagoDTO {
 
     public void setMetodo(String metodo) {
         this.metodo = metodo;
+    }
+
+    public String getFechaPago() {
+        return fechaPago;
+    }
+
+    public void setFechaPago(String fechaPago) {
+        this.fechaPago = fechaPago;
     }
 }
 

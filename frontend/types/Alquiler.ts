@@ -4,6 +4,7 @@ interface AlquilerItem {
   fechaVencimientoPago: string
   monto: number
   estaPagado: boolean
+  fechaPago: string | null
   cuentaBanco: string | null
   titularDePago: string | null
   metodo: string | null
