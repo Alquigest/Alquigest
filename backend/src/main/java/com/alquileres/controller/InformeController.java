@@ -4,7 +4,6 @@ import com.alquileres.dto.*;
 import com.alquileres.service.InformeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +16,11 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Informes", description = "API para generación de informes del sistema")
 public class InformeController {
 
-    @Autowired
-    private InformeService informeService;
+    private final InformeService informeService;
+
+    public InformeController(InformeService informeService) {
+        this.informeService = informeService;
+    }
 
     /**
      * INFORME 1: Honorarios por inmueble del mes actual

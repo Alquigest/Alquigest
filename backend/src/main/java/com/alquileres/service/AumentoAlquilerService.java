@@ -8,7 +8,6 @@ import com.alquileres.model.Contrato;
 import com.alquileres.repository.AumentoAlquilerRepository;
 import com.alquileres.repository.ContratoRepository;
 import com.alquileres.util.FechaUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +22,18 @@ import java.util.stream.Collectors;
 @Service
 public class AumentoAlquilerService {
 
-    @Autowired
-    private AumentoAlquilerRepository aumentoAlquilerRepository;
+    private final AumentoAlquilerRepository aumentoAlquilerRepository;
+    private final ContratoRepository contratoRepository;
+    private final ClockService clockService;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private ClockService clockService;
+    public AumentoAlquilerService(
+            AumentoAlquilerRepository aumentoAlquilerRepository,
+            ContratoRepository contratoRepository,
+            ClockService clockService) {
+        this.aumentoAlquilerRepository = aumentoAlquilerRepository;
+        this.contratoRepository = contratoRepository;
+        this.clockService = clockService;
+    }
 
     /**
      * Obtener el historial completo de aumentos de un contrato

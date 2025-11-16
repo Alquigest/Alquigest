@@ -9,7 +9,6 @@ import com.alquileres.repository.ConfiguracionSistemaRepository;
 import com.alquileres.util.BCRAApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
@@ -38,20 +37,24 @@ public class AlquilerActualizacionService {
      */
     private static final String CLAVE_ULTIMO_MES_PROCESADO = "ULTIMO_MES_PROCESADO_ALQUILERES";
 
-    @Autowired
-    private AlquilerRepository alquilerRepository;
+    private final AlquilerRepository alquilerRepository;
+    private final ContratoRepository contratoRepository;
+    private final ConfiguracionSistemaRepository configuracionSistemaRepository;
+    private final BCRAApiClient bcraApiClient;
+    private final AumentoAlquilerService aumentoAlquilerService;
 
-    @Autowired
-    private ContratoRepository contratoRepository;
-
-    @Autowired
-    private ConfiguracionSistemaRepository configuracionSistemaRepository;
-
-    @Autowired
-    private BCRAApiClient bcraApiClient;
-
-    @Autowired
-    private AumentoAlquilerService aumentoAlquilerService;
+    public AlquilerActualizacionService(
+            AlquilerRepository alquilerRepository,
+            ContratoRepository contratoRepository,
+            ConfiguracionSistemaRepository configuracionSistemaRepository,
+            BCRAApiClient bcraApiClient,
+            AumentoAlquilerService aumentoAlquilerService) {
+        this.alquilerRepository = alquilerRepository;
+        this.contratoRepository = contratoRepository;
+        this.configuracionSistemaRepository = configuracionSistemaRepository;
+        this.bcraApiClient = bcraApiClient;
+        this.aumentoAlquilerService = aumentoAlquilerService;
+    }
 
     /**
      * Procesa la creación de alquileres pendientes

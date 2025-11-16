@@ -10,7 +10,6 @@ import com.alquileres.service.PagoServicioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +24,11 @@ import java.util.stream.Collectors;
 @Tag(name = "Pagos de Servicios", description = "API para gestión de pagos de servicios")
 public class PagoServicioController {
 
-    @Autowired
-    private PagoServicioService pagoServicioService;
+    private final PagoServicioService pagoServicioService;
+
+    public PagoServicioController(PagoServicioService pagoServicioService) {
+        this.pagoServicioService = pagoServicioService;
+    }
 
     /**
      * Actualiza los montos de los pagos de servicios no pagados de un contrato

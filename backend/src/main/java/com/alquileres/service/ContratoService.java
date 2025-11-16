@@ -82,7 +82,7 @@ public class ContratoService {
             EncryptionService encryptionService,
             PDFService pdfService,
             BCRAApiClient bcraApiClient,
-            ClockService clockService) {
+            ClockService clockService, AumentoAlquilerService aumentoAlquilerService) {
         this.contratoRepository = contratoRepository;
         this.inmuebleRepository = inmuebleRepository;
         this.inquilinoRepository = inquilinoRepository;
@@ -98,10 +98,15 @@ public class ContratoService {
         this.pdfService = pdfService;
         this.bcraApiClient = bcraApiClient;
         this.clockService = clockService;
+        this.aumentoAlquilerService = aumentoAlquilerService;
     }
 
-    @Autowired
-    private AumentoAlquilerService aumentoAlquilerService;
+    private final AumentoAlquilerService aumentoAlquilerService;
+
+    // Constructor adicional para inyección de AumentoAlquilerService si es necesario
+    public void setAumentoAlquilerService(AumentoAlquilerService aumentoAlquilerService) {
+        // Este método se puede usar para lazy loading si es necesario
+    }
 
     /**
      * Enriquece un ContratoDTO con información adicional del propietario, inmueble y alquiler

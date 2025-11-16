@@ -4,7 +4,6 @@ import com.alquileres.dto.CancelacionContratoDTO;
 import com.alquileres.service.CancelacionContratoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +15,11 @@ import java.util.List;
 @Tag(name = "Cancelaciones de Contratos", description = "API para gestión de cancelaciones de contratos")
 public class CancelacionContratoController {
 
-    @Autowired
-    private CancelacionContratoService cancelacionContratoService;
+    private final CancelacionContratoService cancelacionContratoService;
+
+    public CancelacionContratoController(CancelacionContratoService cancelacionContratoService) {
+        this.cancelacionContratoService = cancelacionContratoService;
+    }
 
     /**
      * Obtiene todas las cancelaciones de contratos

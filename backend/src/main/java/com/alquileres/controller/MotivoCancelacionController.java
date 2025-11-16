@@ -4,7 +4,6 @@ import com.alquileres.dto.MotivoCancelacionDTO;
 import com.alquileres.service.MotivoCancelacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +14,11 @@ import java.util.List;
 @Tag(name = "Motivos de Cancelación", description = "API para gestionar motivos de cancelación de contratos")
 public class MotivoCancelacionController {
 
-    @Autowired
-    private MotivoCancelacionService motivoCancelacionService;
+    private final MotivoCancelacionService motivoCancelacionService;
+
+    public MotivoCancelacionController(MotivoCancelacionService motivoCancelacionService) {
+        this.motivoCancelacionService = motivoCancelacionService;
+    }
 
     @GetMapping
     @Operation(summary = "Obtener todos los motivos de cancelación",

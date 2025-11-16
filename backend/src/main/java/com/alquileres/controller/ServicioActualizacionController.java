@@ -3,7 +3,6 @@ package com.alquileres.controller;
 import com.alquileres.service.ServicioActualizacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,8 +13,11 @@ import java.util.Map;
 @Tag(name = "Actualización de Servicios", description = "API para testing y forzar procesamiento de pagos")
 public class ServicioActualizacionController {
 
-    @Autowired
-    private ServicioActualizacionService servicioActualizacionService;
+    private final ServicioActualizacionService servicioActualizacionService;
+
+    public ServicioActualizacionController(ServicioActualizacionService servicioActualizacionService) {
+        this.servicioActualizacionService = servicioActualizacionService;
+    }
 
     /**
      * Fuerza el procesamiento de pagos de servicios

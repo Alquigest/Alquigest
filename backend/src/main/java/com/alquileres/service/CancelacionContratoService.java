@@ -3,7 +3,6 @@ package com.alquileres.service;
 import com.alquileres.dto.CancelacionContratoDTO;
 import com.alquileres.model.CancelacionContrato;
 import com.alquileres.repository.CancelacionContratoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class CancelacionContratoService {
 
-    @Autowired
-    private CancelacionContratoRepository cancelacionContratoRepository;
+    private final CancelacionContratoRepository cancelacionContratoRepository;
+
+    public CancelacionContratoService(CancelacionContratoRepository cancelacionContratoRepository) {
+        this.cancelacionContratoRepository = cancelacionContratoRepository;
+    }
 
     /**
      * Convierte una entidad CancelacionContrato a DTO

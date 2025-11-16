@@ -5,7 +5,6 @@ import com.alquileres.dto.RevelarClaveFiscalRequest;
 import com.alquileres.service.PropietarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,8 +21,11 @@ import java.util.Map;
 @Tag(name = "Propietarios", description = "API para gestión de propietarios")
 public class PropietarioController {
 
-    @Autowired
-    private PropietarioService propietarioService;
+    private final PropietarioService propietarioService;
+
+    public PropietarioController(PropietarioService propietarioService) {
+        this.propietarioService = propietarioService;
+    }
 
     // GET /api/propietarios - Obtener todos los propietarios
     @GetMapping

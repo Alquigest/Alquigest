@@ -2,7 +2,6 @@ package com.alquileres.config;
 
 import com.alquileres.security.JwtAuthenticationFilter;
 import com.alquileres.security.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +31,11 @@ public class SecurityConfig {
     @Value("${app.cors.allowedOrigins:http://localhost:3000}")
     private String allowedOrigins;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
+
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public JwtAuthenticationFilter authenticationJwtTokenFilter() {

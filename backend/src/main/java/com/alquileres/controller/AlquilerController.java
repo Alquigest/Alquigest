@@ -11,7 +11,6 @@ import com.alquileres.exception.ErrorCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +24,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class AlquilerController {
 
-    @Autowired
-    private AlquilerService alquilerService;
+    private final AlquilerService alquilerService;
+
+    public AlquilerController(AlquilerService alquilerService) {
+        this.alquilerService = alquilerService;
+    }
 
     // Obtener todos los alquileres
     @GetMapping

@@ -5,7 +5,6 @@ import com.alquileres.dto.ContratoCreateDTO;
 import com.alquileres.dto.EstadoContratoUpdateDTO;
 import com.alquileres.service.ContratoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +21,11 @@ import java.util.Objects;
 @Tag(name = "Contratos", description = "API para gestión de contratos de alquiler")
 public class ContratoController {
 
-    @Autowired
-    private ContratoService contratoService;
+    private final ContratoService contratoService;
+
+    public ContratoController(ContratoService contratoService) {
+        this.contratoService = contratoService;
+    }
 
     // GET /api/contratos - Obtener todos los contratos
     @GetMapping

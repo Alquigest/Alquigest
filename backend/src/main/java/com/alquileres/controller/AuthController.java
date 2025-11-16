@@ -58,44 +58,48 @@ public class AuthController {
     @Value("${app.cors.allowedOrigins:http://localhost:3000}")
     private String allowedOrigins;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
+    private final PasswordEncoder encoder;
+    private final JwtUtils jwtUtils;
+    private final com.alquileres.security.UserDetailsServiceImpl userDetailsService;
+    private final PermisosService permisosService;
+    private final ContratoActualizacionService contratoActualizacionService;
+    private final ServicioActualizacionService servicioActualizacionService;
+    private final AlquilerActualizacionService alquilerActualizacionService;
+    private final LoginAttemptService loginAttemptService;
+    private final PasswordResetService passwordResetService;
+    private final EmailService emailService;
 
-    @Autowired
-    UsuarioRepository usuarioRepository;
-
-    @Autowired
-    RolRepository rolRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    com.alquileres.security.UserDetailsServiceImpl userDetailsService;
-
-    @Autowired
-    PermisosService permisosService;
-
-    @Autowired
-    ContratoActualizacionService contratoActualizacionService;
-
-    @Autowired
-    ServicioActualizacionService servicioActualizacionService;
-
-    @Autowired
-    AlquilerActualizacionService alquilerActualizacionService;
-
-    @Autowired
-    LoginAttemptService loginAttemptService;
-
-    @Autowired
-    PasswordResetService passwordResetService;
-
-    @Autowired
-    EmailService emailService;
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            UsuarioRepository usuarioRepository,
+            RolRepository rolRepository,
+            PasswordEncoder encoder,
+            JwtUtils jwtUtils,
+            com.alquileres.security.UserDetailsServiceImpl userDetailsService,
+            PermisosService permisosService,
+            ContratoActualizacionService contratoActualizacionService,
+            ServicioActualizacionService servicioActualizacionService,
+            AlquilerActualizacionService alquilerActualizacionService,
+            LoginAttemptService loginAttemptService,
+            PasswordResetService passwordResetService,
+            EmailService emailService) {
+        this.authenticationManager = authenticationManager;
+        this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+        this.permisosService = permisosService;
+        this.contratoActualizacionService = contratoActualizacionService;
+        this.servicioActualizacionService = servicioActualizacionService;
+        this.alquilerActualizacionService = alquilerActualizacionService;
+        this.loginAttemptService = loginAttemptService;
+        this.passwordResetService = passwordResetService;
+        this.emailService = emailService;
+    }
 
     @PostMapping("/signin")
     @Operation(summary = "Iniciar sesión")

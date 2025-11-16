@@ -2,7 +2,6 @@ package com.alquileres.controller;
 
 import com.alquileres.dto.InquilinoDTO;
 import com.alquileres.service.InquilinoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +13,11 @@ import java.util.List;
 @Tag(name = "Inquilinos", description = "API para gestión de inquilinos")
 public class InquilinoController {
 
-    @Autowired
-    private InquilinoService inquilinoService;
+    private final InquilinoService inquilinoService;
+
+    public InquilinoController(InquilinoService inquilinoService) {
+        this.inquilinoService = inquilinoService;
+    }
 
     // GET /api/inquilinos - Obtener todos los inquilinos
     @GetMapping

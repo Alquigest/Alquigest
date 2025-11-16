@@ -3,7 +3,6 @@ package com.alquileres.controller;
 import com.alquileres.util.BCRAApiClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +15,11 @@ import java.util.Map;
 @Tag(name = "ICL BCRA", description = "Endpoints para consultar el Índice de Contratos de Locación del BCRA")
 public class ICLController {
 
-    @Autowired
-    private BCRAApiClient bcraApiClient;
+    private final BCRAApiClient bcraApiClient;
+
+    public ICLController(BCRAApiClient bcraApiClient) {
+        this.bcraApiClient = bcraApiClient;
+    }
 
     /**
      * GET /api/icl/tasa - Obtener la tasa de aumento del ICL entre dos fechas

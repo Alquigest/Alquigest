@@ -3,7 +3,6 @@ package com.alquileres.controller;
 import com.alquileres.service.ClockService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +20,11 @@ import java.util.Map;
 @Tag(name = "Testing", description = "Endpoints para facilitar testing y debugging")
 public class TestingController {
 
-    @Autowired
-    private ClockService clockService;
+    private final ClockService clockService;
+
+    public TestingController(ClockService clockService) {
+        this.clockService = clockService;
+    }
 
     /**
      * Configura una fecha específica para testing.
