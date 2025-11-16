@@ -84,7 +84,7 @@ useEffect(() => {
                 Volver</Button>
             </Link>            
             <NuevoPropietarioModal
-                text="Nuevo"
+                text="Nuevo Locador"
                 onPropietarioCreado={(nuevo) => setPropietariosBD(prev => [...prev, nuevo])}
               />
 
