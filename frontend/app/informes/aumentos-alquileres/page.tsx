@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, CalendarArrowUp, FileDown, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react'
+import { ArrowLeft, CalendarArrowUp, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import GraficoAumentosContrato from '@/components/informes/grafico-aumentos'
+import ExportarAumentosPDF from '@/components/informes/exportar-aumentos-pdf'
 
 interface AumentoItem {
 	aumentoId: number
@@ -66,6 +67,21 @@ export default function AumentosAlquileresPage() {
 	}, [meses])
 
 	const formatoMoneda = (valor: number) => valor.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 })
+
+	// Evita desfase de mes por huso horario cuando vienen fechas 'YYYY-MM-DD'
+	const formatoMesAnioLocal = (fecha: string) => {
+		if (!fecha) return '--/----'
+		// Intentar parseo seguro como fecha local
+		const isoParts = fecha.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+		if (isoParts) {
+			const [, y, m, d] = isoParts
+			const dt = new Date(Number(y), Number(m) - 1, Number(d))
+			return dt.toLocaleDateString('es-AR', { year: 'numeric', month: 'long' })
+		}
+		// Fallback: usar Date nativa pero fijando timezone UTC al formatear
+		const d = new Date(fecha)
+		return d.toLocaleDateString('es-AR', { year: 'numeric', month: 'long', timeZone: 'UTC' as const })
+	}
 
 	const contratosOrdenados = useMemo(() => {
 		if (!data) return []
@@ -164,10 +180,15 @@ export default function AumentosAlquileresPage() {
 
 				<div className="flex justify-between items-center mb-6">
 					<p className="text-lg font-semibold">Listado de aumentos por contrato</p>
-					<Button disabled variant="secondary">
-						<FileDown className="h-4 w-4 mr-2" />
-						Generar PDF
-					</Button>
+					{data && (
+					  <ExportarAumentosPDF
+					    periodoDesde={data.periodoDesde}
+					    periodoHasta={data.periodoHasta}
+					    contratos={contratosOrdenados}
+					    disabled={loading || !!error}
+					    totalAumentos={totalAumentos}
+					  />
+					)}
 				</div>
 
 				{/* Estado de carga / error */}
@@ -226,7 +247,7 @@ export default function AumentosAlquileresPage() {
 													<div key={aumento.aumentoId} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-muted/50 rounded-md">
 														<div className="flex flex-col gap-1">
 															<span className="text-sm font-medium">
-																{new Date(aumento.fechaAumento).toLocaleDateString('es-AR', { year: 'numeric', month: 'long' })}
+																{formatoMesAnioLocal(aumento.fechaAumento)}
 															</span>
 															<span className="flex items-center text-base text-primary ">
 																{formatoMoneda(aumento.montoAnterior)} <ArrowRight className="inline-block h-5 mx-4" /> {formatoMoneda(aumento.montoNuevo)}

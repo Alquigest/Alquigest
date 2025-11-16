@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState, useMemo } from 'react'
-import { ArrowLeft, HandCoins, FileDown } from 'lucide-react'
+import { ArrowLeft, HandCoins } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import ExportarHonorariosPDF from '@/components/informes/exportar-honorarios-pdf'
 import BACKEND_URL from '@/utils/backendURL'
 import { fetchWithToken } from '@/utils/functions/auth-functions/fetchWithToken'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -129,10 +130,15 @@ export default function HonorariosMesPage() {
 
 				<div className="flex justify-between items-center mb-6">
 					<p className="text-lg font-semibold">Listado de Alquileres pagados</p>
-					<Button disabled variant="secondary">
-						<FileDown className="h-4 w-4 mr-2" />
-						Generar PDF
-					</Button>
+					{data && (
+					  <ExportarHonorariosPDF
+					    periodo={data.periodo}
+					    totalHonorarios={data.totalHonorarios}
+					    honorarios={honorariosOrdenados}
+					    promedioHonorarios={data.honorariosPorInmueble.length ? data.totalHonorarios / data.honorariosPorInmueble.length : 0}
+					    disabled={loading || !!error}
+					  />
+					)}
 				</div>
 
 				{/* Estado de carga / error */}
