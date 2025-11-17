@@ -644,7 +644,7 @@ public class ContratoService {
      * @throws BusinessException si las fechas no cumplen las reglas
      */
     private void validarLogicaFechas(String fechaInicioISO, String fechaFinISO) {
-        String fechaActualISO = LocalDate.now().toString();
+        String fechaActualISO = clockService.getCurrentDate().toString();
         
         // Validar que fecha fin no sea anterior a fecha inicio
         if (fechaInicioISO != null && fechaFinISO != null) {
@@ -782,7 +782,7 @@ public class ContratoService {
      */
     private void generarPrimerAlquiler(Contrato contrato) {
         try {
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaVencimiento = LocalDate.of(
                 fechaActual.getYear(), 
                 fechaActual.getMonth(), 
@@ -1009,7 +1009,7 @@ public class ContratoService {
         CancelacionContrato cancelacion = new CancelacionContrato();
         cancelacion.setContrato(contrato);
         cancelacion.setFechaCancelacion(
-            LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
         cancelacion.setMotivoCancelacion(motivoCancelacion);
         

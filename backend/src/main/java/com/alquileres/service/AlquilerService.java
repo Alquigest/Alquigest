@@ -16,6 +16,7 @@ import com.alquileres.exception.ErrorCodes;
 import com.alquileres.util.FechaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,9 @@ public class AlquilerService {
     private final com.alquileres.repository.PropietarioRepository propietarioRepository;
     private final AumentoAlquilerService aumentoAlquilerService;
     private final com.alquileres.util.BCRAApiClient bcraApiClient;
+
+    @Autowired
+    ClockService clockService;
 
     public AlquilerService(
             AlquilerRepository alquilerRepository,
@@ -112,8 +116,8 @@ public class AlquilerService {
 
     // Obtener alquileres próximos a vencer
     public List<AlquilerDTO> obtenerAlquileresProximosAVencer(int diasAntes) {
-        String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         List<Alquiler> alquileres = alquilerRepository.findAlquileresProximosAVencer(fechaActual, fechaLimite);
         return alquileres.stream()
@@ -128,8 +132,8 @@ public class AlquilerService {
 
     // Contar alquileres próximos a vencer
     public Long contarAlquileresProximosAVencer(int diasAntes) {
-        String fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        String fechaLimite = LocalDate.now().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
         return alquilerRepository.countAlquileresProximosAVencer(fechaActual, fechaLimite);
     }
 
@@ -161,7 +165,7 @@ public class AlquilerService {
             }
         } else {
             // Si no se proporciona fecha, usar el día 10 del mes actual
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaConDia10 = fechaActual.withDayOfMonth(10);
             fechaVencimientoISO = fechaConDia10.format(DateTimeFormatter.ISO_LOCAL_DATE);
         }
@@ -227,7 +231,7 @@ public class AlquilerService {
             alquiler.setFechaPago(fechaPagoDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         } else {
             // Si no viene fecha, usar la fecha actual
-            alquiler.setFechaPago(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            alquiler.setFechaPago(clockService.getCurrentDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         }
 
         // Actualizar información de pago
@@ -474,7 +478,7 @@ public class AlquilerService {
 
                 // Obtener fechas para consultar la API
                 String fechaInicio = contrato.getFechaAumento();
-                String fechaFin = LocalDate.now().withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+                String fechaFin = clockService.getCurrentDate().withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
 
                 logger.debug("Reintentando consulta API del BCRA para alquiler ID {}: fechaInicio={}, fechaFin={}",
                             alquiler.getId(), fechaInicio, fechaFin);

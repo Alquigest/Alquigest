@@ -9,6 +9,7 @@ import com.alquileres.repository.ConfiguracionSistemaRepository;
 import com.alquileres.util.BCRAApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
@@ -43,6 +44,9 @@ public class AlquilerActualizacionService {
     private final BCRAApiClient bcraApiClient;
     private final AumentoAlquilerService aumentoAlquilerService;
 
+    @Autowired
+    ClockService clockService;
+
     public AlquilerActualizacionService(
             AlquilerRepository alquilerRepository,
             ContratoRepository contratoRepository,
@@ -65,7 +69,7 @@ public class AlquilerActualizacionService {
     @Transactional
     public int procesarAlquileresPendientes() {
         try {
-            String mesActual = LocalDate.now().format(FORMATO_PERIODO);
+            String mesActual = clockService.getCurrentDate().format(FORMATO_PERIODO);
             String ultimoMesProcesado = obtenerUltimoMesProcesado();
 
             logger.info("Verificando procesamiento de alquileres. Mes actual: {}, Último procesado: {}",
@@ -198,7 +202,7 @@ public class AlquilerActualizacionService {
             logger.info("Procesando {} contratos que necesitan alquileres", contratosSinAlquileres.size());
 
             // Calcular fecha de vencimiento una sola vez
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
             String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
 
@@ -227,7 +231,7 @@ public class AlquilerActualizacionService {
                         if (Boolean.TRUE.equals(contrato.getAumentaConIcl())) {
                             try {
                                 String fechaInicio = contrato.getFechaAumento();
-                                String fechaFin = LocalDate.now().withDayOfMonth(1).format(FORMATO_FECHA);
+                                String fechaFin = clockService.getCurrentDate().withDayOfMonth(1).format(FORMATO_FECHA);
 
                                 BigDecimal tasaAumento = bcraApiClient.obtenerTasaAumentoICL(fechaInicio, fechaFin);
                                 montoNuevo = montoBase.multiply(tasaAumento).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -366,7 +370,7 @@ public class AlquilerActualizacionService {
                     try {
                         // Obtener fechas para consultar ICL
                         String fechaInicio = contrato.getFechaAumento();
-                        String fechaFin = LocalDate.now().withDayOfMonth(1).format(FORMATO_FECHA);
+                        String fechaFin = clockService.getCurrentDate().withDayOfMonth(1).format(FORMATO_FECHA);
 
                         logger.info("Consultando ICL del BCRA para contrato ID {} - Desde: {} hasta: {}",
                                    contrato.getId(), fechaInicio, fechaFin);
@@ -436,7 +440,7 @@ public class AlquilerActualizacionService {
             }
 
             // Crear nuevo alquiler con vencimiento el día 10 del mes actual
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
             String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
 
@@ -538,7 +542,7 @@ public class AlquilerActualizacionService {
         try {
             // Parsear la fecha de aumento
             LocalDate fechaAumento = LocalDate.parse(contrato.getFechaAumento(), FORMATO_FECHA);
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
 
             // ✅ VALIDACIÓN CORRECTA: Verificar que el MES y AÑO sean iguales
             // Si fechaAumento es 2025-06-01 y estamos en junio 2025, debe aumentar
@@ -602,7 +606,7 @@ public class AlquilerActualizacionService {
             }
 
             // Crear nuevo alquiler con vencimiento el día 10 del mes actual
-            LocalDate fechaActual = LocalDate.now();
+            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
             String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
 
