@@ -8,8 +8,10 @@ import Loading from "./loading";
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BACKEND_URL from "@/utils/backendURL"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, CalendarClockIcon } from "lucide-react"
+import { ArrowLeft, CalendarClockIcon, ArrowUpDown } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 
 
 export default function HistorialPagoAlquilerPage() {
@@ -17,6 +19,8 @@ export default function HistorialPagoAlquilerPage() {
   const contratoId = params?.id
   const [data, setData] = useState<AlquilerItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [sortBy, setSortBy] = useState<"periodo" | "monto" | "fechaPago" | "vencimiento">("periodo")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,10 +88,11 @@ export default function HistorialPagoAlquilerPage() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-6 py-8 pt-30">
-        <div> 
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"> 
           <Button variant="outline" onClick={() => window.history.back()}> 
             <ArrowLeft className="h-4 w-4 mr-2" /> Volver 
-          </Button> 
+          </Button>
+
         </div> 
         <Card className="mt-10">
           <CardHeader>
@@ -95,16 +100,42 @@ export default function HistorialPagoAlquilerPage() {
               <CalendarClockIcon className="h-7 w-7" />
               <CardTitle className="text-xl">Historial de pagos de alquiler</CardTitle>
             </div>
-            {primerPago && (
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-base text-foreground">
-                  Inmueble: <span className="text-primary">{direccion}</span>
-                </p>
-                <p className="text-base text-foreground">
-                  Locatario: <span className="text-primary">{nombreCompleto}</span>
-                </p>
+            <Separator className="mt-5"/>
+            <div className="flex justify-between items-center">
+              {primerPago && (
+                <div>
+                  <p className="text-base text-foreground">
+                    Inmueble: <span className="text-primary">{direccion}</span>
+                  </p>
+                  <p className="text-base text-foreground">
+                    Locatario: <span className="text-primary">{nombreCompleto}</span>
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Ordenar por</span>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                  <SelectTrigger className="min-w-44">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="periodo">Período</SelectItem>
+                    <SelectItem value="monto">Monto</SelectItem>
+                    <SelectItem value="vencimiento">Vencimiento</SelectItem>
+                    <SelectItem value="fechaPago">Fecha de pago</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  title={sortDir === "asc" ? "Ascendente" : "Descendente"}
+                  onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                >
+                  <ArrowUpDown className="h-4 w-4 mr-2" />
+                  {sortDir === "asc" ? "Asc" : "Desc"}
+                </Button>
               </div>
-            )}
+            </div>
+            
           </CardHeader>
           <CardContent>
             <Table>
@@ -128,7 +159,31 @@ export default function HistorialPagoAlquilerPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.map((item) => {
+                  // ordenamiento
+                  (() => {
+                    const copia = [...data]
+                    const sign = sortDir === "asc" ? 1 : -1
+                    copia.sort((a, b) => {
+                      if (sortBy === "periodo") {
+                        const ta = new Date(a.fechaVencimientoPago).getTime()
+                        const tb = new Date(b.fechaVencimientoPago).getTime()
+                        return (ta - tb) * sign
+                      }
+                      if (sortBy === "monto") {
+                        return (a.monto - b.monto) * sign
+                      }
+                      if (sortBy === "vencimiento") {
+                        const ta = new Date(a.fechaVencimientoPago).getTime()
+                        const tb = new Date(b.fechaVencimientoPago).getTime()
+                        return (ta - tb) * sign
+                      }
+                      // fechaPago: nulls al final siempre
+                      const ta = a.fechaPago ? new Date(a.fechaPago).getTime() : Number.POSITIVE_INFINITY
+                      const tb = b.fechaPago ? new Date(b.fechaPago).getTime() : Number.POSITIVE_INFINITY
+                      return (ta - tb) * sign
+                    })
+                    return copia
+                  })().map((item) => {
                     const estadoPago = item.estaPagado 
                       ? <Badge className="bg-emerald-300 text-black w-26">Pagado</Badge>
                       : <Badge className="bg-red-300 text-black w-26">Pendiente</Badge>

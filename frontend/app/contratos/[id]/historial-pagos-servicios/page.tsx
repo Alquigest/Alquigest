@@ -38,7 +38,7 @@ export default function HistorialPagosServiciosPage() {
   const [data, setData] = useState<PagoServicioItem[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<"periodo" | "tipo" | "fechaPago">("periodo")
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +64,16 @@ export default function HistorialPagosServiciosPage() {
           <Button variant="outline" onClick={() => window.history.back()}> 
             <ArrowLeft className="h-4 w-4 mr-2" /> Volver
           </Button>
-          <div className="flex items-center gap-2">
+        </div>
+
+        <Card className="mt-10">
+
+          <CardHeader className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+                <CalendarClockIcon className="h-7 w-7" />
+                <CardTitle className="text-xl">Historial de pagos de servicios</CardTitle>
+            </div>
+                      <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Ordenar por</span>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger className="min-w-44">
@@ -85,13 +94,6 @@ export default function HistorialPagosServiciosPage() {
               {sortDir === "asc" ? "Asc" : "Desc"}
             </Button>
           </div>
-        </div> 
-        <Card className="mt-10">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-                <CalendarClockIcon className="h-7 w-7" />
-                <CardTitle className="text-xl">Historial de pagos de servicios</CardTitle>
-            </div>
           </CardHeader>
           <CardContent>
             <Table >
