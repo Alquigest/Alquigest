@@ -37,6 +37,10 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Long> {
     @Query("SELECT a FROM Alquiler a WHERE a.contrato.id IN :contratoIds AND a.estaPagado = false AND a.esActivo = true")
     List<Alquiler> findAlquileresPendientesByContratoIds(@Param("contratoIds") List<Long> contratoIds);
 
+    // Buscar alquileres activos pendientes de pago por múltiples contratos (batch query) cuyo mes de vencimiento es el actual
+    @Query("SELECT a FROM Alquiler a WHERE a.contrato.id IN :contratoIds AND a.estaPagado = false AND a.esActivo = true AND MONTH(CAST(a.fechaVencimientoPago AS date)) = :mes AND YEAR(CAST(a.fechaVencimientoPago AS date)) = :anio")
+    List<Alquiler> findAlquileresPendientesByContratoIdsAndMesAnioActual(@Param("contratoIds") List<Long> contratoIds, @Param("mes") int mes, @Param("anio") int anio);
+
     // Buscar alquileres activos pagados por contrato
     @Query("SELECT a FROM Alquiler a WHERE a.contrato.id = :contratoId AND a.estaPagado = true AND a.esActivo = true")
     List<Alquiler> findAlquileresPagadosByContratoId(@Param("contratoId") Long contratoId);

@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Propagation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -110,14 +109,14 @@ public class AlquilerActualizacionService {
 
             if (config.isPresent()) {
                 String valor = config.get().getValor();
-                logger.debug("Último mes procesado obtenido de BD: {}", valor);
+                logger.debug("Ultimo mes procesado obtenido de BD: {}", valor);
                 return valor;
             } else {
-                logger.debug("No se encontró registro de último mes procesado en BD");
+                logger.debug("No se encontro registro de ultimo mes procesado en BD");
                 return null;
             }
         } catch (Exception e) {
-            logger.error("Error al obtener último mes procesado: {}", e.getMessage(), e);
+            logger.error("Error al obtener ultimo mes procesado: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -147,10 +146,10 @@ public class AlquilerActualizacionService {
                     "Último mes en que se procesaron los alquileres automáticamente"
                 );
                 configuracionSistemaRepository.save(config);
-                logger.info("Registro de último mes procesado creado en BD: {}", mesActual);
+                logger.info("Registro de ultimo mes procesado creado en BD: {}", mesActual);
             }
         } catch (Exception e) {
-            logger.error("Error al actualizar último mes procesado: {}", e.getMessage(), e);
+            logger.error("Error al actualizar ultimo mes procesado: {}", e.getMessage(), e);
             // No lanzamos la excepción para evitar que falle todo el proceso
         }
     }
@@ -164,7 +163,7 @@ public class AlquilerActualizacionService {
     @Transactional
     public int crearAlquileresParaContratosVigentes() {
         try {
-            logger.info("Iniciando creación automática de alquileres para contratos vigentes");
+            logger.info("Iniciando creacion automatica de alquileres para contratos vigentes");
 
             // Obtener todos los contratos vigentes
             List<Contrato> contratosVigentes = contratoRepository.findContratosVigentes();
@@ -182,7 +181,10 @@ public class AlquilerActualizacionService {
                 .collect(Collectors.toList());
 
             // Buscar alquileres pendientes en batch
-            List<Alquiler> alquileresPendientes = alquilerRepository.findAlquileresPendientesByContratoIds(contratoIds);
+            LocalDate fechaActual = clockService.getCurrentDate();
+            int mesActual = fechaActual.getMonthValue();
+            int anioActual = fechaActual.getYear();
+            List<Alquiler> alquileresPendientes = alquilerRepository.findAlquileresPendientesByContratoIdsAndMesAnioActual(contratoIds, mesActual, anioActual);
 
             // Crear un Set de IDs de contratos que ya tienen alquileres
             java.util.Set<Long> contratosConAlquileres = alquileresPendientes.stream()
@@ -192,7 +194,7 @@ public class AlquilerActualizacionService {
             // Filtrar contratos que necesitan alquileres
             List<Contrato> contratosSinAlquileres = contratosVigentes.stream()
                 .filter(c -> !contratosConAlquileres.contains(c.getId()))
-                .collect(Collectors.toList());
+                .toList();
 
             if (contratosSinAlquileres.isEmpty()) {
                 logger.info("Todos los contratos vigentes ya tienen alquileres pendientes");
@@ -202,7 +204,6 @@ public class AlquilerActualizacionService {
             logger.info("Procesando {} contratos que necesitan alquileres", contratosSinAlquileres.size());
 
             // Calcular fecha de vencimiento una sola vez
-            LocalDate fechaActual = clockService.getCurrentDate();
             LocalDate fechaVencimiento = LocalDate.of(fechaActual.getYear(), fechaActual.getMonth(), 10);
             String fechaVencimientoISO = fechaVencimiento.format(FORMATO_FECHA);
 
@@ -251,7 +252,7 @@ public class AlquilerActualizacionService {
                                 actualizarFechaAumentoContrato(contrato);
 
                             } catch (Exception e) {
-                                logger.error("Error al consultar ICL para contrato ID {}: {}. Se marcará para aumento manual.",
+                                logger.error("Error al consultar ICL para contrato ID {}: {}. Se marcara para aumento manual.",
                                            contrato.getId(), e.getMessage());
                                 // ❌ Fallo la API - crear alquiler con monto base y marcar para aumento manual
                                 montoNuevo = montoBase;
@@ -318,11 +319,11 @@ public class AlquilerActualizacionService {
                 logger.info("Guardados {} aumentos en batch", nuevosAumentos.size());
             }
 
-            logger.info("Creación automática de alquileres completada. Total: {}", nuevosAlquileres.size());
+            logger.info("Creación automatica de alquileres completada. Total: {}", nuevosAlquileres.size());
             return nuevosAlquileres.size();
 
         } catch (Exception e) {
-            logger.error("Error en creación automática de alquileres: {}", e.getMessage(), e);
+            logger.error("Error en creación automatica de alquileres: {}", e.getMessage(), e);
             return 0;
         }
     }
@@ -343,7 +344,7 @@ public class AlquilerActualizacionService {
                 alquilerRepository.findAlquileresPendientesByContratoId(contrato.getId());
 
             if (!alquileresPendientes.isEmpty()) {
-                logger.debug("Contrato ID {} ya tiene alquileres pendientes, se omite creación",
+                logger.debug("Contrato ID {} ya tiene alquileres pendientes, se omite creacion",
                            contrato.getId());
                 return false;
             }
@@ -399,7 +400,7 @@ public class AlquilerActualizacionService {
                         actualizarFechaAumentoContrato(contrato);
 
                     } catch (Exception e) {
-                        logger.error("Error al consultar ICL para contrato ID {}: {}. Se usará el monto sin aumento.",
+                        logger.error("Error al consultar ICL para contrato ID {}: {}. Se usara el monto sin aumento.",
                                    contrato.getId(), e.getMessage());
                         // Si falla la consulta, usar el monto original
                         montoNuevo = montoBase;
@@ -448,7 +449,7 @@ public class AlquilerActualizacionService {
             nuevoAlquiler.setEsActivo(true);
             alquilerRepository.save(nuevoAlquiler);
 
-            logger.info("Alquiler creado automáticamente para contrato ID: {} - Monto: {} (Aumento aplicado: {})",
+            logger.info("Alquiler creado automaticamente para contrato ID: {} - Monto: {} (Aumento aplicado: {})",
                        contrato.getId(), montoNuevo, aplicoAumento);
             return true;
 
@@ -470,15 +471,15 @@ public class AlquilerActualizacionService {
         try {
             // Validar que tenga periodoAumento configurado
             if (contrato.getPeriodoAumento() == null || contrato.getPeriodoAumento() <= 0) {
-                logger.warn("Contrato ID {} no tiene periodoAumento válido. No se actualizará fechaAumento.",
+                logger.warn("Contrato ID {} no tiene periodoAumento valido. No se actualizara fechaAumento.",
                            contrato.getId());
                 return;
             }
 
             // Validar que tenga fechaAumento actual
             if (contrato.getFechaAumento() == null || contrato.getFechaAumento().isEmpty() ||
-                contrato.getFechaAumento().equalsIgnoreCase("No aumenta más")) {
-                logger.debug("Contrato ID {} no tiene fechaAumento válida para actualizar.",
+                contrato.getFechaAumento().equalsIgnoreCase("No aumenta mas")) {
+                logger.debug("Contrato ID {} no tiene fechaAumento valida para actualizar.",
                            contrato.getId());
                 return;
             }
@@ -499,7 +500,7 @@ public class AlquilerActualizacionService {
                     // Si la nueva fechaAumento supera la fechaFin, marcar como "No aumenta más"
                     contrato.setFechaAumento("No aumenta más");
                     contratoRepository.save(contrato);
-                    logger.info("Contrato ID {} - FechaAumento actualizada a 'No aumenta más' (superaría fechaFin: {})",
+                    logger.info("Contrato ID {} - FechaAumento actualizada a 'No aumenta mas' (superaria fechaFin: {})",
                                contrato.getId(), fechaFin);
                     return;
                 }
@@ -564,7 +565,7 @@ public class AlquilerActualizacionService {
             return debeAumentar;
 
         } catch (Exception e) {
-            logger.warn("Error al parsear fecha de aumento del contrato ID {}: {}. No se aplicará aumento.",
+            logger.warn("Error al parsear fecha de aumento del contrato ID {}: {}. No se aplicara aumento.",
                        contrato.getId(), e.getMessage());
             return false;
         }
@@ -580,7 +581,7 @@ public class AlquilerActualizacionService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean generarAlquilerParaNuevoContrato(Long contratoId) {
         try {
-            logger.info("Forzando generación de alquiler para nuevo contrato ID: {}", contratoId);
+            logger.info("Forzando generacion de alquiler para nuevo contrato ID: {}", contratoId);
 
             Optional<Contrato> contratoOpt = contratoRepository.findById(contratoId);
             if (!contratoOpt.isPresent()) {
@@ -592,7 +593,7 @@ public class AlquilerActualizacionService {
 
             // Verificar que el contrato esté vigente
             if (!"Vigente".equals(contrato.getEstadoContrato().getNombre())) {
-                logger.debug("Contrato ID {} no está vigente, se omite creación de alquiler", contratoId);
+                logger.debug("Contrato ID {} no esta vigente, se omite creación de alquiler", contratoId);
                 return false;
             }
 
