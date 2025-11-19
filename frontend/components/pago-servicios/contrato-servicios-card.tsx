@@ -244,7 +244,7 @@ export default function ContratoServiciosCard({
                 isDisabled={registrandoBatch || cantidadSeleccionados === 0 || !useAuth().hasPermission("pagar_servicios")}
                 confirmLabel="Confirmar pagos"
                 cancelLabel="Cancelar"
-                title="Confirmación de pagos masivos"
+                title="Confirmación de múltiples pagos"
                 description="Revisa los servicios y montos a registrar. Esta acción marcará como pagados todos los servicios listados."
                 triggerVariant="default"
                 className="bg-emerald-600 hover:bg-emerald-700"

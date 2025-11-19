@@ -49,7 +49,7 @@ export default function PasoCargaPdf({ pdfFile, setPdfFile }: PasoCargaPdfProps)
 							<FileUp className="h-12 w-12 text-muted-foreground" />
 							<div className="text-center">
 								<p className="text-sm font-medium">Hacé clic para seleccionar un archivo</p>
-								<p className="text-xs text-muted-foreground mt-1">o arrastrá y soltá el PDF aquí</p>
+								
 							</div>
 							<input
 								id="pdf-upload"

@@ -189,7 +189,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
               <BotonPagoModal
                 triggerLabel={loading ? "Procesando..." : "Registrar pago"}
                 items={[{
-                  id: pagoServicio.id,
+                  id: pagoServicio.servicioContrato.tipoServicio.nombre,
                   titulo: pagoServicio.servicioContrato.tipoServicio.nombre,
                   subtitulo: `${pagoServicio.periodo} | ${medioPago}${vencido === 'SI' ? ' | Vencido' : ''}`,
                   monto: typeof monto === 'number' ? monto : parseFloat(String(monto).replace(',', '.'))

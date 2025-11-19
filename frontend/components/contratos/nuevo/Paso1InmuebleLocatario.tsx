@@ -86,7 +86,7 @@ export default function Paso1InmuebleLocatario({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label>Nombre y Apellido</Label>
+            <Label>Apellido, Nombre</Label>
             <Input value={`${datosAdicionales.apellidoPropietario}, ${datosAdicionales.nombrePropietario}`} readOnly />
           </div>
           <div className="space-y-2">

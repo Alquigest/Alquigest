@@ -14,7 +14,7 @@ export default function RecuperarContrasenaPage() {
             </Button>
             <div className="flex items-center m-5 gap-2">
                 <KeyRound className="h-11 w-11" />
-                <h1 className="text-3xl font-bold">Recupera tu contraseña</h1>
+                <h1 className="text-3xl font-bold">Recupere su contraseña</h1>
             </div>
         </div>
         <div className="flex items-center justify-center">
