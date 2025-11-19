@@ -9,6 +9,8 @@ import Link from "next/link"
 import { fetchJSON } from "@/utils/functions/fetchWithCredentials"
 import Loading from "@/components/loading"
 import InmuebleIcon from "@/components/inmueble-icon"
+import ModalAumentoManual from "@/components/alquileres/modal-aumento-manual"
+import ModalAumentoExitoso from "@/components/alquileres/modal-aumento-exitoso"
 
 interface AlquilerAumentoManual {
   id: number
@@ -33,6 +35,10 @@ interface AlquilerAumentoManual {
 export default function AumentosManualesAlquileresPage() {
   const [alquileres, setAlquileres] = useState<AlquilerAumentoManual[]>([])
   const [loading, setLoading] = useState(true)
+  const [modalAumentoOpen, setModalAumentoOpen] = useState(false)
+  const [modalExitoOpen, setModalExitoOpen] = useState(false)
+  const [alquilerSeleccionado, setAlquilerSeleccionado] = useState<AlquilerAumentoManual | null>(null)
+  const [nuevoMonto, setNuevoMonto] = useState(0)
 
   useEffect(() => {
     const fetchAlquileres = async () => {
@@ -49,6 +55,24 @@ export default function AumentosManualesAlquileresPage() {
 
     fetchAlquileres()
   }, [])
+
+  const handleAplicarAumento = (alquiler: AlquilerAumentoManual) => {
+    setAlquilerSeleccionado(alquiler)
+    setModalAumentoOpen(true)
+  }
+
+  const handleAumentoExitoso = (monto: number) => {
+    setNuevoMonto(monto)
+    setModalExitoOpen(true)
+    
+    // Remover el alquiler de la lista ya que ya no necesita aumento manual
+    setAlquileres(prev => prev.filter(a => a.id !== alquilerSeleccionado?.id))
+  }
+
+  const handleCerrarModalExito = () => {
+    setModalExitoOpen(false)
+    setAlquilerSeleccionado(null)
+  }
 
   if (loading) {
     return (
@@ -85,7 +109,7 @@ export default function AumentosManualesAlquileresPage() {
         {/* Contador */}
         {alquileres.length > 0 && (
           <div className="mb-6">
-            <Badge variant="outline" className="text-base px-4 py-2 bg-orange-100 text-orange-700 border-orange-300">
+            <Badge variant="outline" className="text-base px-4 py-2 bg-orange-100 dark:bg-orange-900  text-foreground border-orange-300 dark:border-orange-700">
               <AlertCircle className="h-4 w-4 mr-2" />
               {alquileres.length} {alquileres.length === 1 ? "contrato requiere" : "contratos requieren"} aumento manual
             </Badge>
@@ -118,12 +142,12 @@ export default function AumentosManualesAlquileresPage() {
                   <CardHeader className="grid grid-cols-1 md:grid-cols-12 items-center gap-4">
                     {/* Dirección */}
                     <div className="flex items-center gap-2 md:col-span-5">
-                      <InmuebleIcon tipoInmuebleString="CASA" className="h-7 w-7" />
+                      <InmuebleIcon  className="h-8 w-8" />
                       <div>
                         <CardTitle className="text-lg font-semibold">
                           {alquiler.direccionInmueble}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground">ID Contrato: #{alquiler.contratoId}</p>
+                        <p className="text-base text-muted-foreground">Fecha Vencimiento: {new Date(alquiler.fechaVencimientoPago).toLocaleDateString("es-AR", {timeZone: "UTC"})}</p>
                       </div>
                     </div>
 
@@ -147,11 +171,8 @@ export default function AumentosManualesAlquileresPage() {
                     <div className="flex justify-end md:col-span-1">
                       <Button
                         size="sm"
-                        className="bg-orange-500 hover:bg-orange-600"
-                        onClick={() => {
-                          // Aquí irá la lógica para aplicar el aumento manual
-                          console.log("Aplicar aumento manual para alquiler:", alquiler.id)
-                        }}
+                        
+                        onClick={() => handleAplicarAumento(alquiler)}
                       >
                         <TrendingUp className="h-4 w-4 mr-2" />
                         Aplicar
@@ -163,6 +184,25 @@ export default function AumentosManualesAlquileresPage() {
             </div>
           )}
         </div>
+
+        {/* Modales */}
+        {alquilerSeleccionado && (
+          <>
+            <ModalAumentoManual
+              open={modalAumentoOpen}
+              onOpenChange={setModalAumentoOpen}
+              alquilerId={alquilerSeleccionado.id}
+              direccionInmueble={alquilerSeleccionado.direccionInmueble}
+              onSuccess={handleAumentoExitoso}
+            />
+            <ModalAumentoExitoso
+              open={modalExitoOpen}
+              onOpenChange={handleCerrarModalExito}
+              nuevoMonto={nuevoMonto}
+              direccionInmueble={alquilerSeleccionado.direccionInmueble}
+            />
+          </>
+        )}
       </main>
     </div>
   )

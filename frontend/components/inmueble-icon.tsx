@@ -23,6 +23,6 @@ export default function InmuebleIcon({tipoInmuebleId, className, tipoInmuebleStr
         case 7:
             return <BuildingIcon className={`${className}  text-yellow-700`} />
         default:
-            return <BuildingIcon className={`${className} text-yellow-700`} />
+            return <Building2Icon className={`${className} text-yellow-700`} />
     }
 }
