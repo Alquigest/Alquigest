@@ -26,10 +26,10 @@ export default function QuickActions() {
     <div>
         {/* Dropdown Menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="fixed bg-primary bottom-15 right-15 rounded-2xl p-4 shadow-lg shadow-black/60 hover:scale-110 transform transition cursor-pointer z-999">
-            <div className="flex items-center space-x-2 text-background">
+          <DropdownMenuTrigger className="fixed bg-primary bottom-15 right-3 sm:right-15 rounded-2xl p-4 shadow-lg shadow-black/60 hover:brightness-110 transition-all cursor-pointer z-999">
+            <div className="flex items-center sm:space-x-2 text-background">
               <SquareArrowOutUpRight className="w-6 h-6 " />
-              <span>Accesos Directos</span>
+              <span className="hidden sm:block">Accesos Directos</span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">

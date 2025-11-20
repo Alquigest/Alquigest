@@ -68,7 +68,7 @@ export default function HistorialPagosServiciosPage() {
 
         <Card className="mt-10">
 
-          <CardHeader className="flex justify-between items-center">
+          <CardHeader className="flex flex-col sm:flex-row gap-5 justify-between items-center">
             <div className="flex items-center space-x-2">
                 <CalendarClockIcon className="h-7 w-7" />
                 <CardTitle className="text-xl">Historial de pagos de servicios</CardTitle>

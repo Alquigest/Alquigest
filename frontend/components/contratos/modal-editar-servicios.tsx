@@ -227,7 +227,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button variant="default" disabled={disabled} >
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit />
             Editar Servicios
           </Button>
         </DialogTrigger>

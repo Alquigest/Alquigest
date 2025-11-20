@@ -130,7 +130,7 @@ export default function PagoServiciosPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
 
           <EstadisticaCard 
             titulo="Total de servicios"

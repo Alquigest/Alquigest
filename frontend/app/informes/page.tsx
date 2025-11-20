@@ -16,13 +16,13 @@ function InformeCard(
     return (
         <Link
             href={urlInforme}>
-            <Card className={`hover:shadow-lg hover:border-primary/70  transition-all h-full`}>
+            <Card className={`hover:shadow-lg hover:border-primary/70  transition-all h-full p-5 py-8`}>
                 <CardHeader className={`${classNameHeader}`}>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-xl">
                         {iconInforme}
                         {tituloInforme}
                     </CardTitle>
-                    <CardDescription className={`${classNameCard} `}>
+                    <CardDescription className={`${classNameCard} text-base`}>
                         {descripcion}
                     </CardDescription>
 
@@ -44,10 +44,10 @@ export default function InformesPage() {
                 </Button>
             </Link>
                 <div className="flex items-center gap-2">
-                    <FileChartColumnIncreasing className="h-12 w-12"/>
+                    <FileChartColumnIncreasing className="h-14 w-14"/>
                     <div className="flex flex-col gap-0">
                         <p className="text-2xl font-bold ">Gestión de Informes</p>
-                        <p className="text-secondary">Aquí podrás ver y descargar informes detallados sobre los contratos, pagos y servicios.</p>
+                        <p className="text-secondary text-sm sm:text-lg">Aquí podrás ver y descargar informes detallados sobre los contratos, pagos y servicios.</p>
                     </div>
                 </div>
 

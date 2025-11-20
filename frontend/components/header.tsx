@@ -18,7 +18,7 @@ export default function HeaderAlquigest({ tituloPagina = "", username, toggleThe
             <Link href="/" className="flex items-center space-x-3">
               <div className="flex items-center space-x-2 ">
                 <img src={urlLogoAlquigest} className="p-2 h-10 md:h-12 contrast-70" />
-                <p className="text-lg md:text-xl text-muted-foreground mt-1">| {tituloPagina}</p>
+                <p className="hidden md:block text-lg md:text-xl text-muted-foreground mt-1">| {tituloPagina}</p>
               </div>
             </Link>
           </div>

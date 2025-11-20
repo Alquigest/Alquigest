@@ -130,25 +130,25 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
     return(
         <div className="min-h-screen bg-background">
            
-            <main className="container mx-auto px-6 py-8 pt-30">
+            <main className="container mx-auto px-4 py-8 pt-30">
                     <div className="mb-8 flex flex-col gap-3">
                         <Button variant="outline" onClick={() => window.history.back()} className="w-fit">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                             Volver
                         </Button>
-                    <div className="flex items-center m-5 justify-between">
-                        <div className="flex">
-                            <FileText className="h-15 w-15 mr-2 text-yellow-700" />
+                    <div className="grid sm:grid-cols-2 items-center w-full my-5 sm:justify-between">
+                        <div className="flex gap-2">
+                            <FileText className="h-15 w-15 text-yellow-700" />
                             <div>
-                                <h2 className="text-2xl font-bold text-foreground font-sans">Contrato Nro. {contratoBD.id}</h2>
-                                <p className="text-xl font-medium font-sans text-secondary">Inmueble: {contratoBD.direccionInmueble}</p>
+                                <h2 className="text-xl font-bold text-foreground font-sans">Contrato Nro. {contratoBD.id}</h2>
+                                <p className="text-2xl font-medium font-sans text-secondary">{contratoBD.direccionInmueble}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" onClick={() => router.push(`/alquileres/${id}/historial-pago-alquiler`)}>
+                        <div className="flex flex-col md:flex-row items-center md:justify-end gap-3 my-4">
+                            <Button className="w-42" variant="outline" onClick={() => router.push(`/alquileres/${id}/historial-pago-alquiler`)}>
                                 <History className="h-4 w-4 mr-2" /> Historial de Pagos
                             </Button>
-                            <Button variant="outline" onClick={() => setOpenModalPdf(true)} disabled={contratoBD.estadoContratoId !== 1}>
+                            <Button className="w-42" variant="outline" onClick={() => setOpenModalPdf(true)} disabled={contratoBD.estadoContratoId !== 1}>
                                 <FileUp className="h-4 w-4 mr-2" /> Cargar PDF
                             </Button>
                             {contratoBD && (

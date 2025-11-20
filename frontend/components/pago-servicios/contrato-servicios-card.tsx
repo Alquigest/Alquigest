@@ -160,8 +160,8 @@ export default function ContratoServiciosCard({
           <div className="flex items-center space-x-4">
             <InmuebleIcon tipoInmuebleString={contrato.tipoInmueble} className="h-7 w-7 text-primary" />
             <div>
-              <CardTitle className="text-lg">{contrato.direccionInmueble}</CardTitle>
-              <CardDescription className="font-sans text-base flex gap-5">
+              <CardTitle className="sm:text-lg py-2">{contrato.direccionInmueble}</CardTitle>
+              <CardDescription className="font-sans sm:text-base flex flex-col gap-2 sm:flex-row sm:gap-5">
                 <div>
                   Locador: {contrato.apellidoPropietario}, {contrato.nombrePropietario}
                 </div>
@@ -188,7 +188,7 @@ export default function ContratoServiciosCard({
 
       {isExpanded && (
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-4 ">
             <h4 className="font-semibold text-lg">Servicios controlados:</h4>
             {loading ? (
               <div className="text-center py-4">
@@ -224,16 +224,16 @@ export default function ContratoServiciosCard({
                 ))}
               </div>
             )}
-            <div className="pt-4 border-t flex justify-end gap-5 items-center ">
+            <div className="pt-4 border-t flex flex-col gap-4 sm:flex-row sm:justify-end sm:items-center">
                  {/* Aquí va el botón HISTORIAL */}
               <Link href={`/contratos/${contrato.id}/historial-pagos-servicios`}>
-                <Button className="w-42" variant={"outline"}>
+                <Button className="w-full sm:w-auto" variant={"outline"}>
                   <FileClock className="h-4 w-4 mr-2" />
                   Ver Historial
                 </Button>
               </Link>
               <Button 
-                className="w-42 border-amber-400" 
+                className="w-full sm:w-auto border-amber-400" 
                 variant={"outline"}
                 onClick={() => setModalReciboOpen(true)}
               >
@@ -242,7 +242,7 @@ export default function ContratoServiciosCard({
               </Button>
                 {/* Aquí va el botón para generar MERCEDES LOCATIVAS */}
               <Link href={`/alquileres/${contrato.id}/generar-recibo`}>
-                <Button className="w-42" variant={"outline"}>
+                <Button className="w-full sm:w-auto" variant={"outline"}>
                   <Receipt className="h-4 w-4 mr-2" />
                   Mercedes Locativas
                 </Button>

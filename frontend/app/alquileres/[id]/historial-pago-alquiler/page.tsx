@@ -96,43 +96,45 @@ export default function HistorialPagoAlquilerPage() {
         </div> 
         <Card className="mt-10">
           <CardHeader>
-            <div className="flex items-center space-x-2">
-              <CalendarClockIcon className="h-7 w-7" />
-              <CardTitle className="text-xl">Historial de pagos de alquiler</CardTitle>
-            </div>
-            <Separator className="mt-5"/>
-            <div className="flex justify-between items-center">
-              {primerPago && (
-                <div>
-                  <p className="text-base text-foreground">
-                    Inmueble: <span className="text-primary">{direccion}</span>
-                  </p>
-                  <p className="text-base text-foreground">
-                    Locatario: <span className="text-primary">{nombreCompleto}</span>
-                  </p>
+            <div className="flex flex-col sm:flex-1">
+              <div className="flex items-center space-x-2">
+                <CalendarClockIcon className="h-7 w-7" />
+                <CardTitle className="text-xl">Historial de pagos de alquiler</CardTitle>
+              </div>
+              <Separator className="mt-5"/>
+              <div className="flex flex-col sm:flex-row gap-2 justify-between items-center">
+                {primerPago && (
+                  <div>
+                    <p className="text-base text-foreground">
+                      Inmueble: <span className="text-primary">{direccion}</span>
+                    </p>
+                    <p className="text-base text-foreground">
+                      Locatario: <span className="text-primary">{nombreCompleto}</span>
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ordenar por</span>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                    <SelectTrigger className="min-w-44">
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="periodo">Período</SelectItem>
+                      <SelectItem value="monto">Monto</SelectItem>
+                      <SelectItem value="vencimiento">Vencimiento</SelectItem>
+                      <SelectItem value="fechaPago">Fecha de pago</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    title={sortDir === "asc" ? "Ascendente" : "Descendente"}
+                    onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                  >
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    {sortDir === "asc" ? "Asc" : "Desc"}
+                  </Button>
                 </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Ordenar por</span>
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                  <SelectTrigger className="min-w-44">
-                    <SelectValue placeholder="Seleccionar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="periodo">Período</SelectItem>
-                    <SelectItem value="monto">Monto</SelectItem>
-                    <SelectItem value="vencimiento">Vencimiento</SelectItem>
-                    <SelectItem value="fechaPago">Fecha de pago</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  title={sortDir === "asc" ? "Ascendente" : "Descendente"}
-                  onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-                >
-                  <ArrowUpDown className="h-4 w-4 mr-2" />
-                  {sortDir === "asc" ? "Asc" : "Desc"}
-                </Button>
               </div>
             </div>
             

@@ -45,17 +45,17 @@ export default function PildoraUsuario({
 
   return (
     <div>
-      <div className="flex items-center gap-2 ">
+      <div className="flex items-center gap-2">
         {/* Dropdown Menu para el usuario */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={`hidden md:flex flex-col p-1 rounded-4xl ${gradientVar} hover:bg-accent hover:text-muted transition cursor-pointer`}
+              className={`md:flex max-w-27 md:max-w-120 flex-col p-1 rounded-4xl ${gradientVar} hover:bg-accent hover:text-muted transition cursor-pointer`}
             >
               <div className="flex items-center space-x-2">
                 <UserCircle2Icon className="h-8 w-8 rounded-full" />
-                <p className="font-bold pr-2">{username || "Inicie sesión"}</p>
-                {mounted && isRoleAdmin && <p>| Modo Administrador</p>}
+                <p className=" font-bold pr-2 truncate">{username || "Inicie sesión"}</p>
+                {mounted && isRoleAdmin && <p className="hidden md:block">| Modo Administrador</p>}
               </div>
             </button>
           </DropdownMenuTrigger>

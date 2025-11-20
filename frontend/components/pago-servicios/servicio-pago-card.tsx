@@ -89,9 +89,10 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
   return (
     <Card className="bg-muted/50 border-1 border-foreground/30">
       <CardContent className="flex flex-col gap-2">
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(e => !e)}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between cursor-pointer gap-5 sm:gap-0" onClick={() => setIsExpanded(e => !e)}>
           
             <div className="flex items-center gap-3">
+              <div className="flex gap-2 items-center">
                 <TipoServicioIcon tipoServicio={pagoServicio.servicioContrato.tipoServicio.id} className="h-9 w-9"/>
                 <div>
                 <p className="font-bold text-base">{pagoServicio.servicioContrato.tipoServicio.nombre}</p>
@@ -101,8 +102,9 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
                   <p className="text-sm text-muted-foreground">Nro Contrato Servicio: {pagoServicio.servicioContrato.nroContratoServicio || "No Especificado"}</p>
                 )}
                 </div>
+              </div>
             </div>
-            <div className="flex items-center gap-10">
+            <div className="flex items-center justify-between gap-10">
               <div className="flex flex-col gap-1 items-end">
                 <div>
                     {pagoServicio.estaPagado ? (

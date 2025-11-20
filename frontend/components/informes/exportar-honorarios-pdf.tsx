@@ -214,7 +214,7 @@ export default function ExportarHonorariosPDF({
   }
 
   return (
-    <Button onClick={handleClick} disabled={disabled || !honorarios.length} variant="secondary">
+    <Button onClick={handleClick} disabled={disabled || !honorarios.length} variant="default">
       <FileDown className="h-4 w-4 mr-2" />
       Exportar PDF
     </Button>

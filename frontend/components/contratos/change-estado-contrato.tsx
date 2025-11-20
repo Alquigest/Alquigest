@@ -141,8 +141,7 @@ export default function ChangeEstadoContrato({ contratoId, disabled , estadoActu
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button
-            size="sm"
-            className="gap-1"
+            className="gap-1 w-42"
             disabled={cambioBloqueado || disabled}
             title={cambioBloqueado ? "No se puede cambiar estado cuando el contrato está No Vigente o Cancelado" : "Cambiar estado"}
           >

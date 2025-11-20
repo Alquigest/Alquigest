@@ -254,17 +254,16 @@ export default function AlquileresPage() {
           />
         </div>
         )}
-        {/* Alquileres List */} 
-        <div className="space-y-6"> 
-          <div className="flex justify-between my-10">
-            <div className="flex items-center justify-between"> 
-              <h2 className="text-xl font-semibold font-sans">
-                {filtroContrato === 'vigentes' && 'Contratos de Alquiler Vigentes'}
-                {filtroContrato === 'proximos-vencer' && 'Contratos próximos a vencer'}
-                {filtroContrato === 'no-vigentes' && 'Contratos Inactivos'}
-              </h2> 
-            </div>
-            <div className="flex items-center gap-4">
+        {/* Alquileres List */}
+        <div className="flex items-center justify-between mt-15"> 
+          <h2 className="text-xl font-semibold font-sans">
+            {filtroContrato === 'vigentes' && 'Contratos de Alquiler Vigentes'}
+            {filtroContrato === 'proximos-vencer' && 'Contratos próximos a vencer'}
+            {filtroContrato === 'no-vigentes' && 'Contratos Inactivos'}
+          </h2> 
+        </div> 
+        <div className="my-5"> 
+            <div className="flex justify-center sm:justify-end items-center gap-4">
               <AlquileresToolbar
                 vistaDetallada={vistaDetallada}
                 setVistaDetallada={setVistaDetallada}
@@ -274,11 +273,9 @@ export default function AlquileresPage() {
                 setFiltroContrato={handleChangeFiltro}
               />
             </div>
-          </div>  
           <div> {(!loading && contratosBD.length == 0) && ( <p className="text-lg text-secondary">No hay contratos activos actualmente</p> )} 
         </div>
         </div>
-
           <BarraBusqueda 
             arrayDatos={contratosOrdenados}
             placeholder="Busque por dirección o propietario..."

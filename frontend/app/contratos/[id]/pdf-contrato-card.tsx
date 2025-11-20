@@ -49,8 +49,8 @@ export default function PDFContratoCard({idContrato}: {idContrato: number}) {
                 <h2 className="text-xl font-bold text-foreground font-sans">Documento PDF del Contrato</h2>
             </div>
         </div> 
-        <div className="mt-10 ml-5">
-            <Card className="max-w-4xl">
+        <div className="mt-10 sm:ml-5">
+            <Card >
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5"/>

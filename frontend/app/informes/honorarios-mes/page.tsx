@@ -86,9 +86,9 @@ export default function HonorariosMesPage() {
 				<div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
 					<Card>
 						<CardHeader className="pb-2 flex flex-col items-center">
-							<CardTitle className="text-base font-light">Período</CardTitle>
+							<CardTitle className="text-base sm:text-lg font-light">Período</CardTitle>
 							<CardDescription>
-                                <p className='text-xl text-primary'>
+                                <p className='text-lg sm:text-2xl font-bold text-primary'>
                                     {loading ? <Skeleton className="h-5 w-24" /> : data?.periodo || '--/----'}
                                 </p>
                                 </CardDescription>
@@ -96,9 +96,9 @@ export default function HonorariosMesPage() {
 					</Card>
 					<Card>
 						<CardHeader className="pb-2 flex flex-col items-center">
-							<CardTitle className="text-base font-light">Total Honorarios</CardTitle>
+							<CardTitle className="text-base sm:text-lg font-light">Total Honorarios</CardTitle>
 							<CardDescription>
-                                <p className='text-xl text-primary font-semibold'>
+                                <p className='text-lg sm:text-2xl font-bold text-primary'>
 								    {loading ? <Skeleton className="h-5 w-32" /> : data ? formatoMoneda(data.totalHonorarios) : '—'}
                                 </p>
                             </CardDescription>
@@ -106,9 +106,9 @@ export default function HonorariosMesPage() {
 					</Card>
 					<Card>
 						<CardHeader className="pb-2 flex flex-col items-center">
-							<CardTitle className="text-base font-light">Alquileres pagados</CardTitle>
+							<CardTitle className="text-base sm:text-lg font-light">Alquileres pagados</CardTitle>
 							<CardDescription>
-                                <p className='text-xl'>
+                                <p className='text-lg sm:text-2xl font-bold'>
                                     {loading ? <Skeleton className="h-5 w-24" /> : data ? `${data.honorariosPorInmueble.length}` : '—'}
                                 </p>
                                     
@@ -117,9 +117,9 @@ export default function HonorariosMesPage() {
 					</Card>
                     <Card>
 						<CardHeader className="pb-2 flex flex-col items-center">
-							<CardTitle className="text-base font-light">Honorarios promedio</CardTitle>
+							<CardTitle className="text-base sm:text-lg font-light">Honorarios promedio</CardTitle>
 							<CardDescription>
-                                <p className='text-xl'>
+                                <p className='text-lg sm:text-2xl font-bold'>
                                     {loading ? <Skeleton className="h-5 w-24" /> : data ? `${formatoMoneda(data.honorariosPorInmueble.length > 0 ? data.totalHonorarios / data.honorariosPorInmueble.length : 0)}` : '—'}
                                 </p>
                                     

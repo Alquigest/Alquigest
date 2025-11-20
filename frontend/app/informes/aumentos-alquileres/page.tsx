@@ -140,7 +140,7 @@ export default function AumentosAlquileresPage() {
 						<CardHeader className="pb-2 flex flex-col items-center">
 							<CardTitle className="text-base font-light">Período desde</CardTitle>
 							<CardDescription>
-								<p className='text-xl text-primary'>
+								<p className='text-xl  text-primary'>
 									{loading ? <Skeleton className="h-5 w-24" /> : data?.periodoDesde || '--/----'}
 								</p>
 							</CardDescription>
