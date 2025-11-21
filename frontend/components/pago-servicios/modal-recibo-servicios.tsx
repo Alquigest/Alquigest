@@ -7,6 +7,7 @@ import { Receipt, FileDown } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { TIPO_SERVICIO_LABEL } from "@/types/ServicioContrato"
 import GenerarReciboServiciosPDF from "./generar-recibo-servicios-pdf"
+import { fetchJSON } from "@/utils/functions/fetchWithCredentials"
 
 interface Servicio {
   id: number
@@ -62,52 +63,21 @@ export default function ModalReciboServicios({
   const fetchDatosRecibo = async () => {
     setLoading(true)
     try {
-      // TODO: Reemplazar con el endpoint real cuando esté disponible
-      // const data = await fetchJSON<DatosReciboServicios>(`/recibos-servicios/contrato/${contratoId}`)
+      // Obtener periodo actual en formato mm/aaaa
+      const fechaActual = new Date()
+      const mes = String(fechaActual.getMonth() + 1).padStart(2, '0')
+      const anio = fechaActual.getFullYear()
+      const periodoActual = `${mes}/${anio}`
       
-      // DATOS MOCK - Eliminar cuando se implemente el endpoint
-      await new Promise(resolve => setTimeout(resolve, 500)) // Simular delay de red
+      // Construir la URL con query params
+      const params = new URLSearchParams({
+        contratoId: contratoId.toString(),
+        periodo: periodoActual
+      })
       
-      const datosMock: DatosReciboServicios = {
-        periodo: "11/2025",
-        servicios: [
-          {
-            id: 1,
-            nombreTipoServicio: "Luz",
-            monto: 15000
-          },
-          {
-            id: 2,
-            nombreTipoServicio: "Agua",
-            monto: 9000
-          },
-          {
-            id: 3,
-            nombreTipoServicio: "Gas",
-            monto: 7500
-          }
-        ],
-        contrato: {
-          fechaInicioContrato: "2023-03-01",
-          tipoInmueble: "CASA"
-        },
-        propietario: {
-          nombre: "Juan",
-          apellido: "Pérez",
-          direccion: "Calle Falsa 123",
-          barrio: "Centro",
-          dni: "12345678"
-        },
-        inquilino: {
-          nombre: "Lucas",
-          apellido: "Gómez",
-          direccion: "Av. Rivadavia 900",
-          barrio: "Norte",
-          dni: "98765432"
-        }
-      }
+      const data = await fetchJSON<DatosReciboServicios>(`/pagos-servicios/recibo?${params.toString()}`)
       
-      setDatos(datosMock)
+      setDatos(data)
     } catch (err: any) {
       console.error("Error al obtener datos del recibo:", err)
     } finally {
