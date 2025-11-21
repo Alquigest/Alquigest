@@ -151,6 +151,7 @@ public class InquilinoService {
         inquilino.setApellido(inquilinoDTO.getApellido());
         inquilino.setCuil(inquilinoDTO.getCuil());
         inquilino.setTelefono(inquilinoDTO.getTelefono());
+        inquilino.setDireccion(inquilinoDTO.getDireccion());
         inquilino.setEsActivo(inquilinoDTO.getEsActivo());
 
         Inquilino inquilinoActualizado = inquilinoRepository.save(inquilino);
