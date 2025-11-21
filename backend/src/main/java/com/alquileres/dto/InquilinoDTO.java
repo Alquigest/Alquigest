@@ -27,6 +27,9 @@ public class InquilinoDTO {
     @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
     private String telefono;
 
+    @Size(max = 100, message = "La dirección no puede exceder 100 caracteres")
+    private String direccion;
+
     @Size(max = 100, message = "El barrio no puede exceder 100 caracteres")
     private String barrio;
 
@@ -45,6 +48,7 @@ public class InquilinoDTO {
         this.apellido = inquilino.getApellido();
         this.cuil = inquilino.getCuil();
         this.telefono = inquilino.getTelefono();
+        this.direccion = inquilino.getDireccion();
         this.barrio = inquilino.getBarrio();
         this.estaAlquilando = inquilino.getEstaAlquilando();
         this.esActivo = inquilino.getEsActivo();
@@ -68,6 +72,7 @@ public class InquilinoDTO {
         inquilino.setApellido(this.apellido);
         inquilino.setCuil(this.cuil);
         inquilino.setTelefono(this.telefono);
+        inquilino.setDireccion(this.direccion);
         inquilino.setBarrio(this.barrio);
         inquilino.setEstaAlquilando(this.estaAlquilando != null ? this.estaAlquilando : false);
         inquilino.setEsActivo(this.esActivo != null ? this.esActivo : true);
@@ -115,6 +120,14 @@ public class InquilinoDTO {
         this.telefono = telefono;
     }
 
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
     public String getBarrio() {
         return barrio;
     }
@@ -147,6 +160,7 @@ public class InquilinoDTO {
                 ", apellido='" + apellido + '\'' +
                 ", cuil='" + cuil + '\'' +
                 ", telefono='" + telefono + '\'' +
+                ", direccion='" + direccion + '\'' +
                 ", barrio='" + barrio + '\'' +
                 ", estaAlquilando=" + estaAlquilando +
                 ", esActivo=" + esActivo +

@@ -24,6 +24,9 @@ public class Inquilino {
     @Column(name = "telefono", length = 20)
     private String telefono;
 
+    @Column(name = "direccion", length = 100)
+    private String direccion;
+
     @Column(name = "barrio", length = 100)
     private String barrio;
 
@@ -49,6 +52,16 @@ public class Inquilino {
         this.apellido = apellido;
         this.cuil = cuil;
         this.telefono = telefono;
+        this.esActivo = true;
+    }
+
+    // Constructor con direccion
+    public Inquilino(String nombre, String apellido, String cuil, String telefono, String direccion) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.cuil = cuil;
+        this.telefono = telefono;
+        this.direccion = direccion;
         this.esActivo = true;
     }
 
@@ -106,6 +119,14 @@ public class Inquilino {
         this.telefono = telefono;
     }
 
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
     public String getBarrio() {
         return barrio;
     }
@@ -153,6 +174,7 @@ public class Inquilino {
                 ", nombre='" + nombre + '\'' +
                 ", cuil='" + cuil + '\'' +
                 ", telefono='" + telefono + '\'' +
+                ", direccion='" + direccion + '\'' +
                 ", barrio='" + barrio + '\'' +
                 ", estaAlquilando=" + estaAlquilando +
                 ", esActivo=" + esActivo +
