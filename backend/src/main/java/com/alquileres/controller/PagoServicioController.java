@@ -5,8 +5,10 @@ import com.alquileres.dto.PagoServicioResponseDTO;
 import com.alquileres.dto.ActualizarPagoServicioRequest;
 import com.alquileres.dto.RegistroPagoBatchRequest;
 import com.alquileres.dto.RegistroPagoBatchResponse;
+import com.alquileres.dto.ReciboServicioDTO;
 import com.alquileres.model.PagoServicio;
 import com.alquileres.service.PagoServicioService;
+import com.alquileres.service.ReciboServicioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,9 +27,11 @@ import java.util.stream.Collectors;
 public class PagoServicioController {
 
     private final PagoServicioService pagoServicioService;
+    private final ReciboServicioService reciboServicioService;
 
-    public PagoServicioController(PagoServicioService pagoServicioService) {
+    public PagoServicioController(PagoServicioService pagoServicioService, ReciboServicioService reciboServicioService) {
         this.pagoServicioService = pagoServicioService;
+        this.reciboServicioService = reciboServicioService;
     }
 
     /**
@@ -274,6 +278,39 @@ public class PagoServicioController {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new HashMap<>());
+        }
+    }
+
+    /**
+     * Genera un recibo de servicios para un contrato y período específico
+     * El recibo contiene todos los servicios pagados en ese período
+     *
+     * @param contratoId ID del contrato
+     * @param periodo Período en formato mm/aaaa (ej: 11/2025)
+     * @return JSON con los datos del recibo
+     */
+    @GetMapping("/recibo")
+    @Operation(summary = "Generar recibo de servicios",
+               description = "Genera un recibo de servicios para un contrato y período específico. " +
+                           "El recibo incluye todos los servicios pagados en ese período, " +
+                           "datos del contrato, propietario e inquilino.")
+    public ResponseEntity<?> generarRecibo(
+            @RequestParam Long contratoId,
+            @RequestParam String periodo) {
+        try {
+            ReciboServicioDTO recibo = reciboServicioService.generarRecibo(contratoId, periodo);
+            return ResponseEntity.ok(recibo);
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "Error interno del servidor",
+                    "mensaje", e.getMessage()
+                ));
         }
     }
 }

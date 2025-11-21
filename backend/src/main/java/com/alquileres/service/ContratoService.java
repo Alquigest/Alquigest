@@ -32,7 +32,6 @@ import com.alquileres.util.BCRAApiClient;
 import com.alquileres.security.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -858,7 +857,9 @@ public class ContratoService {
         
         // Actualizar el estado del contrato
         contrato.setEstadoContrato(nuevoEstado);
-        
+
+        System.out.println("Check 1");
+
         // Aplicar los cambios según el nuevo estado
         aplicarCambiosPorNuevoEstado(
             contrato, 
@@ -1494,5 +1495,22 @@ public class ContratoService {
                    montoAnterior, montoNuevo, porcentajeAumento);
         
         return montoNuevo;
+    }
+
+    /**
+     * Obtiene la entidad Contrato por su ID (a diferencia de obtenerContratoPorId que devuelve DTO)
+     * Útil para servicios que necesitan acceso directo a las relaciones de la entidad
+     *
+     * @param id ID del contrato
+     * @return La entidad Contrato
+     * @throws BusinessException si el contrato no existe
+     */
+    public Contrato obtenerContratoEntidadPorId(Long id) {
+        return contratoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException(
+                ErrorCodes.CONTRATO_NO_ENCONTRADO,
+                "Contrato no encontrado con ID: " + id,
+                HttpStatus.NOT_FOUND
+            ));
     }
 }

@@ -20,6 +20,8 @@ public class InmuebleDTO {
 
     private Long tipoInmuebleId;
 
+    private String tipoInmuebleNombre;
+
     @NotNull(message = "El estado es obligatorio")
     private Integer estado;
 
@@ -91,6 +93,14 @@ public class InmuebleDTO {
 
     public void setTipoInmuebleId(Long tipoInmuebleId) {
         this.tipoInmuebleId = tipoInmuebleId;
+    }
+
+    public String getTipoInmuebleNombre() {
+        return tipoInmuebleNombre;
+    }
+
+    public void setTipoInmuebleNombre(String tipoInmuebleNombre) {
+        this.tipoInmuebleNombre = tipoInmuebleNombre;
     }
 
     public Integer getEstado() {

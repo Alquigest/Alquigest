@@ -96,4 +96,8 @@ public interface PagoServicioRepository extends JpaRepository<PagoServicio, Inte
            "WHERE p.periodo = :periodo " +
            "ORDER BY c.id, p.id")
     List<Object[]> findPagosServiciosDelMesActualConDetalle(@Param("periodo") String periodo);
+
+    // Buscar todos los pagos de un período específico para un contrato (para generar recibos)
+    @Query("SELECT p FROM PagoServicio p WHERE p.periodo = :periodo AND p.servicioContrato.contrato.id = :contratoId")
+    List<PagoServicio> findByPeriodoAndServicioContratoContratoId(@Param("periodo") String periodo, @Param("contratoId") Long contratoId);
 }
