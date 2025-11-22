@@ -48,6 +48,18 @@ public class InmuebleDTO {
         this.esActivo = inmueble.getEsActivo();
     }
 
+    public InmuebleDTO(Inmueble inmueble, String tipoInmuebleNombre) {
+        this.id = inmueble.getId();
+        this.propietarioId = inmueble.getPropietarioId();
+        this.direccion = inmueble.getDireccion();
+        this.tipoInmuebleId = inmueble.getTipoInmuebleId();
+        this.tipoInmuebleNombre = tipoInmuebleNombre;
+        this.estado = inmueble.getEstado();
+        this.superficie = inmueble.getSuperficie();
+        this.esAlquilado = inmueble.getEsAlquilado();
+        this.esActivo = inmueble.getEsActivo();
+    }
+
     // Método para convertir a entidad
     public Inmueble toEntity() {
         Inmueble inmueble = new Inmueble();
@@ -133,5 +145,20 @@ public class InmuebleDTO {
 
     public void setEsActivo(Boolean esActivo) {
         this.esActivo = esActivo;
+    }
+
+    @Override
+    public String toString() {
+        return "InmuebleDTO{" +
+                "id=" + id +
+                ", propietarioId=" + propietarioId +
+                ", direccion='" + direccion + '\'' +
+                ", tipoInmuebleId=" + tipoInmuebleId +
+                ", tipoInmuebleNombre='" + tipoInmuebleNombre + '\'' +
+                ", estado=" + estado +
+                ", superficie=" + superficie +
+                ", esAlquilado=" + esAlquilado +
+                ", esActivo=" + esActivo +
+                '}';
     }
 }

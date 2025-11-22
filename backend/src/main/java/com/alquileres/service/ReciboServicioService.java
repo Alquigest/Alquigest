@@ -88,6 +88,9 @@ public class ReciboServicioService {
         InmuebleDTO inmuebleDTO = inmuebleService.obtenerInmueblePorId(contrato.getInmueble().getId());
 
         // Construir datos del contrato
+        System.out.println("INMUEBLE DTOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+        System.out.println("IDTO:" + inmuebleDTO);
+
         String tipoInmuebleNombre = inmuebleDTO.getTipoInmuebleNombre() != null ?
                 inmuebleDTO.getTipoInmuebleNombre() : "N/A";
         ReciboServicioDTO.ContratoReciboDTO datosContrato = new ReciboServicioDTO.ContratoReciboDTO(

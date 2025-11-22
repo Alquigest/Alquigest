@@ -97,7 +97,12 @@ public class InmuebleService {
     public InmuebleDTO obtenerInmueblePorId(Long id) {
         Optional<Inmueble> inmueble = inmuebleRepository.findById(id);
         if (inmueble.isPresent()) {
-            return new InmuebleDTO(inmueble.get());
+            String tipoInmuebleNombre = "N/A";
+            Optional<TipoInmueble> tipoInmueble = tipoInmuebleRepository.findById(inmueble.get().getTipoInmuebleId());
+            if (tipoInmueble.isPresent()) {
+                tipoInmuebleNombre = tipoInmueble.get().getNombre();
+            }
+            return new InmuebleDTO(inmueble.get(), tipoInmuebleNombre);
         } else {
             throw new BusinessException(
                 ErrorCodes.INMUEBLE_NO_ENCONTRADO,
