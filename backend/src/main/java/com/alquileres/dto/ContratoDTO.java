@@ -62,6 +62,8 @@ public class ContratoDTO {
     // Monto del último alquiler
     private BigDecimal montoUltimoAlquiler;
 
+    private boolean tienePDF;
+
     // Constructor por defecto
     public ContratoDTO() {
     }
@@ -80,6 +82,7 @@ public class ContratoDTO {
         this.porcentajeHonorario = contrato.getPorcentajeHonorario();
         this.periodoAumento = contrato.getPeriodoAumento();
         this.fechaAumento = contrato.getFechaAumento();
+        this.tienePDF = contrato.getIdPDF() != null;
 
         // Información adicional para mostrar
         this.direccionInmueble = contrato.getInmueble() != null ? contrato.getInmueble().getDireccion() : null;
@@ -343,6 +346,14 @@ public class ContratoDTO {
 
     public void setMontoUltimoAlquiler(BigDecimal montoUltimoAlquiler) {
         this.montoUltimoAlquiler = montoUltimoAlquiler;
+    }
+
+    public boolean isTienePDF() {
+        return tienePDF;
+    }
+
+    public void setTienePDF(boolean tienePDF) {
+        this.tienePDF = tienePDF;
     }
 
     @Override
