@@ -188,23 +188,7 @@ export default function ServicioPagoCard({ pagoServicio, onPagoRegistrado, onDat
               </Select>
             </div>
             <div className="flex justify-end">
-              <BotonPagoModal
-                triggerLabel={loading ? "Procesando..." : "Registrar pago"}
-                items={[{
-                  id: pagoServicio.servicioContrato.tipoServicio.nombre,
-                  titulo: pagoServicio.servicioContrato.tipoServicio.nombre,
-                  subtitulo: `${pagoServicio.periodo} | ${medioPago}${vencido === 'SI' ? ' | Vencido' : ''}`,
-                  monto: typeof monto === 'number' ? monto : parseFloat(String(monto).replace(',', '.'))
-                }]}
-                onConfirm={confirmarPagoIndividual}
-                isDisabled={loading || pagoServicio.estaPagado || !monto || parseFloat(String(monto).replace(',', '.')) <= 0 || !useAuth().hasPermission("pagar_servicios")}
-                confirmLabel="Confirmar pago"
-                iconLabel={<CheckSquare/>}
-                cancelLabel="Cancelar"
-                title="Confirmar pago del servicio"
-                description="Verificá los datos del servicio antes de registrar el pago."
-                className="bg-emerald-600 hover:bg-emerald-700 mr-[3px]"
-              />
+
             </div>
           </div>
         )}
