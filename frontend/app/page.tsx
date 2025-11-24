@@ -295,7 +295,7 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-2">
               <EditIcon className="h-4 w-4" />
-              {editingLayout ? "Guardar orden" : "Ordenar paneles"}
+              {editingLayout ? "Guardar Orden" : "Ordenar Paneles"}
             </div>
           </Button>
         </div>
