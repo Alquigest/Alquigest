@@ -120,6 +120,9 @@ export default function HistorialPagosServiciosPage() {
                     const copia = [...data]
                     const sign = sortDir === "asc" ? 1 : -1
                     const parsePeriodo = (p: string) => {
+                      // Intenta MM/YYYY o MM-YYYY
+                      const m1 = p.match(/^(\d{2})[-\/](\d{4})$/)
+                      if (m1) return new Date(Number(m1[2]), Number(m1[1]) - 1, 1).getTime()
                       // Intenta YYYY-MM o YYYY/MM
                       const m = p.match(/^(\d{4})[-\/]?(\d{2})$/)
                       if (m) return new Date(Number(m[1]), Number(m[2]) - 1, 1).getTime()
