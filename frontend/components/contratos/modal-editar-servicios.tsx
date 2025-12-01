@@ -65,6 +65,7 @@ export default function ModalEditarServicios({ contratoId, fechaInicioContrato, 
             id: servicioExistente.id, // Importante: guardar el ID del servicio
             tipoServicioId: servicioBase.tipoServicioId,
             nroCuenta: servicioExistente.nroCuenta || "",
+            nroContratoServicio: servicioExistente.nroContratoServicio || null,
             contratoId: servicioExistente.contratoId,
             nroContrato: servicioExistente.nroContrato || contratoId.toString(),
             esDeInquilino: servicioExistente.esDeInquilino,
