@@ -103,7 +103,10 @@ const ServicioCard: React.FC<ServicioCardProps> = ({ s, updateServicio }) => {
                   <SelectValue placeholder="Seleccionar periodicidad" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="anual">Anual</SelectItem>
+                  {s.tipoServicioId === 4 || s.tipoServicioId === 5 ? (
+                    <SelectItem value="anual">Anual</SelectItem>
+                  ) : (null)}
+                  
                   <SelectItem value="mestral">Mensual</SelectItem>
                 </SelectContent>
               </Select>

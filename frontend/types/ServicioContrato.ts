@@ -22,6 +22,6 @@ export const BORDER_HOVER_CLASSES: Record<number, string> = {
     1: "hover:border-yellow-500",   // Luz
     2: "hover:border-sky-500",   // Agua
     3: "hover:border-orange-500",   // Gas
-    4: "hover:border-purple-500",  // Rentas
-    5: "hover:border-emerald-500",     // Municipal
+    4: "hover:border-emerald-500",  // Rentas
+    5: "hover:border-purple-500",     // Municipal
   };
