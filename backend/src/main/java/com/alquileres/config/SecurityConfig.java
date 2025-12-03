@@ -28,7 +28,7 @@ import java.util.Arrays;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("${allowed.origins:http://localhost:3000}")
+    @Value("${ALLOWED_ORIGINS:http://localhost:3000}")
     private String allowedOrigins;
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -152,15 +152,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Configurar orígenes permitidos desde application.properties
+        // Configurar orígenes permitidos desde variables de entorno / properties (ALLOWED_ORIGINS)
         String[] origins = allowedOrigins.split(",");
         configuration.setAllowedOrigins(Arrays.asList(origins));
-        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // IMPORTANTE: Permitir cookies
-        configuration.setExposedHeaders(Arrays.asList("Token-Refreshed")); // Exponer header personalizado
+        configuration.setAllowCredentials(true); // Permitir cookies/credenciales
+        configuration.setExposedHeaders(Arrays.asList("Token-Refreshed"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
