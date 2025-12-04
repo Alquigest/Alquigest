@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -129,13 +130,13 @@ public class AuthController {
             String jwt = jwtUtils.generateJwtToken(authentication);
 
             // Configurar cookie HttpOnly con el JWT
-            Cookie jwtCookie = new Cookie(jwtCookieName, jwt);
-            jwtCookie.setHttpOnly(true);  // No accesible desde JavaScript
-            jwtCookie.setSecure(false);   // Cambiar a true en producción con HTTPS
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(cookieMaxAge); // Duración en segundos
-            // jwtCookie.setAttribute("SameSite", "Strict"); // Protección CSRF - descomentar si usas Spring 6.1+
-            response.addCookie(jwtCookie);
+            ResponseCookie cookie = ResponseCookie.from(jwtCookieName, jwt)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(cookieMaxAge)
+                    .build();
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             List<String> roles = userDetails.getAuthorities().stream()
@@ -338,13 +339,13 @@ public class AuthController {
     @Operation(summary = "Cerrar sesión")
     public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
         try {
-            // Limpiar cookie
-            Cookie jwtCookie = new Cookie(jwtCookieName, null);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(false); // Cambiar a true en producción
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(0); // Eliminar cookie
-            response.addCookie(jwtCookie);
+            ResponseCookie rCookie = ResponseCookie.from(jwtCookieName, "")
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(cookieMaxAge)
+                    .build();
 
             // Obtener el token de la cookie para invalidarlo en la blacklist
             Cookie[] cookies = request.getCookies();
@@ -464,12 +465,13 @@ public class AuthController {
             String newJwt = jwtUtils.generateJwtToken(authentication);
 
             // Configurar nueva cookie con el nuevo JWT
-            Cookie jwtCookie = new Cookie(jwtCookieName, newJwt);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(false); // Cambiar a true en producción
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(cookieMaxAge);
-            response.addCookie(jwtCookie);
+            ResponseCookie rCookie = ResponseCookie.from(jwtCookieName, newJwt)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(cookieMaxAge)
+                    .build();
 
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
