@@ -7,7 +7,7 @@ import { Building2, User } from "lucide-react"
 
 export default function NuevoPagoPage({direccionInmueble, nombreInquilino, apellidoInquilino}: {direccionInmueble: string, nombreInquilino: string, apellidoInquilino: string}) {
   return (
-    <div className="min-h-screen bg-background pt-30">
+    <div className="min-h-screen bg-background pt-25 sm:pt-28">
       <main className="container mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold mb-8">Registrar Pago de Servicios</h1>
         <div className="flex flex-col gap-5">
