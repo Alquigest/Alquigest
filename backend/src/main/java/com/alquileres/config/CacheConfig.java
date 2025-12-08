@@ -46,10 +46,22 @@ public class CacheConfig {
         return new ConcurrentMapCacheManager(
                 "contratos",
                 "contratos-vigentes",
+                "contratos-vigentes-count",
                 "contratos-no-vigentes",
                 "contratos-proximos-vencer",
+                "contratos-proximos-vencer-count",
                 "contratos-inmueble",
-                "contratos-inquilino"
+                "contratos-inquilino",
+                "contrato-id",
+                "contrato-existe",
+                "inmueble-contrato-vigente",
+                "alquileres",
+                "alquileres-pendientes",
+                "inmuebles",
+                "inquilinos",
+                "propietarios",
+                "servicios",
+                "servicios-contrato"
         );
     }
 }

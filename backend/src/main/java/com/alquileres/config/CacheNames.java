@@ -11,8 +11,10 @@ public class CacheNames {
     // Cachés de Contratos
     public static final String CONTRATOS = "contratos";
     public static final String CONTRATOS_VIGENTES = "contratos-vigentes";
+    public static final String CONTRATOS_VIGENTES_COUNT = "contratos-vigentes-count";
     public static final String CONTRATOS_NO_VIGENTES = "contratos-no-vigentes";
     public static final String CONTRATOS_PROXIMOS_VENCER = "contratos-proximos-vencer";
+    public static final String CONTRATOS_PROXIMOS_VENCER_COUNT = "contratos-proximos-vencer-count";
     public static final String CONTRATOS_POR_INMUEBLE = "contratos-inmueble";
     public static final String CONTRATOS_POR_INQUILINO = "contratos-inquilino";
     public static final String CONTRATO_POR_ID = "contrato-id";

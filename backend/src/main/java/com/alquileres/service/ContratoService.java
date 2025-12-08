@@ -365,7 +365,7 @@ public class ContratoService {
      * 
      * @return Cantidad de contratos vigentes
      */
-    @Cacheable("contratos-vigentes-count")
+    @Cacheable(CacheNames.CONTRATOS_VIGENTES_COUNT)
     public Long contarContratosVigentes() {
         return contratoRepository.countContratosVigentes();
     }
@@ -399,7 +399,7 @@ public class ContratoService {
      * @param diasAntes Número de días hacia adelante para buscar vencimientos
      * @return Cantidad de contratos próximos a vencer
      */
-    @Cacheable(value = "contratos-proximos-vencer-count", key = "#diasAntes")
+    @Cacheable(value = CacheNames.CONTRATOS_PROXIMOS_VENCER_COUNT, key = "#diasAntes")
     public Long contarContratosProximosAVencer(int diasAntes) {
         String fechaActual = clockService.getCurrentDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
         String fechaLimite = clockService.getCurrentDate().plusDays(diasAntes).format(DateTimeFormatter.ISO_LOCAL_DATE);
