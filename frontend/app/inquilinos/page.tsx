@@ -13,7 +13,7 @@ import ModalError from "@/components/modal-error";
 import NuevoInquilinoModal from "./nuevoInquilinoModal";
 import BarraBusqueda from "@/components/busqueda/barra-busqueda";
 import InquilinoCard from "@/components/inquilinos/inquilino-card"// Componente presentacional
-import { SquareX, SquareCheck, Edit } from "lucide-react";
+import { SquareX, SquareCheck } from "lucide-react";
 
 export default function InquilinosPage() {
   const { hasPermission } = useAuth();
