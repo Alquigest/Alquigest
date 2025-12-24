@@ -3,13 +3,11 @@
 import { Button } from "@/components/ui/button"
 import {  ArrowLeft, Menu, Grid, SquareCheck, SquareX } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Propietario } from "@/types/Propietario"
-import BACKEND_URL from "@/utils/backendURL"
 import NuevoPropietarioModal from "./nuevoPropietarioModal"
 import EditarPropietarioModal from "./editarPropietarioModal"
 import Loading from "@/components/loading"
-import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import BarraBusqueda from "@/components/busqueda/barra-busqueda"
 import { useAuth } from "@/contexts/AuthProvider"
 import PropietarioCard from "@/components/propietarios/propietario-card"
@@ -17,7 +15,7 @@ import { usePropietarios } from "@/hooks/usePropietarios"
 
 export default function PropietariosPage() {
 
-  const { hasPermission, hasRole, user } = useAuth();
+  const { hasPermission } = useAuth();
   const { propietariosBD, propietariosMostrar, setPropietariosMostrar, loading, filtroInactivos, agregarPropietario, toggleFiltroInactivos, actualizarPropietario } = usePropietarios();
   const [isEditOwnerOpen, setIsEditOwnerOpen] = useState(false)
   const [editingOwner, setEditingOwner] = useState<Propietario | null>(null)
