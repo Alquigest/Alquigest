@@ -17,6 +17,7 @@ public class PropietarioDTO {
     @Size(max = 50, message = "El apellido no puede exceder 50 caracteres")
     private String apellido;
 
+    @NotBlack(message = "El CUIL es obligatorio")
     @Size(max = 20, message = "El CUIL no puede exceder 20 caracteres")
     private String cuil;
 
@@ -27,12 +28,15 @@ public class PropietarioDTO {
     @Size(max = 100, message = "El email no puede exceder 100 caracteres")
     private String email;
 
+    @NotBlack(message = "La dirección es obligatoria")
     @Size(max = 100, message = "La dirección no puede exceder 100 caracteres")
     private String direccion;
 
+    @NotBlack(message = "El barrio es obligatorio")
     @Size(max = 100, message = "El barrio no puede exceder 100 caracteres")
     private String barrio;
 
+    @Size(min = 6, message = "La clave fiscal debe tener al menos 6 caracteres")
     @Size(max = 500, message = "La clave fiscal no puede exceder 500 caracteres")
     private String claveFiscal;
 
