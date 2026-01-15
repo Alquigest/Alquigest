@@ -19,7 +19,7 @@ import com.alquileres.service.ServicioActualizacionService;
 import com.alquileres.service.AlquilerActualizacionService;
 import com.alquileres.service.LoginAttemptService;
 import com.alquileres.service.PasswordResetService;
-import com.alquileres.service.EmailService;
+import com.alquileres.service.ResendEmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -70,7 +70,7 @@ public class AuthController {
     private final AlquilerActualizacionService alquilerActualizacionService;
     private final LoginAttemptService loginAttemptService;
     private final PasswordResetService passwordResetService;
-    private final EmailService emailService;
+    private final ResendEmailService resendEmailService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
@@ -85,7 +85,7 @@ public class AuthController {
             AlquilerActualizacionService alquilerActualizacionService,
             LoginAttemptService loginAttemptService,
             PasswordResetService passwordResetService,
-            EmailService emailService) {
+            ResendEmailService resendEmailService) {
         this.authenticationManager = authenticationManager;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -98,7 +98,7 @@ public class AuthController {
         this.alquilerActualizacionService = alquilerActualizacionService;
         this.loginAttemptService = loginAttemptService;
         this.passwordResetService = passwordResetService;
-        this.emailService = emailService;
+        this.resendEmailService = resendEmailService;
     }
 
     @PostMapping("/signin")
@@ -317,7 +317,7 @@ public class AuthController {
     @Operation(summary = "Enviar email de prueba")
     public ResponseEntity<?> enviarEmailPrueba(@RequestParam String destinatario) {
         try {
-            emailService.enviarEmailPrueba(destinatario);
+            resendEmailService.enviarEmailPrueba(destinatario);
             return ResponseEntity.ok(new MessageResponse("Email de prueba enviado a: " + destinatario));
         } catch (Exception e) {
             return ResponseEntity

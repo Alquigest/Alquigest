@@ -22,15 +22,15 @@ public class AsyncPasswordResetProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AsyncPasswordResetProcessor.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final EmailService emailService;
+    private final ResendEmailService resendEmailService;
     private final Random random;
     private final long tokenExpirationTime;
 
     public AsyncPasswordResetProcessor(
             UsuarioRepository usuarioRepository,
-            EmailService emailService) {
+            ResendEmailService resendEmailService) {
         this.usuarioRepository = usuarioRepository;
-        this.emailService = emailService;
+        this.resendEmailService = resendEmailService;
         this.random = new Random();
         this.tokenExpirationTime = 3600000; // 1 hora por defecto
     }
@@ -94,7 +94,7 @@ public class AsyncPasswordResetProcessor {
     @Async
     public void enviarEmailAsync(String email, String username, String token) {
         try {
-            emailService.enviarEmailRecuperacionContrasena(email, username, token);
+            resendEmailService.enviarEmailRecuperacionContrasena(email, username, token);
             logger.info("Email de recuperación de contraseña enviado a: {}", email);
         } catch (Exception e) {
             logger.error("Error al enviar email de recuperación a {}: {}", email, e.getMessage(), e);
