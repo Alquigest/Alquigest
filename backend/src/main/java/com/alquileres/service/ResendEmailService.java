@@ -55,10 +55,6 @@ public class ResendEmailService {
 
     /**
      * Envía un email de recuperación de contraseña
-     *
-     * @param destinatario Email del destinatario
-     * @param usuario Nombre del usuario
-     * @param token Token de recuperación
      */
     public void enviarEmailRecuperacionContrasena(String destinatario, String usuario, String token) {
         try {
@@ -67,7 +63,7 @@ public class ResendEmailService {
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("from", fromEmail);
-            requestBody.put("to", destinatario);
+            requestBody.put("to", new String[]{destinatario}); // Resend requiere array
             requestBody.put("subject", "Recuperación de Contraseña - Alquigest");
             requestBody.put("html", htmlContent);
 
@@ -84,8 +80,6 @@ public class ResendEmailService {
 
     /**
      * Envía un email de prueba
-     *
-     * @param destinatario Email del destinatario
      */
     public void enviarEmailPrueba(String destinatario) {
         try {
@@ -93,7 +87,7 @@ public class ResendEmailService {
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("from", fromEmail);
-            requestBody.put("to", destinatario);
+            requestBody.put("to", new String[]{destinatario}); // Resend requiere array
             requestBody.put("subject", "Email de Prueba - Alquigest");
             requestBody.put("html", htmlContent);
 
@@ -119,8 +113,7 @@ public class ResendEmailService {
             }
 
             logger.debug("Enviando email a Resend API...");
-            logger.debug("Destinatario: {}", requestBody.get("to"));
-            logger.debug("Asunto: {}", requestBody.get("subject"));
+            logger.debug("Request body: {}", requestBody);
 
             String response = webClient.post()
                     .uri(RESEND_API_URL)
@@ -128,6 +121,18 @@ public class ResendEmailService {
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .bodyValue(requestBody)
                     .retrieve()
+                    .onStatus(
+                        status -> status.value() == 403,
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                            .map(errorBody -> {
+                                logger.error("❌ Resend API retornó 403 Forbidden");
+                                logger.error("❌ Response body: {}", errorBody);
+                                logger.error("❌ API Key usado: {}...{}",
+                                    apiKey.substring(0, Math.min(10, apiKey.length())),
+                                    apiKey.substring(Math.max(0, apiKey.length() - 4)));
+                                return new RuntimeException("Error 403: " + errorBody);
+                            })
+                    )
                     .bodyToMono(String.class)
                     .block();
 
@@ -139,17 +144,17 @@ public class ResendEmailService {
                 logger.warn("⚠️ Email enviado pero respuesta inesperada: {}", response);
             }
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException.Forbidden e) {
+            String errorBody = e.getResponseBodyAsString();
             logger.error("❌ ERROR 403 FORBIDDEN de Resend API");
+            logger.error("❌ Response body: {}", errorBody);
             logger.error("❌ Posibles causas:");
-            logger.error("   1. API Key inválida o incorrecta");
-            logger.error("   2. API Key no configurada en Render Environment");
-            logger.error("   3. API Key expirada o revocada");
-            logger.error("   4. API Key sin permisos para enviar emails");
-            logger.error("❌ Verifica tu API Key en: https://resend.com/api-keys");
-            logger.error("❌ API Key actual configurada: {}...",
-                apiKey != null ? apiKey.substring(0, Math.min(10, apiKey.length())) : "null");
+            logger.error("   1. Domain not verified");
+            logger.error("   2. From email incorrect");
+            logger.error("   3. API Key sin permisos correctos");
+            logger.error("❌ From email usado: {}", requestBody.get("from"));
+            logger.error("❌ API Key: {}...", apiKey.substring(0, Math.min(10, apiKey.length())));
 
-            throw new RuntimeException("Error 403 de Resend API - API Key inválida. Verifica la configuración en Render.", e);
+            throw new RuntimeException("Error 403 de Resend: " + errorBody, e);
         } catch (WebClientException e) {
             logger.error("❌ Error de conexión con Resend API: {}", e.getMessage());
             throw new RuntimeException("Error de conexión con Resend API: " + e.getMessage(), e);
