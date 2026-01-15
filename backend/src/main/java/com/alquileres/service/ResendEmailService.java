@@ -36,7 +36,21 @@ public class ResendEmailService {
         this.fromEmail = fromEmail;
         this.webClient = webClientBuilder.build();
         this.objectMapper = new ObjectMapper();
-        logger.info("ResendEmailService inicializado con email: {}", fromEmail);
+
+        // Validar API Key
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            logger.error("❌ RESEND_API_KEY NO ESTÁ CONFIGURADA - El servicio de email NO funcionará");
+            logger.error("❌ Configura la variable de entorno: RESEND_API_KEY=re_tu_api_key");
+        } else if (!apiKey.startsWith("re_")) {
+            logger.warn("⚠️ RESEND_API_KEY no tiene el formato esperado (debería empezar con 're_')");
+            logger.warn("⚠️ API Key actual: {}...", apiKey.substring(0, Math.min(5, apiKey.length())));
+        } else {
+            logger.info("✅ ResendEmailService inicializado correctamente");
+            logger.info("   Email remitente: {}", fromEmail);
+            logger.info("   API Key configurada: {}...{}",
+                apiKey.substring(0, 6),
+                apiKey.substring(apiKey.length() - 4));
+        }
     }
 
     /**
@@ -99,9 +113,14 @@ public class ResendEmailService {
      */
     private void sendEmailViaResendAPI(Map<String, Object> requestBody) {
         try {
-            if (apiKey == null || apiKey.isEmpty()) {
-                throw new RuntimeException("RESEND_API_KEY no está configurada");
+            if (apiKey == null || apiKey.trim().isEmpty()) {
+                logger.error("❌ RESEND_API_KEY no está configurada");
+                throw new RuntimeException("RESEND_API_KEY no está configurada. Configura la variable de entorno en Render.");
             }
+
+            logger.debug("Enviando email a Resend API...");
+            logger.debug("Destinatario: {}", requestBody.get("to"));
+            logger.debug("Asunto: {}", requestBody.get("subject"));
 
             String response = webClient.post()
                     .uri(RESEND_API_URL)
@@ -115,15 +134,27 @@ public class ResendEmailService {
             logger.debug("Respuesta de Resend: {}", response);
 
             if (response != null && response.contains("id")) {
-                logger.info("Email enviado exitosamente a través de Resend API");
+                logger.info("✅ Email enviado exitosamente a través de Resend API");
             } else {
-                logger.warn("Email enviado pero respuesta inesperada: {}", response);
+                logger.warn("⚠️ Email enviado pero respuesta inesperada: {}", response);
             }
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException.Forbidden e) {
+            logger.error("❌ ERROR 403 FORBIDDEN de Resend API");
+            logger.error("❌ Posibles causas:");
+            logger.error("   1. API Key inválida o incorrecta");
+            logger.error("   2. API Key no configurada en Render Environment");
+            logger.error("   3. API Key expirada o revocada");
+            logger.error("   4. API Key sin permisos para enviar emails");
+            logger.error("❌ Verifica tu API Key en: https://resend.com/api-keys");
+            logger.error("❌ API Key actual configurada: {}...",
+                apiKey != null ? apiKey.substring(0, Math.min(10, apiKey.length())) : "null");
+
+            throw new RuntimeException("Error 403 de Resend API - API Key inválida. Verifica la configuración en Render.", e);
         } catch (WebClientException e) {
-            logger.error("Error de conexión con Resend API: {}", e.getMessage(), e);
+            logger.error("❌ Error de conexión con Resend API: {}", e.getMessage());
             throw new RuntimeException("Error de conexión con Resend API: " + e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Error inesperado al enviar email: {}", e.getMessage(), e);
+            logger.error("❌ Error inesperado al enviar email: {}", e.getMessage(), e);
             throw new RuntimeException("Error al enviar email: " + e.getMessage(), e);
         }
     }
