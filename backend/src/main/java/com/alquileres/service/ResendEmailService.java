@@ -1,31 +1,41 @@
 package com.alquileres.service;
 
-import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.SendEmailRequest;
-import com.resend.services.emails.model.SendEmailResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Servicio de email utilizando la API oficial de Resend.
+ * Servicio de email utilizando la API REST de Resend.
  * Más confiable y mejor soportado que SMTP para producción en Render.
  */
 @Service
 public class ResendEmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(ResendEmailService.class);
+    private static final String RESEND_API_URL = "https://api.resend.com/emails";
 
-    private final Resend resend;
+    private final String apiKey;
     private final String fromEmail;
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     public ResendEmailService(
             @Value("${resend.api-key}") String apiKey,
-            @Value("${resend.from-email:noreply@resend.dev}") String fromEmail) {
-        this.resend = new Resend(apiKey);
+            @Value("${resend.from-email:noreply@resend.dev}") String fromEmail,
+            WebClient.Builder webClientBuilder) {
+        this.apiKey = apiKey;
         this.fromEmail = fromEmail;
+        this.webClient = webClientBuilder.build();
+        this.objectMapper = new ObjectMapper();
         logger.info("ResendEmailService inicializado con email: {}", fromEmail);
     }
 
@@ -41,27 +51,18 @@ public class ResendEmailService {
             String enlace = "https://alquigest.onrender.com/auth/nueva-contrasena?token=" + token;
             String htmlContent = buildHtmlRecuperacionContrasena(usuario, enlace);
 
-            SendEmailRequest sendEmailRequest = SendEmailRequest.builder()
-                    .from(fromEmail)
-                    .to(destinatario)
-                    .subject("Recuperación de Contraseña - Alquigest")
-                    .html(htmlContent)
-                    .build();
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("from", fromEmail);
+            requestBody.put("to", destinatario);
+            requestBody.put("subject", "Recuperación de Contraseña - Alquigest");
+            requestBody.put("html", htmlContent);
 
-            SendEmailResponse response = resend.emails().send(sendEmailRequest);
+            sendEmailViaResendAPI(requestBody);
 
-            if (response != null && response.getId() != null) {
-                logger.info("Email de recuperación de contraseña enviado exitosamente a: {} (ID: {})",
-                    destinatario, response.getId());
-            } else {
-                logger.warn("Email enviado pero sin confirmación de ID para: {}", destinatario);
-            }
-        } catch (ResendException e) {
-            logger.error("Error de Resend al enviar email de recuperación a {}: {}",
-                destinatario, e.getMessage(), e);
-            throw new RuntimeException("Error al enviar email de recuperación: " + e.getMessage(), e);
+            logger.info("Email de recuperación de contraseña enviado exitosamente a: {}",
+                destinatario);
         } catch (Exception e) {
-            logger.error("Error inesperado al enviar email de recuperación a {}: {}",
+            logger.error("Error al enviar email de recuperación a {}: {}",
                 destinatario, e.getMessage(), e);
             throw new RuntimeException("Error al enviar email de recuperación: " + e.getMessage(), e);
         }
@@ -76,29 +77,54 @@ public class ResendEmailService {
         try {
             String htmlContent = buildHtmlPrueba();
 
-            SendEmailRequest sendEmailRequest = SendEmailRequest.builder()
-                    .from(fromEmail)
-                    .to(destinatario)
-                    .subject("Email de Prueba - Alquigest")
-                    .html(htmlContent)
-                    .build();
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("from", fromEmail);
+            requestBody.put("to", destinatario);
+            requestBody.put("subject", "Email de Prueba - Alquigest");
+            requestBody.put("html", htmlContent);
 
-            SendEmailResponse response = resend.emails().send(sendEmailRequest);
+            sendEmailViaResendAPI(requestBody);
 
-            if (response != null && response.getId() != null) {
-                logger.info("Email de prueba enviado exitosamente a: {} (ID: {})",
-                    destinatario, response.getId());
-            } else {
-                logger.warn("Email de prueba enviado pero sin confirmación de ID para: {}", destinatario);
-            }
-        } catch (ResendException e) {
-            logger.error("Error de Resend al enviar email de prueba a {}: {}",
-                destinatario, e.getMessage(), e);
-            throw new RuntimeException("Error al enviar email de prueba: " + e.getMessage(), e);
+            logger.info("Email de prueba enviado exitosamente a: {}",
+                destinatario);
         } catch (Exception e) {
-            logger.error("Error inesperado al enviar email de prueba a {}: {}",
+            logger.error("Error al enviar email de prueba a {}: {}",
                 destinatario, e.getMessage(), e);
             throw new RuntimeException("Error al enviar email de prueba: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Envía email a través de la API REST de Resend
+     */
+    private void sendEmailViaResendAPI(Map<String, Object> requestBody) {
+        try {
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new RuntimeException("RESEND_API_KEY no está configurada");
+            }
+
+            String response = webClient.post()
+                    .uri(RESEND_API_URL)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            logger.debug("Respuesta de Resend: {}", response);
+
+            if (response != null && response.contains("id")) {
+                logger.info("Email enviado exitosamente a través de Resend API");
+            } else {
+                logger.warn("Email enviado pero respuesta inesperada: {}", response);
+            }
+        } catch (WebClientException e) {
+            logger.error("Error de conexión con Resend API: {}", e.getMessage(), e);
+            throw new RuntimeException("Error de conexión con Resend API: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Error inesperado al enviar email: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al enviar email: " + e.getMessage(), e);
         }
     }
 
