@@ -20,12 +20,15 @@ import com.alquileres.service.AlquilerActualizacionService;
 import com.alquileres.service.LoginAttemptService;
 import com.alquileres.service.PasswordResetService;
 import com.alquileres.service.ResendEmailService;
+import com.alquileres.service.CodigoSeguridadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +52,8 @@ import java.util.stream.Collectors;
 @Tag(name = "Autenticación", description = "API para autenticación y registro de usuarios")
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @Value("${app.jwt.cookieName:accessToken}")
     private String jwtCookieName;
 
@@ -71,6 +76,7 @@ public class AuthController {
     private final LoginAttemptService loginAttemptService;
     private final PasswordResetService passwordResetService;
     private final ResendEmailService resendEmailService;
+    private final CodigoSeguridadService codigoSeguridadService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
@@ -85,7 +91,8 @@ public class AuthController {
             AlquilerActualizacionService alquilerActualizacionService,
             LoginAttemptService loginAttemptService,
             PasswordResetService passwordResetService,
-            ResendEmailService resendEmailService) {
+            ResendEmailService resendEmailService,
+            com.alquileres.service.CodigoSeguridadService codigoSeguridadService) {
         this.authenticationManager = authenticationManager;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -98,6 +105,7 @@ public class AuthController {
         this.alquilerActualizacionService = alquilerActualizacionService;
         this.loginAttemptService = loginAttemptService;
         this.passwordResetService = passwordResetService;
+        this.codigoSeguridadService = codigoSeguridadService;
         this.resendEmailService = resendEmailService;
     }
 
@@ -273,7 +281,25 @@ public class AuthController {
         }
 
         usuario.setRoles(roles);
-        usuarioRepository.save(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        List<String> codigosGenerados = List.of();
+        try {
+            codigosGenerados = codigoSeguridadService.generarCodigos(usuarioGuardado.getId());
+            if (!codigosGenerados.isEmpty()) {
+                logger.info("Códigos de seguridad generados para nuevo usuario: {}", usuarioGuardado.getUsername());
+            }
+        } catch (Exception e) {
+            logger.error("Error al generar códigos de seguridad para nuevo usuario: {}", e.getMessage());
+        }
+
+        if (!codigosGenerados.isEmpty()) {
+            return ResponseEntity.ok(new com.alquileres.dto.CodigosSeguridadResponseDTO(
+                codigosGenerados,
+                "Usuario registrado exitosamente. IMPORTANTE: Entregue estos códigos de seguridad al usuario de forma segura. " +
+                "No podrá volver a verlos una vez que cierre esta ventana."
+            ));
+        }
 
         return ResponseEntity.ok(new MessageResponse("Usuario registrado exitosamente!"));
     }
