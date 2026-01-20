@@ -17,13 +17,12 @@ export const useInquilinos = (
   const [inquilinos, setInquilinos] = useState<Inquilino[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [esActivo, setEsActivo] = useState(esActivoInicial);
 
-  const fetchInquilinos = async (estado = esActivo) => {
+  const fetchInquilinos = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await inquilinosService.getByEstado(estado);
+      const data = await inquilinosService.getByEstado(esActivoInicial);
       setInquilinos(data);
     } catch (err: any) {
       setError(err?.message || "Error al cargar inquilinos");
@@ -35,7 +34,7 @@ export const useInquilinos = (
 
   useEffect(() => {
     fetchInquilinos();
-  }, [esActivo]);
+  }, [esActivoInicial]);
 
   const update = async (id: number, data: Partial<Inquilino>) => {
     try {
