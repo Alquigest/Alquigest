@@ -25,6 +25,8 @@ export default function QuickActions() {
     crearInmueble: hasPermission("crear_inmueble"),
     crearUsuario: hasPermission("crear_usuario_abogada"), //CAMBIAR PROVISORIO!!!!
     crearContrato: hasPermission("crear_contrato"),
+    pagarServicios: hasPermission("pagar_servicios"),
+    pagarAlquileres: hasPermission("pagar_alquileres"),
   }), [])
   return (
     <div>
@@ -38,17 +40,17 @@ export default function QuickActions() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">
             {/* Pagar Alquileres */}
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenPagoAlquileres(true) }}>
-              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" >
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if(perms.pagarAlquileres) setOpenPagoAlquileres(true) }}>
+              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" disabled={!perms.pagarAlquileres}>
                 <Receipt className="mr-2 text-background" />
-                Pagar Alquileres (Beta)
+                Pagar Alquileres
               </Button>
             </DropdownMenuItem>
             {/* Pagar Servicios */}
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpenPagoServicios(true) }}>
-              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" >
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if(perms.pagarServicios) setOpenPagoServicios(true) }}>
+              <Button  size="sm" className="w-full flex items-center justify-start bg-green-600 hover:bg-green-800" disabled={!perms.pagarServicios}>
                 <Blocks className="mr-2 text-background" />
-                Pagar Servicios (Beta)
+                Pagar Servicios
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Locador */}

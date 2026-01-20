@@ -107,10 +107,12 @@ export default function RegistrarNuevoUser() {
       setPasswordValidMessage("");
       setPasswordMessage("");
     } catch (error: any) {
-      setLoading(false);
       console.error("Error al crear usuario:", error);
       setErrorCarga(error.message || "No se pudo conectar con el servidor");
       setMostrarError(true);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
