@@ -76,6 +76,7 @@ export default function EditarClaveFiscal({
             value={claveFiscalEnmascarada || claveFiscalActualizada}
             onChange={(e) => setClaveFiscalActualizada(e.target.value)}
             disabled={!!claveFiscalEnmascarada}
+            
             placeholder='No posee clave fiscal registrada'
           />
 
@@ -100,6 +101,7 @@ export default function EditarClaveFiscal({
           <Input
             value={claveFiscalActualizada}
             onChange={(e) => setClaveFiscalActualizada(e.target.value)}
+            maxLength={50}
           />
 
       )}

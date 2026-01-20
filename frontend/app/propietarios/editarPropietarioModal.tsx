@@ -150,6 +150,7 @@ const handleUpdateOwner = async () => {
                 <Input
                     id="edit-direccion"
                     value={editingOwner.direccion}
+                    required
                     onChange={(e) => setEditingOwner({ ...editingOwner, direccion: e.target.value })}
                 />
                 </div>
@@ -158,6 +159,7 @@ const handleUpdateOwner = async () => {
                 <Input
                     id="edit-barrio"
                     value={editingOwner.barrio}
+                    required
                     onChange={(e) => setEditingOwner({ ...editingOwner, barrio: e.target.value })}
                 />
                 </div>

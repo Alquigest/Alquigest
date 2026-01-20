@@ -155,7 +155,7 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
                 id="clave-fiscal"
                 type="text"
                 minLength={8}
-                maxLength={64}
+                maxLength={50}
                 value={nuevoPropietario.claveFiscal}
                 onChange={(e) => {
                   setNuevoPropietario({ ...nuevoPropietario, claveFiscal: e.target.value})
