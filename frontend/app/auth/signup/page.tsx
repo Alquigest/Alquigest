@@ -29,7 +29,7 @@ export default function RegistrarNuevoUser() {
   const [passwordVerif, setPasswordVerif] = useState("");
   const [passwordValidMessage, setPasswordValidMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const [errorCarga, setErrorCarga] = useState("");
   const [mostrarError, setMostrarError] = useState(false);
 
@@ -87,6 +87,7 @@ export default function RegistrarNuevoUser() {
     }
 
     try {
+      setLoading(true);
       const createdUsuario = await fetchWithToken(`${BACKEND_URL}/auth/signup`, {
         method: "POST",
         body: JSON.stringify(formData),
@@ -106,6 +107,7 @@ export default function RegistrarNuevoUser() {
       setPasswordValidMessage("");
       setPasswordMessage("");
     } catch (error: any) {
+      setLoading(false);
       console.error("Error al crear usuario:", error);
       setErrorCarga(error.message || "No se pudo conectar con el servidor");
       setMostrarError(true);
@@ -224,7 +226,10 @@ export default function RegistrarNuevoUser() {
                   </div>
                 </div>
                 <div className="flex gap-4 pt-6">
-                  <Button type="submit" className="flex-1">
+                  <Button 
+                    type="submit" 
+                    className="flex-1"
+                    loading={loading}>
                     <Save className="h-4 w-4 mr-2" />
                     Registrar Usuario
                   </Button>
