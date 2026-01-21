@@ -9,6 +9,8 @@ import { useState, useEffect } from "react"
 import ModalError from "@/components/modal-error"
 import { useAuth } from "@/contexts/AuthProvider"
 import { useCrearPropietario } from "@/hooks/useCrearPropietario"
+import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable"
+import { barrios } from "@/utils/barrios"
 
 
 type NuevoPropietarioModalProps = {
@@ -209,15 +211,14 @@ export default function NuevoPropietarioModal(props: NuevoPropietarioModalProps)
             </div>
             <div>
               <Label htmlFor="barrio">Barrio</Label>
-              <Input
-                id="barrio"
-                required
-                maxLength={50}
-                value={nuevoPropietario.barrio}
-                onChange={(e) =>
-                  setNuevoPropietario({ ...nuevoPropietario, barrio: e.target.value })
+              <BusquedaDesplegable
+                items={barrios}
+                propiedadesBusqueda={["Nombre"]}
+                onSelect={(barrio) =>
+                  setNuevoPropietario({ ...nuevoPropietario, barrio: barrio.Nombre })
                 }
-                placeholder="Ingrese el barrio"
+                placeholder="Buscar barrio..."
+                getItemLabel={(barrio) => barrio.Nombre}
               />
             </div>
 

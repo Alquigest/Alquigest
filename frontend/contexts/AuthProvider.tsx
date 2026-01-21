@@ -47,7 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("✅ Sesión activa:", userData.username);
       } else {
         setUser(null);
-        console.log("❌ Sin sesión activa");
+        switch (res.status) {
+          case 401:
+            console.log("❌ Sesión no autorizada [401]");
+            break;
+          case 403:
+            console.log("❌ Acceso prohibido [403]");
+            break;
+          default:
+            console.log(`❌ Error de autenticación [${res.status}]`);
+        }
       }
     } catch (error) {
       console.error("Error verificando autenticación:", error);

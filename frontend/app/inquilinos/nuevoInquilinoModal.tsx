@@ -10,6 +10,8 @@ import BACKEND_URL from "@/utils/backendURL"
 import ModalError from "@/components/modal-error"
 import { fetchWithToken } from "@/utils/functions/auth-functions/fetchWithToken"
 import { useAuth } from "@/contexts/AuthProvider"
+import BusquedaDesplegable from "@/components/busqueda/busqueda-desplegable"
+import { barrios } from "@/utils/barrios"
 
 
 type NuevoInquilinoModalProps = {
@@ -193,15 +195,14 @@ return (
             </div>
                         <div>
               <Label htmlFor="barrio">Barrio</Label>
-              <Input
-                id="barrio"
-                required
-                maxLength={50}
-                value={nuevoInquilino.barrio}
-                onChange={(e) =>
-                  setNuevoInquilino({ ...nuevoInquilino, barrio: e.target.value })
+              <BusquedaDesplegable
+                items={barrios}
+                propiedadesBusqueda={["Nombre"]}
+                onSelect={(barrio) =>
+                  setNuevoInquilino({ ...nuevoInquilino, barrio: barrio.Nombre })
                 }
-                placeholder="Ingrese el barrio del domicilio real"
+                placeholder="Buscar barrio..."
+                getItemLabel={(barrio) => barrio.Nombre}
               />
             </div>
 

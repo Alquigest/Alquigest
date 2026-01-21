@@ -2,7 +2,6 @@
 
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 
 export default function BarraBusqueda({

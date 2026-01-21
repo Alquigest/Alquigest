@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, use } from "react"
 import ModalError from "@/components/modal-error"
 import EditarClaveFiscal from "@/components/edit-clave-fiscal"
 import { useEditarPropietario } from "@/hooks/useEditarPropietario"
+import BusquedaDesplegable, { BusquedaDesplegableRef } from "@/components/busqueda/busqueda-desplegable"
+import { barrios } from "@/utils/barrios"
 
 type EditarPropietarioModalProps = {
   propietario: any
@@ -21,9 +23,12 @@ export default function EditarPropietarioModal({ propietario, isOpen, onClose, o
   const [editingOwner, setEditingOwner] = useState(propietario)
   const [claveFiscalActualizada, setClaveFiscalActualizada] = useState("")
   const { actualizarPropietario, desactivarPropietario, loading, error, mostrarError, setMostrarError } = useEditarPropietario()
+  const barrioRef = useRef<BusquedaDesplegableRef>(null)
 
   // Sincronizar el estado interno con la prop `propietario` cuando esta cambie
-  useEffect(() => { setEditingOwner(propietario); setClaveFiscalActualizada("") }, [propietario])
+
+
+
 
   // Resetear la clave fiscal cuando se cierra el modal
   useEffect(() => {
@@ -60,6 +65,11 @@ const handleUpdateOwner = async () => {
     onClose()
   }
 }
+
+  // Setear el valor inicial del barrio
+  if (editingOwner.barrio && barrioRef.current) {
+    barrioRef.current.setDisplayValue(editingOwner.barrio)
+  }
 
   return (
     <div>
@@ -156,11 +166,15 @@ const handleUpdateOwner = async () => {
                 </div>
                 <div>
                 <Label htmlFor="edit-barrio">Barrio</Label>
-                <Input
-                    id="edit-barrio"
-                    value={editingOwner.barrio}
-                    required
-                    onChange={(e) => setEditingOwner({ ...editingOwner, barrio: e.target.value })}
+                <BusquedaDesplegable
+                  ref={barrioRef}
+                  items={barrios}
+                  propiedadesBusqueda={["Nombre"]}
+                  onSelect={(barrio) =>
+                    setEditingOwner({ ...editingOwner, barrio: barrio.Nombre })
+                  }
+                  placeholder={editingOwner.barrio || "Buscar barrio..."}
+                  getItemLabel={(barrio) => barrio.Nombre}
                 />
                 </div>
 

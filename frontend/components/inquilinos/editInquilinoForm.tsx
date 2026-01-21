@@ -9,6 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Inquilino } from "@/types/Inquilino";
+import { useRef, useEffect } from "react";
+import BusquedaDesplegable, { BusquedaDesplegableRef } from "@/components/busqueda/busqueda-desplegable"
+import { barrios } from "@/utils/barrios"
 
 export default function editInquilinoForm({editingInquilino, setEditingInquilino, setIsEditInquilinoOpen, handleUpdateInquilino, loadingActualizacion}: {
     editingInquilino: Partial<Inquilino> | null,
@@ -17,6 +20,14 @@ export default function editInquilinoForm({editingInquilino, setEditingInquilino
     handleUpdateInquilino: () => void,
     loadingActualizacion: boolean
 }) {
+    const barrioRef = useRef<BusquedaDesplegableRef>(null)
+
+    useEffect(() => {
+      // Setear el valor inicial del barrio cuando cambia editingInquilino
+      if (editingInquilino?.barrio && barrioRef.current) {
+        barrioRef.current.setDisplayValue(editingInquilino.barrio)
+      }
+    }, [editingInquilino])
     return(
         <div>{editingInquilino && (
               <form
@@ -80,11 +91,15 @@ export default function editInquilinoForm({editingInquilino, setEditingInquilino
                   </div>
                   <div>
                     <Label htmlFor="edit-barrio">Barrio</Label>
-                    <Input
-                      required
-                      id="edit-barrio"
-                      value={editingInquilino.barrio}
-                      onChange={(e) => setEditingInquilino({ ...editingInquilino, barrio: e.target.value })}
+                    <BusquedaDesplegable
+                      ref={barrioRef}
+                      items={barrios}
+                      propiedadesBusqueda={["Nombre"]}
+                      onSelect={(barrio) =>
+                        setEditingInquilino({ ...editingInquilino, barrio: barrio.Nombre })
+                      }
+                      placeholder="Buscar barrio..."
+                      getItemLabel={(barrio) => barrio.Nombre}
                     />
                   </div>
 
