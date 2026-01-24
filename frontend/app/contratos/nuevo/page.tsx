@@ -287,18 +287,26 @@ export default function NuevoContratoPage() {
           <CardContent>
             <div className="space-y-6">
               {renderStep()}
-              <div className="flex justify-between pt-6">
+              <div className="flex items-center gap-3 pt-6">
                 {step > 1 && (
                   <Button type="button" variant="outline" onClick={() => setStep(step - 1)}>Anterior</Button>
                 )}
                 {step < 6 ? (
-                  <Button type="button" onClick={() => setStep(step + 1)} disabled={!isStepValid(step)}>Siguiente</Button>
+                  <Button
+                    type="button"
+                    onClick={() => setStep(step + 1)}
+                    disabled={!isStepValid(step)}
+                    className="ml-auto"
+                  >
+                    Siguiente
+                  </Button>
                 ) : (
                   <Button 
                     type="button" 
                     onClick={handleSubmitContrato} 
                     disabled={!isStepValid(step)}
                     loading={loadingCreacion}
+                    className="ml-auto"
                   >
                     <Save className="h-4 w-4 mr-2" />Confirmar y Registrar
                   </Button>

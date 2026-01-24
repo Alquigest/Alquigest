@@ -227,6 +227,11 @@ export default function DetalleContratoPage({contratoDetallado} : {contratoDetal
                                 </div>
 
                                 <div className="flex gap-3">
+                                    <h2 className="font-bold">Monto Actual Alquiler:</h2>
+                                    <p className="text-green-600">{formatPrice(contratoBD.montoUltimoAlquiler)}</p>
+                                </div>
+
+                                <div className="flex gap-3">
                                     <h2 className="font-bold">% Honorarios:</h2>
                                     <p className="text-card-foreground">{contratoBD.porcentajeHonorario}%</p>
                                 </div>

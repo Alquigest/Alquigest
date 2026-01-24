@@ -70,7 +70,7 @@ export default function InquilinosPage() {
               onClick={() => setEsActivo(!esActivo)}
               variant="outline"
             >
-              {!esActivo ? (
+              {esActivo ? (
                 <div className="flex gap-2 items-center">
                   <SquareX /> Ver Inactivos
                 </div>
