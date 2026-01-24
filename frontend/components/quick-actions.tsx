@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { Blocks, FastForward, FilePlus2, FileText, Home, HousePlusIcon, Plus, Receipt, SquareArrowOutUpRight, UserCircle2, UserPlus, UserPlus2 } from "lucide-react";
+import { Blocks, FilePlus2, FileText, HousePlusIcon, Lightbulb, Receipt, UserCircle2, UserPlus, UserPlus2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import NuevoInmuebleModal from "@/app/inmuebles/nuevo/nuevoInmuebleModal";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -34,8 +34,8 @@ export default function QuickActions() {
         <DropdownMenu>
           <DropdownMenuTrigger className="fixed bg-primary bottom-15 right-3 sm:right-15 rounded-2xl p-4 shadow-lg shadow-black/60 hover:brightness-110 transition-all cursor-pointer z-999">
             <div className="flex items-center sm:space-x-2 text-background">
-              <SquareArrowOutUpRight className="w-6 h-6 " />
-              <span className="hidden sm:block">Accesos Directos</span>
+              <Lightbulb className="w-6 h-6 " />
+              <span className="hidden sm:block">Acciones Rápidas</span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">
@@ -57,21 +57,21 @@ export default function QuickActions() {
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearPropietario) setOpenPropietario(true) }}>
               <Button  size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearPropietario}>
                 <UserPlus className="mr-2 text-background" />
-                Nuevo Locador
+                Registrar Locador
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Locatario */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearInquilino) setOpenInquilino(true) }}>
               <Button size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearInquilino}>
                 <UserPlus className=" mr-2 text-background" />
-                Nuevo Locatario
+                Registrar Locatario
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Inmueble */}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); if (perms.crearInmueble) setOpenInmueble(true) }}>
               <Button  size="sm" className="w-full flex items-center justify-start" disabled={!perms.crearInmueble}>
                 <HousePlusIcon className="mr-2 text-background" />
-                Nuevo Inmueble
+                Registrar Inmueble
               </Button>
             </DropdownMenuItem>
             {/* Nuevo Contrato */}
@@ -80,13 +80,13 @@ export default function QuickActions() {
                 <Link href={"/contratos/nuevo"} className="w-full">
                   <Button size="sm" className="w-full flex items-center justify-start">
                     <FileText className="mr-2 text-background" />
-                    Nuevo Contrato
+                    Registrar Contrato
                   </Button>
                 </Link>
               ) : (
                 <Button size="sm" className="w-full flex items-center justify-start" disabled>
                   <FilePlus2 className="mr-2 text-background" />
-                  Nuevo Contrato
+                  Registrar Contrato
                 </Button>
               )}
             </DropdownMenuItem>
@@ -96,13 +96,13 @@ export default function QuickActions() {
                 <Link href={"/auth/signup"} className="w-full">
                   <Button variant="outline" size="sm" className="w-full flex items-center justify-start">
                     <UserPlus2 className="h-5 w-5 mr-2" />
-                    Nuevo Usuario
+                    Registrar Usuario
                   </Button>
                 </Link>
               ) : (
                 <Button variant="outline" size="sm" className="w-full flex items-center justify-start" disabled>
                   <UserPlus className="h-5 w-5 mr-2" />
-                  Nuevo Usuario
+                  Registrar Usuario
                 </Button>
               )}
             </DropdownMenuItem>
