@@ -32,7 +32,8 @@ export default function HeaderAlquigest({ tituloPagina = "", username, toggleThe
               <Bell className="h-6 w-6 text-primary" />
               {showNotificationDot && (
                 <span className="absolute top-1 right-1">
-                  <Badge className="bg-red-400 text-white rounded-full p-1 h-2 w-2 min-w-0 min-h-0 border-2 border-background shadow" />
+                  <span className="absolute flex size-3 animate-ping rounded-full bg-red-500 opacity-90"></span>
+                  <span className="relative flex size-3 rounded-full bg-red-500 border-red-700 border"></span>
                 </span>
               )}
             </button>

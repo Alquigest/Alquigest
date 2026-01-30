@@ -36,6 +36,7 @@ export default function ClientRootLayout({ children }: { children: ReactNode }) 
     if (path.startsWith("/inquilinos")) return "Locatarios";
     if (path.startsWith("/alquileres")) return "Contratos de alquiler";
     if (path.startsWith("/contratos")) return "Contratos";
+    if (path.startsWith("/auth")) return "Mi Perfil";
     return "Gestiones";
   };
 

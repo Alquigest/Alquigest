@@ -1,7 +1,6 @@
 "use client"
 
-import { Moon, Sun, UserCircle2Icon, LogOut, LogIn } from "lucide-react";
-import Link from "next/link";
+import { Moon, Sun, UserCircle2Icon, LogOut, LogIn, UserCog2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthProvider";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function PildoraUsuario({
   username = "",
@@ -60,6 +60,16 @@ export default function PildoraUsuario({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            {(username !== "") && (
+              <DropdownMenuItem >
+                  <Link href={"/auth/me"}>
+                    <div className="flex">
+                      <UserCog2 className="h-4 w-4 mr-2"/> 
+                      Ver Perfil
+                    </div>
+                  </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleLoginOrLogout(); }}>
               {(username === "") ? <div className="flex"> <LogIn className="h-4 w-4 mr-2"/> Iniciar Sesión </div> : <div className="flex"> <LogOut className="h-4 w-4 mr-2" />
               Cerrar sesión</div> }

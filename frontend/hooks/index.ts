@@ -7,4 +7,6 @@ export { useEditarPropietario } from "./useEditarPropietario";
 export { useNuevoContratoForm } from "./useNuevoContratoForm";
 export { useKeepAlive } from "./useKeepAlive";
 export { useToast } from "./use-toast";
-export { useMediaQuery as useMobile } from "./use-mobile";
+//export { useMediaQuery as useMobile } from "./use-mobile";
+export { useRecuperarContrasena } from "./useRecuperarContrasena";
+export { useUserProfile } from "./useUserProfile";
