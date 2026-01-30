@@ -1,7 +1,6 @@
 "use client";
-import RecuperarContrasenaPaso1 from "@/components/contrasenas/recuperar-contrasena-card";
+import RecuperarContrasenaCodigos from "@/components/contrasenas/recuperar-contrasena-codigos";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, KeyRound } from "lucide-react";
 
 export default function RecuperarContrasenaPage() {
@@ -18,7 +17,7 @@ export default function RecuperarContrasenaPage() {
             </div>
         </div>
         <div className="flex items-center justify-center">
-            <RecuperarContrasenaPaso1 />
+            <RecuperarContrasenaCodigos />
         </div>
     </main>
   );
